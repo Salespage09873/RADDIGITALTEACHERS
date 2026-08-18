@@ -234,13 +234,15 @@
 
     <script>
         const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
-
+        
+        // Lista de professores válidos (excluindo TA e outros não-professores)
+        const VALID_TEACHERS = ['MYCAEL', 'RAFAEL', 'HOPE', 'PEDRO', 'DIOGO', 'LIVIA', 'TOSCA'];
+        
         // Cores para cada professor
         const TEACHER_COLORS = {
             'MYCAEL': '#FF6B6B',
             'RAFAEL': '#4ECDC4',
             'HOPE': '#FFE66D',
-            'TA': '#95E1D3',
             'PEDRO': '#F38181',
             'DIOGO': '#AA96DA',
             'LIVIA': '#FCBAD3',
@@ -313,8 +315,8 @@
                     let group = '', teacher = '', room = '';
                     
                     parts.forEach(part => {
-                        // Verificar se é um professor conhecido
-                        const knownTeacher = Object.keys(TEACHER_COLORS).find(t => part.toUpperCase().includes(t));
+                        // Verificar se é um professor válido (não TA)
+                        const knownTeacher = VALID_TEACHERS.find(t => part.toUpperCase().includes(t));
                         if (knownTeacher) {
                             teacher = knownTeacher;
                         } else if (part.match(/^[A-Z]+\d+$/i) || part.toLowerCase().includes('group') || part.toLowerCase().includes('grupo')) {
@@ -324,7 +326,7 @@
                         } else if (!group && !teacher && !room) {
                             // Tentar identificar pelo padrão
                             if (/[A-Z]{3,}/.test(part)) {
-                                const potentialTeacher = Object.keys(TEACHER_COLORS).find(t => part.toUpperCase().includes(t));
+                                const potentialTeacher = VALID_TEACHERS.find(t => part.toUpperCase().includes(t));
                                 if (potentialTeacher) {
                                     teacher = potentialTeacher;
                                 } else {
@@ -336,7 +338,8 @@
                         }
                     });
 
-                    if (teacher && TEACHER_COLORS[teacher]) {
+                    // Apenas adicionar se for um professor válido
+                    if (teacher && VALID_TEACHERS.includes(teacher)) {
                         teachers.add(teacher);
                         allClasses.push({
                             time,
