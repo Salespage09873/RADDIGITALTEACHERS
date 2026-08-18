@@ -1,33 +1,33 @@
-// Configuração do Google Sheets
-// IMPORTANTE: Substitua estas configurações com as do seu Google Sheets
-const SHEET_CONFIG = {
-    // ID da sua planilha Google (encontrado na URL da planilha)
-    spreadsheetId: 'SEU_SPREADSHEET_ID_AQUI',
-    
-    // Nome da aba onde está o cronograma
-    sheetName: 'Cronograma',
-    
-    // API Key do Google (opcional, se a planilha for pública)
-    apiKey: '' 
-};
+// Configuração do Google Sheets - URL pública CSV
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
 
-// Cores para cada professor (personalize conforme necessário)
+// Cores para cada professor (cores vibrantes e distintas)
 const TEACHER_COLORS = {
-    'Ana Silva': '#FF6B6B',
-    'Carlos Santos': '#4ECDC4',
-    'Maria Oliveira': '#45B7D1',
-    'João Pereira': '#96CEB4',
-    'Fernanda Costa': '#FFEAA7',
-    'Pedro Almeida': '#DDA0DD',
-    'Juliana Rodrigues': '#98D8C8',
-    'Ricardo Ferreira': '#F7DC6F',
-    'Camila Souza': '#BB8FCE',
-    'André Martins': '#85C1E9'
+    'MYCAEL': '#FF6B6B',
+    'RAFAEL': '#4ECDC4',
+    'HOPE': '#FFE66D',
+    'TA': '#95E1D3',
+    'PEDRO': '#F38181',
+    'DIOGO': '#AA96DA',
+    'LIVIA': '#FCBAD3',
+    'TOSCA': '#A8D8EA',
+    'CANCELLED': '#CCCCCC',
+    '/': '#EEEEEE'
 };
 
-// Dados de exemplo (serão substituídos pelos dados do Google Sheets)
-let teachersData = [];
+// Dias da semana em português
+const DAYS_MAP = {
+    'Mon 17TH': 'Segunda',
+    'Tue 18TH': 'Terça',
+    'Wed 19TH': 'Quarta',
+    'Thu 20TH': 'Quinta',
+    'Fri 21ST': 'Sexta'
+};
+
 let scheduleData = [];
+let teachers = new Set();
+let selectedTeacher = null;
+let teachersArray = [];
 
 // Elementos do DOM
 const teacherSelectionView = document.getElementById('teacher-selection');
@@ -43,231 +43,216 @@ const loadingEl = document.getElementById('loading');
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', () => {
-    loadData();
+    loadSchedule();
 });
 
-// Carregar dados do Google Sheets
-async function loadData() {
-    showLoading(true);
+// Função para parsear CSV
+function parseCSV(text) {
+    const lines = text.trim().split('\n');
+    const result = [];
     
-    try {
-        // Tentar carregar do Google Sheets
-        if (SHEET_CONFIG.spreadsheetId !== 'SEU_SPREADSHEET_ID_AQUI') {
-            await loadFromGoogleSheets();
-        } else {
-            // Usar dados de exemplo se não estiver configurado
-            loadExampleData();
-        }
+    if (lines.length === 0) return result;
+    
+    // Cabeçalho
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    
+    for (let i = 1; i < lines.length; i++) {
+        const values = [];
+        let inQuotes = false;
+        let currentValue = '';
         
-        renderTeacherSelection();
-        showLoading(false);
+        for (let char of lines[i]) {
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                values.push(currentValue.trim().replace(/^"|"$/g, ''));
+                currentValue = '';
+            } else {
+                currentValue += char;
+            }
+        }
+        values.push(currentValue.trim().replace(/^"|"$/g, ''));
+        
+        const row = {};
+        headers.forEach((header, index) => {
+            row[header] = values[index] || '';
+        });
+        result.push(row);
+    }
+    
+    return result;
+}
+
+// Carregar dados do Google Sheets
+async function loadSchedule() {
+    try {
+        const response = await fetch(SHEET_CSV_URL);
+        const csvText = await response.text();
+        scheduleData = parseCSV(csvText);
+        
+        // Extrair todos os professores únicos
+        scheduleData.forEach(row => {
+            Object.keys(DAYS_MAP).forEach(dayKey => {
+                const teacher = row[dayKey]?.trim() || '';
+                if (teacher && teacher !== 'CANCELLED' && teacher !== '/' && teacher !== '') {
+                    teachers.add(teacher);
+                }
+            });
+        });
+        
+        renderTeacherCards();
+        updateSchedule();
     } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-        alert('Erro ao carregar cronograma. Verifique as configurações do Google Sheets.');
-        loadExampleData();
-        renderTeacherSelection();
-        showLoading(false);
+        console.error('Erro ao carregar cronograma:', error);
+        document.getElementById('schedule-body').innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 40px;">
+                    Erro ao carregar dados. Verifique sua conexão com a internet.
+                </td>
+            </tr>
+        `;
     }
 }
 
-// Carregar dados do Google Sheets API
-async function loadFromGoogleSheets() {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_CONFIG.spreadsheetId}/values/${SHEET_CONFIG.sheetName}?key=${SHEET_CONFIG.apiKey}`;
+// Renderizar cards dos professores
+function renderTeacherCards() {
+    teacherGrid.innerHTML = '';
+    teachersArray = Array.from(teachers);
     
-    const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error('Falha ao carregar dados do Google Sheets');
-    }
-    
-    const data = await response.json();
-    parseSheetData(data.values);
-}
-
-// Analisar dados da planilha
-function parseSheetData(rows) {
-    if (!rows || rows.length === 0) {
-        loadExampleData();
+    if (teachersArray.length === 0) {
+        teacherGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #667eea;">Nenhum professor encontrado no cronograma.</p>';
         return;
     }
     
-    // Estrutura esperada da planilha:
-    // Coluna A: Horário
-    // Coluna B: Segunda-feira
-    // Coluna C: Terça-feira
-    // Coluna D: Quarta-feira
-    // Coluna E: Quinta-feira
-    // Coluna F: Sexta-feira
-    // Coluna G: Sábado
-    
-    const days = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
-    scheduleData = [];
-    const teachersSet = new Set();
-    
-    // Pular cabeçalho (linha 0)
-    for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        if (!row[0]) continue; // Pular linhas vazias
-        
-        const timeSlot = row[0];
-        const rowSchedule = {};
-        
-        days.forEach((day, index) => {
-            const cellData = row[index + 1] || '';
-            if (cellData) {
-                // Espera-se formato: "Matéria - Professor" ou apenas "Professor"
-                const parts = cellData.split('-').map(s => s.trim());
-                let subject, teacher;
-                
-                if (parts.length >= 2) {
-                    subject = parts[0];
-                    teacher = parts[1];
-                } else {
-                    subject = 'Aula';
-                    teacher = parts[0];
-                }
-                
-                rowSchedule[day] = { subject, teacher, time: timeSlot };
-                teachersSet.add(teacher);
-            }
-        });
-        
-        scheduleData.push({
-            time: timeSlot,
-            schedule: rowSchedule
-        });
-    }
-    
-    // Criar lista de professores únicos
-    teachersData = Array.from(teachersSet).map(name => ({
-        name,
-        color: TEACHER_COLORS[name] || getRandomColor()
-    }));
-    
-    // Atualizar cores dos professores
-    teachersData.forEach(teacher => {
-        if (!TEACHER_COLORS[teacher.name]) {
-            TEACHER_COLORS[teacher.name] = teacher.color;
-        }
-    });
-}
-
-// Carregar dados de exemplo
-function loadExampleData() {
-    const exampleSchedule = [
-        {
-            time: '08:00 - 09:00',
-            schedule: {
-                segunda: { subject: 'Matemática', teacher: 'Ana Silva', time: '08:00 - 09:00' },
-                terca: { subject: 'Português', teacher: 'Carlos Santos', time: '08:00 - 09:00' },
-                quarta: { subject: 'História', teacher: 'Maria Oliveira', time: '08:00 - 09:00' },
-                quinta: { subject: 'Geografia', teacher: 'João Pereira', time: '08:00 - 09:00' },
-                sexta: { subject: 'Ciências', teacher: 'Fernanda Costa', time: '08:00 - 09:00' }
-            }
-        },
-        {
-            time: '09:00 - 10:00',
-            schedule: {
-                segunda: { subject: 'Português', teacher: 'Carlos Santos', time: '09:00 - 10:00' },
-                terca: { subject: 'Matemática', teacher: 'Ana Silva', time: '09:00 - 10:00' },
-                quarta: { subject: 'Inglês', teacher: 'Pedro Almeida', time: '09:00 - 10:00' },
-                quinta: { subject: 'Matemática', teacher: 'Ana Silva', time: '09:00 - 10:00' },
-                sexta: { subject: 'Arte', teacher: 'Juliana Rodrigues', time: '09:00 - 10:00' }
-            }
-        },
-        {
-            time: '10:00 - 11:00',
-            schedule: {
-                segunda: { subject: 'Ciências', teacher: 'Fernanda Costa', time: '10:00 - 11:00' },
-                terca: { subject: 'História', teacher: 'Maria Oliveira', time: '10:00 - 11:00' },
-                quarta: { subject: 'Matemática', teacher: 'Ana Silva', time: '10:00 - 11:00' },
-                quinta: { subject: 'Português', teacher: 'Carlos Santos', time: '10:00 - 11:00' },
-                sexta: { subject: 'Educação Física', teacher: 'Ricardo Ferreira', time: '10:00 - 11:00' }
-            }
-        },
-        {
-            time: '11:00 - 12:00',
-            schedule: {
-                segunda: { subject: 'Inglês', teacher: 'Pedro Almeida', time: '11:00 - 12:00' },
-                terca: { subject: 'Geografia', teacher: 'João Pereira', time: '11:00 - 12:00' },
-                quarta: { subject: 'Ciências', teacher: 'Fernanda Costa', time: '11:00 - 12:00' },
-                quinta: { subject: 'História', teacher: 'Maria Oliveira', time: '11:00 - 12:00' },
-                sexta: { subject: 'Matemática', teacher: 'Ana Silva', time: '11:00 - 12:00' }
-            }
-        },
-        {
-            time: '13:00 - 14:00',
-            schedule: {
-                segunda: { subject: 'Arte', teacher: 'Juliana Rodrigues', time: '13:00 - 14:00' },
-                terca: { subject: 'Ciências', teacher: 'Fernanda Costa', time: '13:00 - 14:00' },
-                quarta: { subject: 'Português', teacher: 'Carlos Santos', time: '13:00 - 14:00' },
-                quinta: { subject: 'Inglês', teacher: 'Pedro Almeida', time: '13:00 - 14:00' },
-                sexta: { subject: 'Geografia', teacher: 'João Pereira', time: '13:00 - 14:00' }
-            }
-        },
-        {
-            time: '14:00 - 15:00',
-            schedule: {
-                segunda: { subject: 'Educação Física', teacher: 'Ricardo Ferreira', time: '14:00 - 15:00' },
-                terca: { subject: 'Arte', teacher: 'Juliana Rodrigues', time: '14:00 - 15:00' },
-                quarta: { subject: 'Educação Física', teacher: 'Ricardo Ferreira', time: '14:00 - 15:00' },
-                quinta: { subject: 'Ciências', teacher: 'Fernanda Costa', time: '14:00 - 15:00' },
-                sexta: { subject: 'Português', teacher: 'Carlos Santos', time: '14:00 - 15:00' }
-            }
-        }
-    ];
-    
-    scheduleData = exampleSchedule;
-    
-    // Extrair professores únicos
-    const teachersSet = new Set();
-    exampleSchedule.forEach(slot => {
-        Object.values(slot.schedule).forEach(classInfo => {
-            teachersSet.add(classInfo.teacher);
-        });
-    });
-    
-    teachersData = Array.from(teachersSet).map(name => ({
-        name,
-        color: TEACHER_COLORS[name] || getRandomColor()
-    }));
-}
-
-// Gerar cor aleatória
-function getRandomColor() {
-    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', 
-                    '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'];
-    return colors[Math.floor(Math.random() * colors.length)];
-}
-
-// Renderizar seleção de professores
-function renderTeacherSelection() {
-    teacherGrid.innerHTML = '';
-    
-    teachersData.forEach(teacher => {
+    teachersArray.forEach(teacher => {
         const card = document.createElement('div');
         card.className = 'teacher-card';
-        card.style.backgroundColor = teacher.color;
-        card.textContent = teacher.name;
-        card.onclick = () => showTeacherSchedule(teacher.name);
+        const color = TEACHER_COLORS[teacher] || getRandomColor();
+        card.style.backgroundColor = color;
+        card.textContent = teacher;
+        card.onclick = () => showTeacherSchedule(teacher);
         teacherGrid.appendChild(card);
+    });
+}
+
+// Atualizar tabela de horários
+function updateSchedule() {
+    if (!selectedTeacher) {
+        renderFullSchedule();
+    } else {
+        renderTeacherSchedule(selectedTeacher);
+    }
+}
+
+// Renderizar cronograma completo
+function renderFullSchedule() {
+    scheduleBody.innerHTML = '';
+    
+    scheduleData.forEach(row => {
+        const timeSlot = row['⌚'] || row['Horario'] || '';
+        if (!timeSlot) return;
+        
+        const tr = document.createElement('tr');
+        
+        // Horário
+        const timeCell = document.createElement('td');
+        timeCell.className = 'time-slot';
+        timeCell.textContent = timeSlot;
+        tr.appendChild(timeCell);
+        
+        // Dias da semana
+        Object.keys(DAYS_MAP).forEach(dayKey => {
+            const cell = document.createElement('td');
+            const teacher = row[dayKey]?.trim() || '';
+            
+            if (teacher && teacher !== 'CANCELLED' && teacher !== '/') {
+                const group = row['Group'] || '';
+                const room = row['Room'] || '';
+                
+                cell.className = 'class-cell';
+                const color = TEACHER_COLORS[teacher] || '#667eea';
+                cell.style.backgroundColor = color;
+                cell.innerHTML = `
+                    <div class="subject">${group}</div>
+                    <div class="teacher">${teacher}</div>
+                    <div class="room">${room}</div>
+                `;
+            } else if (teacher === 'CANCELLED') {
+                cell.className = 'empty-cell';
+                cell.textContent = 'CANCELLED';
+                cell.style.backgroundColor = '#CCCCCC';
+            } else {
+                cell.className = 'empty-cell';
+                cell.textContent = '-';
+            }
+            
+            tr.appendChild(cell);
+        });
+        
+        scheduleBody.appendChild(tr);
+    });
+}
+
+// Renderizar cronograma de um professor específico
+function renderTeacherSchedule(teacherName) {
+    scheduleBody.innerHTML = '';
+    
+    scheduleData.forEach(row => {
+        const timeSlot = row['⌚'] || row['Horario'] || '';
+        if (!timeSlot) return;
+        
+        const tr = document.createElement('tr');
+        
+        // Horário
+        const timeCell = document.createElement('td');
+        timeCell.className = 'time-slot';
+        timeCell.textContent = timeSlot;
+        tr.appendChild(timeCell);
+        
+        // Dias da semana
+        Object.keys(DAYS_MAP).forEach(dayKey => {
+            const cell = document.createElement('td');
+            const teacher = row[dayKey]?.trim() || '';
+            
+            if (teacher === teacherName) {
+                const group = row['Group'] || '';
+                const room = row['Room'] || '';
+                
+                cell.className = 'class-cell';
+                const color = TEACHER_COLORS[teacherName] || '#667eea';
+                cell.style.backgroundColor = color;
+                cell.innerHTML = `
+                    <div class="subject">${group}</div>
+                    <div class="teacher">${teacherName}</div>
+                    <div class="room">${room}</div>
+                `;
+            } else {
+                cell.className = 'empty-cell';
+                cell.textContent = '-';
+            }
+            
+            tr.appendChild(cell);
+        });
+        
+        scheduleBody.appendChild(tr);
     });
 }
 
 // Mostrar cronograma do professor
 function showTeacherSchedule(teacherName) {
-    const teacher = teachersData.find(t => t.name === teacherName);
-    if (!teacher) return;
+    selectedTeacher = teacherName;
+    const color = TEACHER_COLORS[teacherName] || '#667eea';
     
-    teacherNameEl.textContent = teacher.name;
-    teacherNameEl.style.color = teacher.color;
-    teacherColorIndicator.style.backgroundColor = teacher.color;
+    teacherNameEl.textContent = teacherName;
+    teacherNameEl.style.color = color;
+    teacherColorIndicator.style.backgroundColor = color;
     
     // Atualizar informação da semana
     const weekInfo = getWeekInfo();
     currentWeekEl.textContent = `Semana de ${weekInfo.start} a ${weekInfo.end}`;
     
     // Renderizar tabela de horários
-    renderSchedule(teacherName);
+    renderTeacherSchedule(teacherName);
     
     // Renderizar legenda
     renderLegend();
@@ -277,58 +262,27 @@ function showTeacherSchedule(teacherName) {
     scheduleView.classList.remove('hidden');
 }
 
-// Renderizar tabela de horários
-function renderSchedule(teacherName) {
-    scheduleBody.innerHTML = '';
-    
-    scheduleData.forEach(slot => {
-        const row = document.createElement('tr');
-        
-        // Coluna de horário
-        const timeCell = document.createElement('td');
-        timeCell.className = 'time-slot';
-        timeCell.textContent = slot.time;
-        row.appendChild(timeCell);
-        
-        // Dias da semana
-        const days = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
-        days.forEach(day => {
-            const cell = document.createElement('td');
-            const classInfo = slot.schedule[day];
-            
-            if (classInfo && classInfo.teacher === teacherName) {
-                const teacher = teachersData.find(t => t.name === classInfo.teacher);
-                cell.className = 'class-cell';
-                cell.style.backgroundColor = teacher ? teacher.color : '#667eea';
-                cell.innerHTML = `
-                    <div class="subject">${classInfo.subject}</div>
-                    <div class="time">${classInfo.time}</div>
-                `;
-            } else {
-                cell.className = 'empty-cell';
-                cell.textContent = '-';
-            }
-            
-            row.appendChild(cell);
-        });
-        
-        scheduleBody.appendChild(row);
-    });
-}
-
 // Renderizar legenda
 function renderLegend() {
     legendContent.innerHTML = '';
     
-    teachersData.forEach(teacher => {
+    teachersArray.forEach(teacher => {
         const item = document.createElement('div');
         item.className = 'legend-item';
+        const color = TEACHER_COLORS[teacher] || '#667eea';
         item.innerHTML = `
-            <div class="legend-color" style="background-color: ${teacher.color}"></div>
-            <span class="legend-name">${teacher.name}</span>
+            <div class="legend-color" style="background-color: ${color}"></div>
+            <span class="legend-name">${teacher}</span>
         `;
         legendContent.appendChild(item);
     });
+}
+
+// Gerar cor aleatória
+function getRandomColor() {
+    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', 
+                    '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'];
+    return colors[Math.floor(Math.random() * colors.length)];
 }
 
 // Obter informações da semana atual
@@ -338,7 +292,7 @@ function getWeekInfo() {
     const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
     
     const startOfWeek = new Date(now.setDate(diff));
-    const endOfWeek = new Date(now.setDate(diff + 5)); // Até sábado
+    const endOfWeek = new Date(now.setDate(diff + 5));
     
     const options = { day: '2-digit', month: '2-digit' };
     return {
@@ -349,6 +303,7 @@ function getWeekInfo() {
 
 // Voltar para seleção
 backBtn.addEventListener('click', () => {
+    selectedTeacher = null;
     scheduleView.classList.add('hidden');
     teacherSelectionView.classList.remove('hidden');
 });
@@ -363,37 +318,3 @@ function showLoading(show) {
         loadingEl.classList.add('hidden');
     }
 }
-
-// Instruções para configurar o Google Sheets
-console.log(`
-╔═══════════════════════════════════════════════════════════════╗
-║  CONFIGURAÇÃO DO GOOGLE SHEETS                                ║
-╠═══════════════════════════════════════════════════════════════╣
-║  Para conectar este site ao seu Google Sheets:                ║
-║                                                               ║
-║  1. Crie uma planilha no Google Sheets com a seguinte         ║
-║     estrutura:                                                ║
-║     - Coluna A: Horários (ex: 08:00 - 09:00)                  ║
-║     - Coluna B: Segunda-feira                                 ║
-║     - Coluna C: Terça-feira                                   ║
-║     - Coluna D: Quarta-feira                                  ║
-║     - Coluna E: Quinta-feira                                  ║
-║     - Coluna F: Sexta-feira                                   ║
-║     - Coluna G: Sábado                                        ║
-║                                                               ║
-║  2. Em cada célula, use o formato: "Matéria - Professor"      ║
-║     Exemplo: "Matemática - Ana Silva"                         ║
-║                                                               ║
-║  3. Publique a planilha:                                      ║
-║     - Arquivo > Compartilhar > Publicar na Web                ║
-║     OU                                                         ║
-║     - Configure a API do Google Sheets                        ║
-║                                                               ║
-║  4. Atualize as configurações no arquivo app.js:              ║
-║     - spreadsheetId: ID da sua planilha                       ║
-║     - sheetName: Nome da aba                                  ║
-║     - apiKey: Sua chave de API (se necessário)                ║
-║                                                               ║
-║  5. Personalize as cores dos professores em TEACHER_COLORS    ║
-╚═══════════════════════════════════════════════════════════════╝
-`);
