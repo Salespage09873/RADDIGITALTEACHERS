@@ -3,516 +3,649 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cronograma de Aulas - Inglês</title>
+    <title>Cronograma Semanal - Escola de Inglês</title>
     <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #3498db;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --radius: 12px;
+        }
+
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            background-color: #f4f7f6;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--white);
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 1rem;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 2rem 1rem;
         }
 
-        header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        /* Teacher Selection */
-        .teacher-selection {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .teacher-selection h2 {
-            color: #333;
-            margin-bottom: 20px;
-            text-align: center;
+        /* Tela de Seleção */
+        #selection-screen {
+            display: block;
+            animation: fadeIn 0.5s ease;
         }
 
         .teachers-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
         }
 
         .teacher-card {
-            padding: 20px;
-            border-radius: 10px;
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 2rem;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-            border: 3px solid transparent;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: var(--shadow);
+            border-bottom: 5px solid transparent;
+            position: relative;
+            overflow: hidden;
         }
 
         .teacher-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
         }
 
-        .teacher-card.active {
-            border-color: #333;
-            transform: scale(1.05);
+        .teacher-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--dark);
+            text-transform: uppercase;
         }
 
-        /* Schedule Display */
-        .schedule-container {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        .teacher-role {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-top: 0.5rem;
         }
 
-        .schedule-header {
+        /* Tela do Cronograma */
+        #schedule-screen {
+            display: none;
+            animation: slideUp 0.5s ease;
+        }
+
+        .back-btn {
+            background: var(--white);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .back-btn:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .current-teacher-header {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border-left: 10px solid var(--accent);
         }
 
-        .schedule-header h2 {
-            color: #333;
+        .current-teacher-header h2 {
             font-size: 2rem;
+            color: var(--primary);
+        }
+
+        /* Dias da Semana */
+        .days-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
         }
 
         .day-section {
-            margin-bottom: 30px;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
+            background: var(--white);
+            border-radius: var(--radius);
             overflow: hidden;
+            box-shadow: var(--shadow);
         }
 
         .day-header {
-            padding: 15px 20px;
+            padding: 1rem 1.5rem;
+            color: var(--white);
+            font-size: 1.2rem;
             font-weight: bold;
-            font-size: 1.3rem;
-            color: white;
-            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .modules-list {
-            padding: 0;
+        .classes-list {
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
         }
 
-        .module-item {
-            padding: 15px 20px;
-            border-bottom: 1px solid #f0f0f0;
+        .class-card {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 1.2rem;
+            background: #fafafa;
+            transition: transform 0.2s;
+            border-left: 4px solid var(--accent);
+        }
+
+        .class-card:hover {
+            transform: scale(1.02);
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .class-time {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .class-details {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
+            flex-direction: column;
+            gap: 0.4rem;
+            font-size: 0.95rem;
         }
 
-        .module-item:last-child {
-            border-bottom: none;
-        }
-
-        .module-time {
-            font-weight: bold;
-            color: #667eea;
-            min-width: 120px;
-        }
-
-        .module-details {
-            flex: 1;
+        .detail-row {
             display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
             align-items: center;
+            gap: 0.5rem;
         }
 
-        .module-group, .module-room, .module-modality, .module-book {
-            background: #f5f5f5;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            color: #555;
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
         }
 
-        .module-modality {
-            background: #e3f2fd;
-            color: #1976d2;
+        .badge-group {
+            background-color: #e3f2fd;
+            color: #1565c0;
         }
 
-        .module-book {
-            background: #fff3e0;
-            color: #f57c00;
+        .badge-book {
+            background-color: #fff3e0;
+            color: #ef6c00;
         }
 
-        .module-teacher {
-            font-weight: bold;
-            padding: 5px 12px;
-            border-radius: 20px;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        .badge-modal {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
         }
 
-        .no-classes {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-            font-style: italic;
+        .badge-room {
+            background-color: #e8f5e9;
+            color: #2e7d32;
         }
 
         .loading {
             text-align: center;
-            padding: 50px;
-            color: white;
+            padding: 3rem;
             font-size: 1.2rem;
+            color: var(--secondary);
         }
 
-        .error {
+        .error-msg {
             background: #ffebee;
             color: #c62828;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            padding: 1rem;
+            border-radius: var(--radius);
             text-align: center;
+            margin-top: 1rem;
         }
 
-        @media (max-width: 768px) {
-            header h1 {
-                font-size: 2rem;
-            }
-
-            .teachers-grid {
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            }
-
-            .module-item {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .module-time {
-                margin-bottom: 5px;
-            }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cores dos Professores (Dinâmicas via JS, mas fallback aqui) */
+        .color-MYCAEL { border-color: #FF6B6B; background-color: #FF6B6B; }
+        .color-RAFAEL { border-color: #4ECDC4; background-color: #4ECDC4; }
+        .color-HOPE { border-color: #FFE66D; background-color: #FFE66D; color: #333; }
+        .color-PEDRO { border-color: #F38181; background-color: #F38181; }
+        .color-DIOGO { border-color: #AA96DA; background-color: #AA96DA; }
+        .color-LIVIA { border-color: #FCBAD3; background-color: #FCBAD3; }
+        .color-TOSCA { border-color: #A8D8EA; background-color: #A8D8EA; }
+        .color-IAGO { border-color: #FF9F43; background-color: #FF9F43; }
+        .color-SARA { border-color: #54a0ff; background-color: #54a0ff; }
+        .color-CAROL { border-color: #5f27cd; background-color: #5f27cd; }
+
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>📚 Cronograma Semanal</h1>
-            <p>Selecione seu nome para ver suas aulas de inglês</p>
-        </header>
 
+<header>
+    <h1>Cronograma Semanal</h1>
+    <p>Selecione seu nome para ver suas aulas</p>
+</header>
+
+<div class="container">
+    <!-- Tela de Seleção -->
+    <div id="selection-screen">
         <div id="loading" class="loading">Carregando cronograma...</div>
-        <div id="error" class="error" style="display: none;"></div>
-
-        <div id="content" style="display: none;">
-            <section class="teacher-selection">
-                <h2>👨‍🏫 Selecione o Professor</h2>
-                <div class="teachers-grid" id="teachersGrid"></div>
-            </section>
-
-            <section class="schedule-container">
-                <div class="schedule-header">
-                    <h2 id="selectedTeacherName">Cronograma da Semana</h2>
-                </div>
-                <div id="scheduleContent"></div>
-            </section>
-        </div>
+        <div id="teachers-grid" class="teachers-grid"></div>
+        <div id="error-message" class="error-msg" style="display:none;"></div>
     </div>
 
-    <script>
-        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
+    <!-- Tela do Cronograma Individual -->
+    <div id="schedule-screen">
+        <button class="back-btn" onclick="showSelection()">
+            ← Voltar para Seleção
+        </button>
         
-        // Lista de professores válidos (excluindo TA e outros não-professores)
-        const VALID_TEACHERS = ['MYCAEL', 'RAFAEL', 'HOPE', 'PEDRO', 'DIOGO', 'LIVIA', 'TOSCA'];
-        
-        // Cores para cada professor
-        const TEACHER_COLORS = {
-            'MYCAEL': '#FF6B6B',
-            'RAFAEL': '#4ECDC4',
-            'HOPE': '#FFE66D',
-            'PEDRO': '#F38181',
-            'DIOGO': '#AA96DA',
-            'LIVIA': '#FCBAD3',
-            'TOSCA': '#A8D8EA'
-        };
+        <div class="current-teacher-header" id="teacher-header">
+            <!-- Preenchido via JS -->
+        </div>
 
-        let allClasses = [];
-        let teachers = new Set();
+        <div id="schedule-content" class="days-container">
+            <!-- Preenchido via JS -->
+        </div>
+    </div>
+</div>
 
-        // Mapeamento dos dias da semana
-        const dayMapping = {
-            'Mon 17TH': 'Segunda-feira',
-            'Tue 18TH': 'Terça-feira',
-            'Wed 19TH': 'Quarta-feira',
-            'Thu 20TH': 'Quinta-feira',
-            'Fri 21ST': 'Sexta-feira'
-        };
+<script>
+    // Configuração da Planilha
+    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
 
-        const dayOrder = ['Mon 17TH', 'Tue 18TH', 'Wed 19TH', 'Thu 20TH', 'Fri 21ST'];
+    // Lista de Professores Válidos e suas Cores
+    const VALID_TEACHERS = [
+        { name: 'MYCAEL', color: '#FF6B6B' },
+        { name: 'RAFAEL', color: '#4ECDC4' },
+        { name: 'HOPE', color: '#FFE66D' },
+        { name: 'PEDRO', color: '#F38181' },
+        { name: 'DIOGO', color: '#AA96DA' },
+        { name: 'LIVIA', color: '#FCBAD3' },
+        { name: 'TOSCA', color: '#A8D8EA' },
+        { name: 'IAGO', color: '#FF9F43' },   // Novo
+        { name: 'SARA', color: '#54a0ff' },   // Novo
+        { name: 'CAROL', color: '#5f27cd' }   // Novo
+    ];
 
-        async function loadSchedule() {
-            try {
-                const response = await fetch(SHEET_URL);
-                if (!response.ok) throw new Error('Erro ao carregar planilha');
-                
-                const csvText = await response.text();
-                parseCSV(csvText);
-                
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
-                
-                renderTeacherButtons();
-            } catch (error) {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('error').textContent = 'Erro: ' + error.message;
-                document.getElementById('error').style.display = 'block';
-            }
+    const DAYS_MAP = {
+        'Mon': 'Segunda-feira',
+        'Tue': 'Terça-feira',
+        'Wed': 'Quarta-feira',
+        'Thu': 'Quinta-feira',
+        'Fri': 'Sexta-feira',
+        'Sat': 'Sábado'
+    };
+
+    let allClasses = [];
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchSchedule();
+    });
+
+    async function fetchSchedule() {
+        try {
+            const response = await fetch(SHEET_URL);
+            if (!response.ok) throw new Error('Erro ao carregar planilha');
+            
+            const csvText = await response.text();
+            parseCSV(csvText);
+            renderTeacherSelection();
+        } catch (error) {
+            console.error(error);
+            document.getElementById('loading').style.display = 'none';
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = 'Erro ao carregar dados. Verifique sua conexão ou tente novamente mais tarde.';
         }
+    }
 
-        function parseCSV(csvText) {
-            const lines = csvText.split('\n').map(line => line.trim()).filter(line => line);
-            if (lines.length < 2) return;
+    function parseCSV(text) {
+        const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+        if (lines.length < 2) return;
 
-            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+        
+        // Identificar colunas de dias (procura por Mon, Tue, Wed, etc no cabeçalho)
+        const dayColumns = {};
+        headers.forEach((header, index) => {
+            const dayKey = Object.keys(DAYS_MAP).find(key => header.includes(key));
+            if (dayKey) {
+                dayColumns[dayKey] = index;
+            }
+        });
+
+        allClasses = [];
+
+        // Processar linhas de dados (começa na linha 1)
+        for (let i = 1; i < lines.length; i++) {
+            // Regex simples para lidar com CSV que pode ter vírgulas dentro de aspas (embora o pub/csv do google seja geralmente seguro)
+            // Aqui faremos um split simples assumindo formato padrão, mas limpando aspas
+            const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.trim().replace(/^"|"$/g, '').replace(/<.*?>/g, '')); // Remove tags HTML como <co/TA/2>
+
+            const timeSlot = row[0]; // Primeira coluna é horário
             
-            // Encontrar colunas relevantes
-            const timeColIndex = headers.findIndex(h => h.includes('⌚') || h.toLowerCase().includes('hor'));
-            
-            for (let i = 1; i < lines.length; i++) {
-                const values = parseCSVLine(lines[i]);
-                if (values.length <= timeColIndex) continue;
+            if (!timeSlot) continue;
 
-                const time = values[timeColIndex]?.trim() || '';
-                if (!time) continue;
-
-                // Processar cada dia da semana
-                dayOrder.forEach(dayKey => {
-                    const colIndex = headers.indexOf(dayKey);
-                    if (colIndex === -1 || colIndex >= values.length) return;
-
-                    const cellData = values[colIndex]?.trim() || '';
-                    if (!cellData) return;
-
-                    // Extrair informações da célula - remover < co/TA/2 > e similares
-                    const cleanedData = cellData.replace(/<\s*co\/TA\/\d+\s*>/gi, '').trim();
-                    if (!cleanedData) return;
-
-                    const parts = cleanedData.split(/(?=[A-Z]{2,}\s)/).map(p => p.trim()).filter(p => p);
+            // Iterar sobre os dias encontrados
+            for (const [dayKey, colIndex] of Object.entries(dayColumns)) {
+                const cellData = row[colIndex];
+                
+                if (cellData && cellData.trim() !== '') {
+                    // Tentar extrair informações da célula
+                    // Formato esperado na célula: "Group - Teacher - Room - Mod" ou variações
+                    // Vamos assumir que o nome do professor é a parte maiúscula ou conhecida
                     
-                    let group = '', teacher = '', room = '', modality = '', book = '';
+                    const parts = cellData.split('-').map(p => p.trim());
                     
-                    // Padrões para identificar modalidades
-                    const modalityPatterns = ['FL2', 'FL3', 'INTENSIVE', 'VIP', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9', 'AW'];
-                    
-                    parts.forEach(part => {
-                        const partUpper = part.toUpperCase();
+                    let groupRaw = '';
+                    let teacherRaw = '';
+                    let roomRaw = '';
+                    let modRaw = '';
+
+                    // Lógica de extração baseada na estrutura comum
+                    // Se tiver 4 partes: Group - Teacher - Room - Mod
+                    if (parts.length >= 3) {
+                        groupRaw = parts[0];
+                        // O professor geralmente é o segundo elemento, mas pode haver variações
+                        // Vamos procurar pelo nome válido na string inteira se a posição não for exata
+                        teacherRaw = findTeacherInString(cellData);
                         
-                        // Verificar se é um professor válido (não TA)
-                        const knownTeacher = VALID_TEACHERS.find(t => partUpper.includes(t));
-                        if (knownTeacher) {
-                            teacher = knownTeacher;
-                        } 
-                        // Verificar se é uma modalidade conhecida (G1-G9, AW, FL2, FL3, etc.)
-                        else if (modalityPatterns.some(m => partUpper.includes(m))) {
-                            // Se já tem grupo, talvez seja o book ou parte do nome do grupo
-                            if (group && !book) {
-                                // Pode ser o book ou informação adicional
-                                if (part.match(/^[A-Z]+\d*$/i) && !part.match(/^G\d$/i)) {
-                                    book = part;
-                                } else if (!group.includes(part)) {
-                                    group += ' ' + part;
-                                }
-                            } else {
-                                group = part;
+                        if (teacherRaw) {
+                            // Se encontramos um professor válido, assumimos a estrutura padrão
+                            // Re-construir partes sem o professor para achar grupo/sala/mod
+                            const remainingParts = cellData.replace(teacherRaw, '').split('-').map(p => p.trim()).filter(p => p !== '');
+                            
+                            // Estratégia simplificada: 
+                            // 1. Grupo: Primeiro item que parece grupo (letras/números)
+                            // 2. Sala: Item que parece sala (número ou nome curto)
+                            // 3. Mod: Item restante que não é grupo nem sala
+                            
+                            // Para simplificar e ser robusto, vamos usar a ordem original se possível
+                            // Mas como a extração do nome bagunça o índice, vamos tentar identificar por padrão
+                            
+                            // Vamos assumir: Parte 0 = Grupo, Parte 1 = Professor (já achado), Parte 2 = Sala, Parte 3 = Mod
+                            // Se o nome do professor estava na posição 1, ok. Se estava embutido, precisamos de lógica melhor.
+                            
+                            // Abordagem mais segura para este CSV específico:
+                            // Geralmente: "GroupName - TeacherName - Room - Mod"
+                            groupRaw = parts[0];
+                            // Teacher já foi extraído
+                            // Procurar Room e Mod nos restantes
+                            const otherParts = parts.filter(p => p !== teacherRaw && p !== groupRaw);
+                            
+                            if (otherParts.length >= 2) {
+                                roomRaw = otherParts[0];
+                                modRaw = otherParts[1];
+                            } else if (otherParts.length === 1) {
+                                roomRaw = otherParts[0];
                             }
                         }
-                        // Verificar se parece ser um book (palavras como Starters, Movers, Flyers, KET, PET, etc.)
-                        else if (part.match(/^(Starters|Movers|Flyers|KET|PET|FCE|CAE|IELTS|TOEFL|Business|Kids|Teens|Adults)$/i)) {
-                            book = part;
-                        }
-                        // Verificar se é sala
-                        else if (part.match(/^(?:room|sala)\s*\d+$/i) || part.match(/^\d+[A-Z]?$/i)) {
-                            room = part;
-                        }
-                        // Tentar identificar modalidade no texto
-                        else if (!modality && /FL\d|INTENSIVE|VIP/i.test(part)) {
-                            const match = part.match(/(FL\d|INTENSIVE|VIP)/i);
-                            if (match) {
-                                modality = match[0].toUpperCase();
-                            }
-                        }
-                        else if (!group && !teacher && !room) {
-                            // Tentar identificar pelo padrão
-                            if (/[A-Z]{3,}/.test(part)) {
-                                const potentialTeacher = VALID_TEACHERS.find(t => part.toUpperCase().includes(t));
-                                if (potentialTeacher) {
-                                    teacher = potentialTeacher;
-                                } else {
-                                    group = part;
-                                }
-                            } else {
-                                group = part;
-                            }
-                        }
-                    });
-
-                    // Tentar extrair modalidade e book do grupo se não foram encontrados
-                    if (group && !modality) {
-                        const modMatch = group.match(/(FL\d|INTENSIVE|VIP)/i);
-                        if (modMatch) {
-                            modality = modMatch[1].toUpperCase();
-                        }
-                    }
-                    
-                    if (group && !book) {
-                        // Procurar por padrões de book no grupo
-                        const bookMatch = group.match(/\b(Starters|Movers|Flyers|KET|PET|FCE|CAE|IELTS|TOEFL|Business|Kids|Teens|Adults)\b/i);
-                        if (bookMatch) {
-                            book = bookMatch[1];
+                    } else if (parts.length === 2) {
+                         // Talvez só Grupo - Professor
+                         groupRaw = parts[0];
+                         teacherRaw = findTeacherInString(cellData);
+                    } else {
+                        // Formato irregular, tenta achar o professor de qualquer jeito
+                        teacherRaw = findTeacherInString(cellData);
+                        if(teacherRaw) {
+                            groupRaw = cellData.replace(teacherRaw, '').replace('-', '').trim();
                         }
                     }
 
-                    // Apenas adicionar se for um professor válido
-                    if (teacher && VALID_TEACHERS.includes(teacher)) {
-                        teachers.add(teacher);
+                    if (teacherRaw) {
+                        // Extrair Book e Turma do GroupRaw
+                        // Ex: "Dune G1" -> Turma: Dune, Book: G1
+                        // Ex: "G1 Dune" -> Turma: Dune, Book: G1
+                        const { groupName, bookName, modalName } = parseGroupInfo(groupRaw, modRaw);
+
                         allClasses.push({
-                            time,
                             day: dayKey,
-                            dayName: dayMapping[dayKey],
-                            group: group || 'N/A',
-                            teacher,
-                            room: room || 'N/A',
-                            modality: modality || '',
-                            book: book || ''
+                            time: timeSlot,
+                            teacher: teacherRaw,
+                            group: groupName,
+                            book: bookName,
+                            modal: modalName,
+                            room: roomRaw || 'N/A'
                         });
                     }
-                });
-            }
-        }
-
-        function parseCSVLine(line) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    result.push(current.trim().replace(/^"|"$/g, ''));
-                    current = '';
-                } else {
-                    current += char;
                 }
             }
-            result.push(current.trim().replace(/^"|"$/g, ''));
-            return result;
         }
+    }
 
-        function renderTeacherButtons() {
-            const grid = document.getElementById('teachersGrid');
-            grid.innerHTML = '';
-
-            Array.from(teachers).sort().forEach(teacher => {
-                const card = document.createElement('div');
-                card.className = 'teacher-card';
-                card.textContent = teacher;
-                card.style.backgroundColor = TEACHER_COLORS[teacher];
-                card.onclick = () => selectTeacher(teacher, card);
-                grid.appendChild(card);
-            });
-        }
-
-        function selectTeacher(teacher, cardElement) {
-            // Remover classe active de todos
-            document.querySelectorAll('.teacher-card').forEach(c => c.classList.remove('active'));
-            cardElement.classList.add('active');
-
-            document.getElementById('selectedTeacherName').textContent = `Aulas de ${teacher}`;
-
-            const teacherClasses = allClasses.filter(c => c.teacher === teacher);
-            renderSchedule(teacherClasses);
-        }
-
-        function renderSchedule(classes) {
-            const container = document.getElementById('scheduleContent');
-            
-            if (classes.length === 0) {
-                container.innerHTML = '<div class="no-classes">Nenhuma aula encontrada para este professor.</div>';
-                return;
+    function findTeacherInString(str) {
+        str = str.toUpperCase();
+        // Remove tags indesejadas antes de buscar
+        str = str.replace(/<.*?>/g, ''); 
+        
+        for (const t of VALID_TEACHERS) {
+            if (str.includes(t.name)) {
+                return t.name;
             }
+        }
+        return null;
+    }
 
-            // Agrupar por dia
-            const classesByDay = {};
-            dayOrder.forEach(day => {
-                classesByDay[day] = classes.filter(c => c.day === day).sort((a, b) => {
-                    return a.time.localeCompare(b.time);
-                });
-            });
+    function parseGroupInfo(groupRaw, modRaw) {
+        if (!groupRaw) return { groupName: '', bookName: '', modalName: '' };
 
-            let html = '';
-            dayOrder.forEach(dayKey => {
-                const dayClasses = classesByDay[dayKey];
-                if (dayClasses.length === 0) return;
+        let cleanGroup = groupRaw.replace(/<.*?>/g, '').trim();
+        let modal = modRaw ? modRaw.trim() : '';
+        
+        // Padrões de Books (G1, G2, ... G9, AW, etc)
+        const bookPattern = /\b(G\d|AW|Starter|Mover|Flyer|KET|PET|FCE|CAE|IELTS|TOEFL)\b/i;
+        
+        let bookMatch = cleanGroup.match(bookPattern);
+        let bookName = bookMatch ? bookMatch[0].toUpperCase() : '';
+        
+        // Remover o book do nome da turma para limpar
+        let groupName = cleanGroup.replace(bookPattern, '').trim();
+        
+        // Limpar caracteres estranhos do nome da turma
+        groupName = groupName.replace(/[-_]+$/, '').replace(/^\s+|\s+$/g, '');
 
-                html += `
-                    <div class="day-section">
-                        <div class="day-header" style="background-color: ${TEACHER_COLORS[dayClasses[0].teacher]}">
-                            ${dayMapping[dayKey]}
-                        </div>
-                        <div class="modules-list">
-                `;
+        // Se a modalidade não veio na coluna separada, tentar achar no texto do grupo
+        if (!modal) {
+            const modPattern = /\b(FL\d|INTENSIVE|VIP|EXTENSIVE)\b/i;
+            const modMatch = cleanGroup.match(modPattern);
+            if (modMatch) {
+                modal = modMatch[0].toUpperCase();
+                groupName = cleanGroup.replace(modPattern, '').trim();
+            }
+        }
 
-                dayClasses.forEach(cls => {
-                    html += `
-                        <div class="module-item">
-                            <div class="module-time">${cls.time}</div>
-                            <div class="module-details">
-                                <span class="module-group">📋 ${cls.group}</span>
-                                ${cls.modality ? `<span class="module-modality">📚 ${cls.modality}</span>` : ''}
-                                ${cls.book ? `<span class="module-book">📖 ${cls.book}</span>` : ''}
-                                <span class="module-teacher" style="background-color: ${TEACHER_COLORS[cls.teacher]}">${cls.teacher}</span>
-                                <span class="module-room">🚪 ${cls.room}</span>
+        return {
+            groupName: groupName || 'Geral',
+            bookName: bookName,
+            modalName: modal
+        };
+    }
+
+    function renderTeacherSelection() {
+        const grid = document.getElementById('teachers-grid');
+        document.getElementById('loading').style.display = 'none';
+        grid.innerHTML = '';
+
+        // Ordenar professores alfabeticamente
+        const sortedTeachers = [...VALID_TEACHERS].sort((a, b) => a.name.localeCompare(b.name));
+
+        sortedTeachers.forEach(teacher => {
+            // Verifica se o professor tem aulas reais na planilha
+            const hasClasses = allClasses.some(c => c.teacher === teacher.name);
+            
+            // Opcional: Mostrar apenas professores com aulas ou mostrar todos?
+            // Vamos mostrar todos para garantir, mas podemos destacar quem tem aula.
+            
+            const card = document.createElement('div');
+            card.className = 'teacher-card';
+            card.style.borderBottomColor = teacher.color;
+            
+            card.innerHTML = `
+                <div class="teacher-name" style="color: ${teacher.color}">${teacher.name}</div>
+                <div class="teacher-role">${hasClasses ? 'Clique para ver aulas' : 'Sem aulas esta semana'}</div>
+            `;
+            
+            card.onclick = () => showTeacherSchedule(teacher.name, teacher.color);
+            grid.appendChild(card);
+        });
+    }
+
+    function showTeacherSchedule(teacherName, teacherColor) {
+        // Filtrar aulas
+        const teacherClasses = allClasses.filter(c => c.teacher === teacherName);
+        
+        if (teacherClasses.length === 0) {
+            alert(`${teacherName} não possui aulas registradas nesta semana.`);
+            return;
+        }
+
+        // Agrupar por dia
+        const byDay = {};
+        Object.keys(DAYS_MAP).forEach(key => byDay[key] = []);
+        
+        teacherClasses.forEach(cls => {
+            if (byDay[cls.day]) {
+                byDay[cls.day].push(cls);
+            }
+        });
+
+        // Ordenar aulas por horário dentro de cada dia
+        Object.keys(byDay).forEach(day => {
+            byDay[day].sort((a, b) => a.time.localeCompare(b.time));
+        });
+
+        // Renderizar Header
+        const header = document.getElementById('teacher-header');
+        header.style.borderLeftColor = teacherColor;
+        header.querySelector('h2') ? header.querySelector('h2').remove() : null;
+        const h2 = document.createElement('h2');
+        h2.textContent = `Cronograma de ${teacherName}`;
+        h2.style.color = teacherColor;
+        header.appendChild(h2);
+
+        // Renderizar Conteúdo
+        const content = document.getElementById('schedule-content');
+        content.innerHTML = '';
+
+        const daysOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+        daysOrder.forEach(dayKey => {
+            const classes = byDay[dayKey];
+            if (classes.length > 0) {
+                const daySection = document.createElement('div');
+                daySection.className = 'day-section';
+                
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'day-header';
+                dayHeader.style.backgroundColor = teacherColor;
+                dayHeader.textContent = DAYS_MAP[dayKey];
+                daySection.appendChild(dayHeader);
+
+                const list = document.createElement('div');
+                list.className = 'classes-list';
+
+                classes.forEach(cls => {
+                    const card = document.createElement('div');
+                    card.className = 'class-card';
+                    card.style.borderLeftColor = teacherColor;
+
+                    let badgesHtml = '';
+                    if (cls.groupName && cls.groupName !== 'Geral') {
+                        badgesHtml += `<span class="badge badge-group" title="Turma">${cls.groupName}</span>`;
+                    }
+                    if (cls.bookName) {
+                        badgesHtml += `<span class="badge badge-book" title="Book/Módulo">${cls.bookName}</span>`;
+                    }
+                    if (cls.modalName) {
+                        badgesHtml += `<span class="badge badge-modal" title="Modalidade">${cls.modalName}</span>`;
+                    }
+                    if (cls.room && cls.room !== 'N/A') {
+                        badgesHtml += `<span class="badge badge-room" title="Sala">📍 ${cls.room}</span>`;
+                    }
+
+                    card.innerHTML = `
+                        <span class="class-time">⏰ ${cls.time}</span>
+                        <div class="class-details">
+                            ${badgesHtml ? `<div class="detail-row">${badgesHtml}</div>` : ''}
+                            <div class="detail-row" style="margin-top:5px; font-style:italic; color:#666;">
+                                Prof. ${cls.teacher}
                             </div>
                         </div>
                     `;
+                    list.appendChild(card);
                 });
 
-                html += `
-                        </div>
-                    </div>
-                `;
-            });
+                daySection.appendChild(list);
+                content.appendChild(daySection);
+            }
+        });
 
-            container.innerHTML = html || '<div class="no-classes">Nenhuma aula encontrada.</div>';
-        }
+        // Trocar telas
+        document.getElementById('selection-screen').style.display = 'none';
+        document.getElementById('schedule-screen').style.display = 'block';
+        window.scrollTo(0, 0);
+    }
 
-        // Iniciar
-        loadSchedule();
-    </script>
+    function showSelection() {
+        document.getElementById('schedule-screen').style.display = 'none';
+        document.getElementById('selection-screen').style.display = 'block';
+    }
+</script>
+
 </body>
 </html>
