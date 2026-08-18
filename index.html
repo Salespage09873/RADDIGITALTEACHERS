@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronograma de Aulas - Teachers Schedule</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Cronograma de Aulas da Semana</h1>
+            <p class="subtitle">Selecione seu nome para ver suas aulas</p>
+        </header>
+
+        <!-- Tela de Seleção do Professor -->
+        <div id="teacher-selection" class="card">
+            <h2>Quem é você?</h2>
+            <div class="teacher-grid" id="teacher-grid">
+                <!-- Professores serão inseridos via JavaScript -->
+            </div>
+        </div>
+
+        <!-- Tela do Cronograma -->
+        <div id="schedule-view" class="card hidden">
+            <div class="schedule-header">
+                <button id="back-btn" class="btn-back">← Voltar</button>
+                <h2 id="teacher-name"></h2>
+                <div id="teacher-color-indicator"></div>
+            </div>
+            
+            <div class="week-info">
+                <span id="current-week"></span>
+            </div>
+
+            <div class="schedule-container">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Horário</th>
+                            <th>Segunda</th>
+                            <th>Terça</th>
+                            <th>Quarta</th>
+                            <th>Quinta</th>
+                            <th>Sexta</th>
+                            <th>Sábado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-body">
+                        <!-- Horário das aulas serão inseridos via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="legend">
+                <h3>Legenda</h3>
+                <div id="legend-content"></div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="hidden">
+            <div class="spinner"></div>
+            <p>Carregando cronograma...</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
