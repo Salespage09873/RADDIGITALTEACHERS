@@ -453,32 +453,100 @@
         
         // Carregar dados do Google Sheets
         async function loadSchedule() {
+            showLoading(true);
+            
             try {
                 const response = await fetch(SHEET_CSV_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const csvText = await response.text();
+                
+                console.log('CSV recebido:', csvText.substring(0, 500));
+                
+                if (!csvText.trim()) {
+                    throw new Error('Planilha vazia ou indisponível');
+                }
+                
                 scheduleData = parseCSV(csvText);
+                
+                console.log('Dados parseados:', scheduleData);
                 
                 // Extrair todos os professores únicos
                 scheduleData.forEach(row => {
                     Object.keys(DAYS_MAP).forEach(dayKey => {
-                        const teacher = row[dayKey]?.trim() || '';
-                        if (teacher && teacher !== 'CANCELLED' && teacher !== '/' && teacher !== '') {
+                        const cellValue = row[dayKey] || '';
+                        // Extrair nome do professor (pode estar no formato "Group,Teacher names,Room,Mod")
+                        const parts = cellValue.split(',').map(p => p.trim());
+                        
+                        // Verificar cada parte para encontrar professores
+                        parts.forEach(part => {
+                            const upperPart = part.toUpperCase();
+                            // Verificar se é um nome de professor conhecido
+                            Object.keys(TEACHER_COLORS).forEach(teacher => {
+                                if (upperPart.includes(teacher) && teacher !== 'CANCELLED' && teacher !== '/') {
+                                    teachers.add(teacher);
+                                }
+                            });
+                            
+                            // Se não for uma palavra-chave conhecida, pode ser um professor
+                            if (part && part.length > 2 && !['GROUP', 'ROOM', 'MOD', 'CANCELLED'].includes(upperPart)) {
+                                // Verificar se parece ser um nome (contém letras)
+                                if (/[A-Za-z]/.test(part)) {
+                                    teachers.add(part);
+                                }
+                            }
+                        });
+                    });
+                });
+                
+                console.log('Professores encontrados:', Array.from(teachers));
+                
+                // Se nenhum professor foi encontrado, usar lista padrão
+                if (teachers.size === 0) {
+                    console.log('Nenhum professor encontrado na planilha. Usando lista padrão.');
+                    Object.keys(TEACHER_COLORS).forEach(teacher => {
+                        if (teacher !== 'CANCELLED' && teacher !== '/') {
                             teachers.add(teacher);
                         }
                     });
-                });
+                }
                 
                 renderTeacherCards();
                 updateSchedule();
             } catch (error) {
                 console.error('Erro ao carregar cronograma:', error);
-                document.getElementById('schedule-body').innerHTML = `
-                    <tr>
-                        <td colspan="7" style="text-align: center; padding: 40px;">
-                            Erro ao carregar dados. Verifique sua conexão com a internet.
-                        </td>
-                    </tr>
+                
+                // Em caso de erro, mostrar professores padrão
+                console.log('Mostrando lista padrão de professores devido ao erro.');
+                Object.keys(TEACHER_COLORS).forEach(teacher => {
+                    if (teacher !== 'CANCELLED' && teacher !== '/') {
+                        teachers.add(teacher);
+                    }
+                });
+                
+                renderTeacherCards();
+                
+                teacherGrid.innerHTML += `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 20px; background: #fff3cd; border-radius: 10px; margin-top: 20px;">
+                        <p style="color: #856404; font-size: 1rem; margin-bottom: 10px;">
+                            ⚠️ Não foi possível carregar a planilha do Google Sheets
+                        </p>
+                        <p style="color: #667eea; font-size: 0.9rem; margin-bottom: 10px;">
+                            Detalhes: ${error.message}
+                        </p>
+                        <p style="color: #856404; font-size: 0.85rem;">
+                            Os professores estão visíveis, mas o cronograma será atualizado quando a conexão for restabelecida.
+                        </p>
+                        <button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            🔄 Tentar Novamente
+                        </button>
+                    </div>
                 `;
+            } finally {
+                showLoading(false);
             }
         }
         
@@ -517,7 +585,7 @@
             scheduleBody.innerHTML = '';
             
             scheduleData.forEach(row => {
-                const timeSlot = row['⌚'] || row['Horario'] || '';
+                const timeSlot = row['⌚'] || row['Horario'] || row['Time'] || '';
                 if (!timeSlot) return;
                 
                 const tr = document.createElement('tr');
@@ -531,21 +599,60 @@
                 // Dias da semana
                 Object.keys(DAYS_MAP).forEach(dayKey => {
                     const cell = document.createElement('td');
-                    const teacher = row[dayKey]?.trim() || '';
+                    const cellValue = row[dayKey] || '';
                     
-                    if (teacher && teacher !== 'CANCELLED' && teacher !== '/') {
-                        const group = row['Group'] || '';
-                        const room = row['Room'] || '';
+                    // Parsear o conteúdo da célula (pode ter múltiplos valores separados por vírgula)
+                    const parts = cellValue.split(',').map(p => p.trim()).filter(p => p);
+                    
+                    if (parts.length > 0 && cellValue.trim() !== '' && cellValue.trim() !== '/' && !cellValue.toUpperCase().includes('CANCELLED')) {
+                        // Tentar extrair informações: Group, Teacher, Room, Mod
+                        let group = '';
+                        let teacher = '';
+                        let room = '';
                         
-                        cell.className = 'class-cell';
-                        const color = TEACHER_COLORS[teacher] || '#667eea';
-                        cell.style.backgroundColor = color;
-                        cell.innerHTML = `
-                            <div class="subject">${group}</div>
-                            <div class="teacher">${teacher}</div>
-                            <div class="room">${room}</div>
-                        `;
-                    } else if (teacher === 'CANCELLED') {
+                        parts.forEach(part => {
+                            const upperPart = part.toUpperCase();
+                            // Verificar se é um professor conhecido
+                            Object.keys(TEACHER_COLORS).forEach(t => {
+                                if (upperPart.includes(t) && t !== 'CANCELLED' && t !== '/') {
+                                    teacher = t;
+                                }
+                            });
+                            
+                            // Se não encontrou professor ainda, verificar padrões
+                            if (!teacher) {
+                                // Nomes próprios geralmente começam com letra maiúscula
+                                if (/^[A-Z][a-z]+/.test(part) && part.length > 2) {
+                                    teacher = part;
+                                }
+                            }
+                            
+                            // Grupo geralmente tem formato específico (ex: A1, B2, etc)
+                            if (!group && /^[A-Z]\d+$/.test(part)) {
+                                group = part;
+                            }
+                            
+                            // Sala pode ser Room ou algo similar
+                            if (!room && (part.toLowerCase().includes('room') || /^\d+[A-Z]?$/i.test(part))) {
+                                room = part;
+                            }
+                        });
+                        
+                        // Se encontrou pelo menos um professor
+                        if (teacher) {
+                            cell.className = 'class-cell';
+                            const color = TEACHER_COLORS[teacher] || getRandomColor();
+                            cell.style.backgroundColor = color;
+                            cell.innerHTML = `
+                                <div class="subject">${group || 'English Class'}</div>
+                                <div class="teacher">${teacher}</div>
+                                <div class="room">${room || ''}</div>
+                            `;
+                        } else {
+                            cell.className = 'empty-cell';
+                            cell.textContent = '-';
+                        }
+                    } else if (cellValue.toUpperCase().includes('CANCELLED')) {
                         cell.className = 'empty-cell';
                         cell.textContent = 'CANCELLED';
                         cell.style.backgroundColor = '#CCCCCC';
@@ -566,7 +673,7 @@
             scheduleBody.innerHTML = '';
             
             scheduleData.forEach(row => {
-                const timeSlot = row['⌚'] || row['Horario'] || '';
+                const timeSlot = row['⌚'] || row['Horario'] || row['Time'] || '';
                 if (!timeSlot) return;
                 
                 const tr = document.createElement('tr');
@@ -580,19 +687,36 @@
                 // Dias da semana
                 Object.keys(DAYS_MAP).forEach(dayKey => {
                     const cell = document.createElement('td');
-                    const teacher = row[dayKey]?.trim() || '';
+                    const cellValue = row[dayKey] || '';
                     
-                    if (teacher === teacherName) {
-                        const group = row['Group'] || '';
-                        const room = row['Room'] || '';
+                    // Verificar se este professor está nesta célula (suporta formato CSV com vírgulas)
+                    const hasTeacher = cellValue.toUpperCase().includes(teacherName.toUpperCase());
+                    
+                    if (hasTeacher) {
+                        // Extrair informações adicionais do formato CSV
+                        const parts = cellValue.split(',').map(p => p.trim()).filter(p => p);
+                        let group = '';
+                        let room = '';
+                        
+                        parts.forEach(part => {
+                            // Grupo geralmente tem formato específico (ex: A1, B2, etc)
+                            if (!group && /^[A-Z]\d+$/.test(part)) {
+                                group = part;
+                            }
+                            
+                            // Sala pode ser Room ou algo similar
+                            if (!room && (part.toLowerCase().includes('room') || /^\d+[A-Z]?$/i.test(part))) {
+                                room = part;
+                            }
+                        });
                         
                         cell.className = 'class-cell';
                         const color = TEACHER_COLORS[teacherName] || '#667eea';
                         cell.style.backgroundColor = color;
                         cell.innerHTML = `
-                            <div class="subject">${group}</div>
+                            <div class="subject">${group || 'English Class'}</div>
                             <div class="teacher">${teacherName}</div>
-                            <div class="room">${room}</div>
+                            <div class="room">${room || ''}</div>
                         `;
                     } else {
                         cell.className = 'empty-cell';
