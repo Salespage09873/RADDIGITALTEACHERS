@@ -14,6 +14,9 @@
             --white: #ffffff;
             --shadow: 0 4px 6px rgba(0,0,0,0.1);
             --radius: 12px;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f1c40f;
         }
 
         * {
@@ -37,28 +40,16 @@
             box-shadow: var(--shadow);
         }
 
-        header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
+        header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        header p { opacity: 0.9; font-size: 1rem; }
 
-        header p {
-            opacity: 0.9;
-            font-size: 1rem;
-        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
-        }
+        /* Telas */
+        #selection-screen { display: block; animation: fadeIn 0.5s ease; }
+        #schedule-screen { display: none; animation: slideUp 0.5s ease; }
 
-        /* Tela de Seleção */
-        #selection-screen {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-
+        /* Grid de Professores */
         .teachers-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -75,34 +66,13 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             box-shadow: var(--shadow);
             border-bottom: 5px solid transparent;
-            position: relative;
-            overflow: hidden;
         }
 
-        .teacher-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-        }
+        .teacher-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+        .teacher-name { font-size: 1.5rem; font-weight: bold; color: var(--dark); text-transform: uppercase; }
+        .teacher-role { font-size: 0.9rem; color: #7f8c8d; margin-top: 0.5rem; }
 
-        .teacher-name {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--dark);
-            text-transform: uppercase;
-        }
-
-        .teacher-role {
-            font-size: 0.9rem;
-            color: #7f8c8d;
-            margin-top: 0.5rem;
-        }
-
-        /* Tela do Cronograma */
-        #schedule-screen {
-            display: none;
-            animation: slideUp 0.5s ease;
-        }
-
+        /* Botões de Navegação */
         .back-btn {
             background: var(--white);
             color: var(--primary);
@@ -117,11 +87,7 @@
             gap: 0.5rem;
             margin-bottom: 2rem;
         }
-
-        .back-btn:hover {
-            background: var(--primary);
-            color: var(--white);
-        }
+        .back-btn:hover { background: var(--primary); color: var(--white); }
 
         .current-teacher-header {
             text-align: center;
@@ -132,26 +98,17 @@
             box-shadow: var(--shadow);
             border-left: 10px solid var(--accent);
         }
+        .current-teacher-header h2 { font-size: 2rem; color: var(--primary); }
 
-        .current-teacher-header h2 {
-            font-size: 2rem;
-            color: var(--primary);
-        }
-
-        /* Dias da Semana */
-        .days-container {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
+        /* Dias e Aulas */
+        .days-container { display: flex; flex-direction: column; gap: 2rem; }
         .day-section {
             background: var(--white);
             border-radius: var(--radius);
             overflow: hidden;
             box-shadow: var(--shadow);
+            margin-bottom: 1rem;
         }
-
         .day-header {
             padding: 1rem 1.5rem;
             color: var(--white);
@@ -160,104 +117,130 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-
         .classes-list {
             padding: 1.5rem;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 1.5rem;
         }
 
+        /* Card da Aula */
         .class-card {
             border: 1px solid #eee;
             border-radius: 8px;
             padding: 1.2rem;
             background: #fafafa;
-            transition: transform 0.2s;
-            border-left: 4px solid var(--accent);
+            transition: all 0.3s;
+            border-left: 5px solid var(--accent);
+            position: relative;
         }
-
-        .class-card:hover {
-            transform: scale(1.02);
-            background: #fff;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        .class-card.completed {
+            background: #e8f8f5;
+            border-left-color: var(--success);
+            opacity: 0.9;
         }
+        .class-card:hover { transform: scale(1.02); background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 
-        .class-time {
-            font-weight: bold;
-            color: var(--primary);
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        .class-details {
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-            font-size: 0.95rem;
-        }
-
-        .detail-row {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
+        .class-time { font-weight: bold; color: var(--primary); font-size: 1.1rem; margin-bottom: 0.5rem; display: block; }
+        
+        .badges-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
         .badge {
             display: inline-block;
-            padding: 0.2rem 0.6rem;
+            padding: 0.25rem 0.6rem;
             border-radius: 4px;
             font-size: 0.85rem;
             font-weight: 600;
         }
+        .badge-group { background-color: #e3f2fd; color: #1565c0; }
+        .badge-book { background-color: #fff3e0; color: #ef6c00; }
+        .badge-modal { background-color: #f3e5f5; color: #7b1fa2; }
+        .badge-room { background-color: #e8f5e9; color: #2e7d32; }
 
-        .badge-group {
-            background-color: #e3f2fd;
-            color: #1565c0;
-        }
-
-        .badge-book {
-            background-color: #fff3e0;
-            color: #ef6c00;
-        }
-
-        .badge-modal {
-            background-color: #f3e5f5;
-            color: #7b1fa2;
-        }
-
-        .badge-room {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 3rem;
-            font-size: 1.2rem;
-            color: var(--secondary);
-        }
-
-        .error-msg {
-            background: #ffebee;
-            color: #c62828;
-            padding: 1rem;
-            border-radius: var(--radius);
-            text-align: center;
+        /* Botões de Ação (RAD) */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
             margin-top: 1rem;
+            border-top: 1px solid #ddd;
+            padding-top: 1rem;
+        }
+        .btn-rad {
+            flex: 1;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.6rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .btn-rad:hover { background: #2980b9; }
+        
+        .btn-complete {
+            flex: 0 0 40px;
+            background: #ddd;
+            border: 2px solid #bbb;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #777;
+            transition: all 0.2s;
+        }
+        .btn-complete.active {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        /* Modal RAD */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-title { font-size: 1.5rem; color: var(--primary); }
+        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #777; }
+        
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: bold; color: var(--secondary); }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .form-group textarea { height: 100px; resize: vertical; }
+        
+        .modal-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+        .btn-save { flex: 1; background: var(--success); color: white; border: none; padding: 0.8rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-clear { flex: 1; background: var(--danger); color: white; border: none; padding: 0.8rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-cancel { flex: 0 0 auto; background: #95a5a6; color: white; border: none; padding: 0.8rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .loading { text-align: center; padding: 3rem; font-size: 1.2rem; color: var(--secondary); }
+        .error-msg { background: #ffebee; color: #c62828; padding: 1rem; border-radius: var(--radius); text-align: center; margin-top: 1rem; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Cores dos Professores */
         .color-MYCAEL { border-color: #FF6B6B; background-color: #FF6B6B; }
@@ -270,14 +253,13 @@
         .color-IAGO { border-color: #FF9F43; background-color: #FF9F43; }
         .color-SARA { border-color: #54a0ff; background-color: #54a0ff; }
         .color-CAROL { border-color: #5f27cd; background-color: #5f27cd; }
-
     </style>
 </head>
 <body>
 
 <header>
     <h1>Cronograma Semanal</h1>
-    <p>Selecione seu nome para ver suas aulas</p>
+    <p>Selecione seu nome para ver suas aulas e registrar o RAD</p>
 </header>
 
 <div class="container">
@@ -290,9 +272,7 @@
 
     <!-- Tela do Cronograma Individual -->
     <div id="schedule-screen">
-        <button class="back-btn" onclick="showSelection()">
-            ← Voltar para Seleção
-        </button>
+        <button class="back-btn" onclick="showSelection()">← Voltar para Seleção</button>
         
         <div class="current-teacher-header" id="teacher-header">
             <!-- Preenchido via JS -->
@@ -304,11 +284,47 @@
     </div>
 </div>
 
+<!-- Modal RAD -->
+<div id="rad-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Registro de Aula (RAD)</h3>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        <input type="hidden" id="rad-class-id">
+        
+        <div class="form-group">
+            <label>Book / Módulo:</label>
+            <input type="text" id="rad-book" placeholder="Ex: G1, G2, Starters...">
+        </div>
+        
+        <div class="form-group">
+            <label>Turma (Group):</label>
+            <input type="text" id="rad-group" placeholder="Ex: Dune, The 100...">
+        </div>
+
+        <div class="form-group">
+            <label>Lição (Lesson):</label>
+            <input type="text" id="rad-lesson" placeholder="Ex: Unit 3, Page 45...">
+        </div>
+
+        <div class="form-group">
+            <label>Lista de Presença / Observações:</label>
+            <textarea id="rad-attendance" placeholder="Cole a lista de alunos aqui ou anote observações..."></textarea>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-clear" onclick="clearRadData()">Limpar RAD</button>
+            <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+            <button class="btn-save" onclick="saveRadData()">Salvar</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    // URL CSV Correta baseada na estrutura da planilha
+    // Configuração da Planilha
     const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?gid=0&single=true&output=csv';
 
-    // Lista de Professores Válidos e suas Cores
     const VALID_TEACHERS = [
         { name: 'MYCAEL', color: '#FF6B6B' },
         { name: 'RAFAEL', color: '#4ECDC4' },
@@ -323,15 +339,16 @@
     ];
 
     const DAYS_MAP = {
-        'Monday': 'Segunda-feira',
-        'Tuesday': 'Terça-feira',
-        'Wednesday': 'Quarta-feira',
-        'Thursday': 'Quinta-feira',
-        'Friday': 'Sexta-feira',
-        'Saturday': 'Sábado'
+        'Mon': 'Segunda-feira',
+        'Tue': 'Terça-feira',
+        'Wed': 'Quarta-feira',
+        'Thu': 'Quinta-feira',
+        'Fri': 'Sexta-feira',
+        'Sat': 'Sábado'
     };
 
     let allClasses = [];
+    let currentTeacherName = '';
 
     document.addEventListener('DOMContentLoaded', () => {
         fetchSchedule();
@@ -358,93 +375,71 @@
         const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
         if (lines.length < 2) return;
 
-        // Parse simples de CSV (assume que não há vírgulas dentro das células de texto livre)
-        // Se houver vírgulas nas células, o Google Sheets CSV geralmente usa aspas, mas vamos simplificar
-        const parseLine = (line) => {
-            // Divide por vírgula, mas ignora vírgulas dentro de aspas se existirem
-            const result = [];
-            let start = 0;
-            let inQuotes = false;
-            for (let i = 0; i < line.length; i++) {
-                if (line[i] === '"') inQuotes = !inQuotes;
-                if (line[i] === ',' && !inQuotes) {
-                    result.push(line.substring(start, i).trim().replace(/^"|"$/g, ''));
-                    start = i + 1;
-                }
-            }
-            result.push(line.substring(start).trim().replace(/^"|"$/g, ''));
-            return result;
-        };
-
-        const headers = parseLine(lines[0]);
-        
-        // Mapeamento de colunas baseado na sua descrição:
-        // B: Book (idx 1), C: Group (idx 2), D: Room (idx 3), E: Modalidade (idx 4), F: Horário (idx 5)
-        // G: Monday (idx 6), H: Tuesday (idx 7), I: Wednesday (idx 8), J: Thursday (idx 9), K: Friday (idx 10)
+        // Mapeamento das colunas baseado na sua descrição:
+        // B: Book, C: Group, D: Room, E: Modalidade, F: Horário
+        // G: Monday, H: Tuesday, I: Wednesday, J: Thursday, K: Friday
+        // Índices no array (0-based): B=1, C=2, D=3, E=4, F=5, G=6...
         
         const COL_BOOK = 1;
         const COL_GROUP = 2;
         const COL_ROOM = 3;
         const COL_MODAL = 4;
         const COL_TIME = 5;
+        const COL_MON = 6;
         
-        const DAY_COLS = {
-            'Monday': 6,
-            'Tuesday': 7,
-            'Wednesday': 8,
-            'Thursday': 9,
-            'Friday': 10
-            // Se tiver sábado na coluna L, seria índice 11
-        };
-
         allClasses = [];
 
         for (let i = 1; i < lines.length; i++) {
-            const row = parseLine(lines[i]);
-            
-            // Dados fixos da linha
+            // Split simples assumindo que não há vírgulas dentro das células principais
+            const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.trim().replace(/^"|"$/g, '').replace(/<.*?>/g, ''));
+
+            const timeSlot = row[COL_TIME] || '';
             const bookRaw = row[COL_BOOK] || '';
             const groupRaw = row[COL_GROUP] || '';
             const roomRaw = row[COL_ROOM] || '';
             const modalRaw = row[COL_MODAL] || '';
-            const timeRaw = row[COL_TIME] || '';
 
-            if (!timeRaw) continue; // Pula linhas sem horário
+            if (!timeSlot) continue;
 
-            // Iterar sobre os dias
-            for (const [dayName, colIndex] of Object.entries(DAY_COLS)) {
-                const cellContent = row[colIndex];
+            // Dias
+            const daysCols = {
+                'Mon': COL_MON,
+                'Tue': COL_MON + 1,
+                'Wed': COL_MON + 2,
+                'Thu': COL_MON + 3,
+                'Fri': COL_MON + 4,
+                'Sat': COL_MON + 5 // Se houver sábado
+            };
+
+            for (const [dayKey, colIndex] of Object.entries(daysCols)) {
+                if (colIndex >= row.length) continue;
                 
-                if (cellContent && cellContent.trim() !== '') {
-                    // A célula contém o nome do professor (e talvez outras infos separadas por hífen)
-                    // Ex: "MYCAEL" ou "MYCAEL - Extra"
-                    const teacherName = findTeacherInString(cellContent);
+                const cellContent = row[colIndex];
+                if (!cellContent) continue;
 
-                    if (teacherName) {
-                        // Processar nome da turma (Group)
-                        let finalGroupName = groupRaw.trim();
-                        
-                        // Regra: Se a turma for "Bridge", mostrar "TPWER Bridge"
-                        if (finalGroupName.toLowerCase() === 'bridge') {
-                            finalGroupName = 'TPWER Bridge';
-                        } else if (finalGroupName.toLowerCase().includes('bridge')) {
-                             // Caso venha algo como "Bridge 1", transforma em "TPWER Bridge 1"
-                             finalGroupName = finalGroupName.replace(/bridge/gi, 'TPWER Bridge');
-                        }
-
-                        // Se o nome da turma estiver vazio, usar um padrão
-                        if (!finalGroupName) finalGroupName = 'Geral';
-
-                        allClasses.push({
-                            day: dayName,
-                            time: timeRaw,
-                            teacher: teacherName,
-                            group: finalGroupName,
-                            book: bookRaw.trim(),
-                            modal: modalRaw.trim(),
-                            room: roomRaw.trim()
-                        });
+                // Procurar nome do professor na célula
+                const teacherFound = findTeacherInString(cellContent);
+                
+                if (teacherFound) {
+                    // Formatar nome da turma (Ex: Bridge -> TPWER Bridge)
+                    let finalGroupName = groupRaw;
+                    if (groupRaw.toLowerCase().includes('bridge')) {
+                        finalGroupName = 'TPWER ' + groupRaw;
+                    } else if (groupRaw && !groupRaw.startsWith('TPWER')) {
+                         // Opcional: Adicionar prefixo padrão se quiser
+                         // finalGroupName = 'TPWER ' + groupRaw; 
                     }
+
+                    allClasses.push({
+                        id: `${dayKey}-${timeSlot}-${teacherFound}-${i}`, // ID único
+                        day: dayKey,
+                        time: timeSlot,
+                        teacher: teacherFound,
+                        group: finalGroupName,
+                        book: bookRaw,
+                        modal: modalRaw,
+                        room: roomRaw
+                    });
                 }
             }
         }
@@ -477,7 +472,7 @@
             
             card.innerHTML = `
                 <div class="teacher-name" style="color: ${teacher.color}">${teacher.name}</div>
-                <div class="teacher-role">${hasClasses ? 'Clique para ver aulas' : 'Sem aulas esta semana'}</div>
+                <div class="teacher-role">${hasClasses ? 'Ver Cronograma & RAD' : 'Sem aulas'}</div>
             `;
             
             card.onclick = () => showTeacherSchedule(teacher.name, teacher.color);
@@ -486,6 +481,7 @@
     }
 
     function showTeacherSchedule(teacherName, teacherColor) {
+        currentTeacherName = teacherName;
         const teacherClasses = allClasses.filter(c => c.teacher === teacherName);
         
         if (teacherClasses.length === 0) {
@@ -497,9 +493,7 @@
         Object.keys(DAYS_MAP).forEach(key => byDay[key] = []);
         
         teacherClasses.forEach(cls => {
-            if (byDay[cls.day]) {
-                byDay[cls.day].push(cls);
-            }
+            if (byDay[cls.day]) byDay[cls.day].push(cls);
         });
 
         Object.keys(byDay).forEach(day => {
@@ -513,7 +507,7 @@
         const content = document.getElementById('schedule-content');
         content.innerHTML = '';
 
-        const daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const daysOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
         daysOrder.forEach(dayKey => {
             const classes = byDay[dayKey];
@@ -531,39 +525,37 @@
                 list.className = 'classes-list';
 
                 classes.forEach(cls => {
+                    // Carregar dados salvos do RAD
+                    const radData = getRadData(cls.id);
+                    const isCompleted = radData.completed || false;
+
                     const card = document.createElement('div');
-                    card.className = 'class-card';
+                    card.className = `class-card ${isCompleted ? 'completed' : ''}`;
                     card.style.borderLeftColor = teacherColor;
+                    card.id = `card-${cls.id}`;
 
                     let badgesHtml = '';
-                    
-                    // Badge da Turma (Group)
-                    if (cls.group) {
-                        badgesHtml += `<span class="badge badge-group" title="Turma">🏫 ${cls.group}</span>`;
-                    }
-                    
-                    // Badge do Book
-                    if (cls.book) {
-                        badgesHtml += `<span class="badge badge-book" title="Book/Módulo">📚 ${cls.book}</span>`;
-                    }
-                    
-                    // Badge da Modalidade
-                    if (cls.modal) {
-                        badgesHtml += `<span class="badge badge-modal" title="Modalidade">💡 ${cls.modal}</span>`;
-                    }
-                    
-                    // Badge da Sala (Room)
-                    if (cls.room) {
-                        badgesHtml += `<span class="badge badge-room" title="Sala">🚪 ${cls.room}</span>`;
-                    }
+                    if (cls.group) badgesHtml += `<span class="badge badge-group">${cls.group}</span>`;
+                    if (cls.book) badgesHtml += `<span class="badge badge-book">${cls.book}</span>`;
+                    if (cls.modal) badgesHtml += `<span class="badge badge-modal">${cls.modal}</span>`;
+                    if (cls.room) badgesHtml += `<span class="badge badge-room">📍 ${cls.room}</span>`;
+
+                    // Ícone de check se completado
+                    const checkIcon = isCompleted ? '✓' : '';
 
                     card.innerHTML = `
-                        <span class="class-time">⏰ ${cls.time}</span>
-                        <div class="class-details">
-                            ${badgesHtml ? `<div class="detail-row">${badgesHtml}</div>` : ''}
-                            <div class="detail-row" style="margin-top:5px; font-style:italic; color:#666;">
-                                Prof. ${cls.teacher}
-                            </div>
+                        <div style="display:flex; justify-content:space-between; align-items:start;">
+                            <span class="class-time">⏰ ${cls.time}</span>
+                            <button class="btn-complete ${isCompleted ? 'active' : ''}" 
+                                    onclick="toggleComplete('${cls.id}')" title="Marcar aula como realizada">
+                                ${checkIcon}
+                            </button>
+                        </div>
+                        <div class="badges-row">${badgesHtml}</div>
+                        <div style="font-size:0.9rem; color:#666; margin-bottom:0.5rem;">Prof. ${cls.teacher}</div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn-rad" onclick="openRadModal('${cls.id}')">📝 RAD</button>
                         </div>
                     `;
                     list.appendChild(card);
@@ -582,6 +574,100 @@
     function showSelection() {
         document.getElementById('schedule-screen').style.display = 'none';
         document.getElementById('selection-screen').style.display = 'block';
+    }
+
+    // --- Lógica do RAD ---
+
+    function getRadKey(classId) {
+        return `rad_${currentTeacherName}_${classId}`;
+    }
+
+    function getRadData(classId) {
+        const key = getRadKey(classId);
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : { completed: false, book: '', group: '', lesson: '', attendance: '' };
+    }
+
+    function saveRadDataToLocal(classId, data) {
+        const key = getRadKey(classId);
+        localStorage.setItem(key, JSON.stringify(data));
+    }
+
+    function openRadModal(classId) {
+        const data = getRadData(classId);
+        const cls = allClasses.find(c => c.id === classId);
+        
+        if (!cls) return;
+
+        document.getElementById('rad-class-id').value = classId;
+        // Preenche com dados da planilha se estiverem vazios no RAD
+        document.getElementById('rad-book').value = data.book || cls.book;
+        document.getElementById('rad-group').value = data.group || cls.group;
+        document.getElementById('rad-lesson').value = data.lesson || '';
+        document.getElementById('rad-attendance').value = data.attendance || '';
+
+        document.getElementById('rad-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('rad-modal').style.display = 'none';
+    }
+
+    function saveRadData() {
+        const classId = document.getElementById('rad-class-id').value;
+        const data = {
+            book: document.getElementById('rad-book').value,
+            group: document.getElementById('rad-group').value,
+            lesson: document.getElementById('rad-lesson').value,
+            attendance: document.getElementById('rad-attendance').value,
+            completed: getRadData(classId).completed // Mantém o status de completado
+        };
+
+        saveRadDataToLocal(classId, data);
+        closeModal();
+        
+        // Atualiza a visualização do card
+        renderCurrentScheduleAgain();
+        alert('Dados do RAD salvos com sucesso!');
+    }
+
+    function clearRadData() {
+        if(!confirm('Tem certeza que deseja limpar todos os dados deste RAD?')) return;
+        
+        const classId = document.getElementById('rad-class-id').value;
+        const data = getRadData(classId);
+        data.book = '';
+        data.group = '';
+        data.lesson = '';
+        data.attendance = '';
+        // Não limpamos o 'completed' aqui, só os dados de texto
+        
+        saveRadDataToLocal(classId, data);
+        closeModal();
+        renderCurrentScheduleAgain();
+    }
+
+    function toggleComplete(classId) {
+        const data = getRadData(classId);
+        data.completed = !data.completed;
+        saveRadDataToLocal(classId, data);
+        renderCurrentScheduleAgain();
+    }
+
+    function renderCurrentScheduleAgain() {
+        // Re-renderiza a tela atual para mostrar atualizações
+        const teacher = VALID_TEACHERS.find(t => t.name === currentTeacherName);
+        if (teacher) {
+            showTeacherSchedule(teacher.name, teacher.color);
+        }
+    }
+
+    // Fechar modal ao clicar fora
+    window.onclick = function(event) {
+        const modal = document.getElementById('rad-modal');
+        if (event.target == modal) {
+            closeModal();
+        }
     }
 </script>
 
