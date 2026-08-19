@@ -6,144 +6,157 @@
     <title>Cronograma Semanal - Professores</title>
     <style>
         :root {
-            --bg-color: #f0f2f5;
+            --bg-color: #f4f7f6;
             --text-color: #333;
             --card-bg: #ffffff;
             --shadow: 0 4px 6px rgba(0,0,0,0.1);
             --radius: 12px;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 0;
-            color: var(--text-color);
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; }
 
         header {
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            background: linear-gradient(135deg, #2c3e50, #34495e);
             color: white;
-            padding: 2rem;
+            padding: 2rem 1rem;
             text-align: center;
             box-shadow: var(--shadow);
         }
 
-        h1 { margin: 0; font-size: 1.8rem; }
-        p { margin: 0.5rem 0 0; opacity: 0.9; }
+        header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        header p { opacity: 0.9; }
 
-        .container {
-            max-width: 1000px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
 
         /* Tela de Seleção */
-        .grid-teachers {
+        #selection-screen { display: block; animation: fadeIn 0.5s ease; }
+        
+        .teachers-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 1.5rem;
+            margin-top: 2rem;
         }
 
         .teacher-card {
             background: var(--card-bg);
-            padding: 2rem;
             border-radius: var(--radius);
+            padding: 2rem;
             text-align: center;
             cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             box-shadow: var(--shadow);
-            transition: transform 0.2s, box-shadow 0.2s;
-            border-bottom: 6px solid #ccc;
-            font-weight: bold;
-            font-size: 1.2rem;
-            text-transform: uppercase;
+            border-bottom: 6px solid transparent;
         }
 
-        .teacher-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
-        }
+        .teacher-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+        .teacher-name { font-size: 1.4rem; font-weight: bold; text-transform: uppercase; }
+        .teacher-count { font-size: 0.9rem; color: #777; margin-top: 0.5rem; }
 
-        /* Tela de Detalhes */
-        #details-view { display: none; }
-        
-        .btn-back {
-            background: #fff;
-            border: 2px solid #333;
-            padding: 0.5rem 1.5rem;
+        /* Tela do Cronograma */
+        #schedule-screen { display: none; animation: slideUp 0.5s ease; }
+
+        .back-btn {
+            background: white;
+            color: #2c3e50;
+            border: 2px solid #2c3e50;
+            padding: 0.8rem 1.5rem;
             border-radius: 50px;
-            cursor: pointer;
             font-weight: bold;
-            margin-bottom: 1.5rem;
-            display: inline-block;
-        }
-
-        .day-block {
-            background: var(--card-bg);
+            cursor: pointer;
             margin-bottom: 2rem;
+            transition: all 0.3s;
+        }
+        .back-btn:hover { background: #2c3e50; color: white; }
+
+        .teacher-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: white;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
+            border-left: 10px solid #3498db;
+        }
+        .teacher-header h2 { font-size: 2rem; color: #2c3e50; }
+
+        /* Dias e Aulas */
+        .days-container { display: flex; flex-direction: column; gap: 2rem; }
+
+        .day-section {
+            background: white;
+            border-radius: var(--radius);
             overflow: hidden;
+            box-shadow: var(--shadow);
         }
 
         .day-header {
-            padding: 1rem;
+            padding: 1rem 1.5rem;
             color: white;
-            font-weight: bold;
             font-size: 1.2rem;
+            font-weight: bold;
             text-transform: uppercase;
         }
 
-        .classes-grid {
+        .classes-list {
+            padding: 1.5rem;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1rem;
-            padding: 1rem;
+            gap: 1.5rem;
+            background: #fafafa;
         }
 
-        .class-item {
+        .class-card {
+            background: white;
             border: 1px solid #eee;
             border-radius: 8px;
-            padding: 1rem;
-            background: #fafafa;
-            border-left: 5px solid #ccc;
+            padding: 1.2rem;
+            position: relative;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        .time-badge {
+        .class-time {
             font-size: 1.1rem;
             font-weight: bold;
             color: #2c3e50;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.8rem;
             display: block;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
         }
 
         .info-row {
-            margin-bottom: 0.4rem;
-            font-size: 0.95rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
         }
 
-        .tag {
+        .info-label { font-weight: bold; width: 70px; color: #7f8c8d; }
+        .info-value { flex: 1; color: #2c3e50; }
+
+        .badge {
+            display: inline-block;
             padding: 0.2rem 0.6rem;
             border-radius: 4px;
             font-size: 0.85rem;
-            font-weight: 600;
-            display: inline-block;
+            font-weight: bold;
+            margin-right: 5px;
+            margin-bottom: 5px;
         }
-        .tag-group { background: #e3f2fd; color: #1565c0; }
-        .tag-book { background: #fff3e0; color: #ef6c00; }
-        .tag-room { background: #e8f5e9; color: #2e7d32; }
-        .tag-mod { background: #f3e5f5; color: #7b1fa2; }
+        .badge-book { background: #fff3e0; color: #e65100; }
+        .badge-group { background: #e3f2fd; color: #1565c0; }
+        .badge-modal { background: #f3e5f5; color: #7b1fa2; }
+        .badge-room { background: #e8f5e9; color: #2e7d32; }
 
-        .loading, .error {
-            text-align: center;
-            padding: 2rem;
-            font-size: 1.2rem;
-        }
-        .error { color: #d32f2f; background: #ffebee; border-radius: 8px; }
+        .loading, .error-msg { text-align: center; padding: 2rem; font-size: 1.2rem; }
+        .error-msg { color: #c62828; background: #ffebee; border-radius: var(--radius); }
 
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -154,29 +167,31 @@
 </header>
 
 <div class="container">
-    
-    <!-- View 1: Lista de Professores -->
-    <div id="selection-view">
-        <div id="loading-msg" class="loading">Carregando dados da planilha...</div>
-        <div id="error-msg" class="error" style="display:none;"></div>
-        <div id="teachers-list" class="grid-teachers"></div>
+    <!-- Tela Inicial -->
+    <div id="selection-screen">
+        <div id="loading" class="loading">Carregando dados da planilha...</div>
+        <div id="teachers-grid" class="teachers-grid"></div>
+        <div id="error-message" class="error-msg" style="display:none;"></div>
     </div>
 
-    <!-- View 2: Detalhe do Professor -->
-    <div id="details-view">
-        <button class="btn-back" onclick="voltarParaInicio()">← Voltar</button>
-        <h2 id="teacher-title" style="margin-bottom: 1.5rem; text-align:center;"></h2>
-        <div id="schedule-content"></div>
-    </div>
+    <!-- Tela do Professor -->
+    <div id="schedule-screen">
+        <button class="back-btn" onclick="showSelection()">← Voltar</button>
+        
+        <div class="teacher-header" id="teacher-header">
+            <h2 id="header-name">Nome do Professor</h2>
+        </div>
 
+        <div id="schedule-content" class="days-container"></div>
+    </div>
 </div>
 
 <script>
-    // URL fornecida
+    // URL CORRETA DE EXPORTAÇÃO CSV (Baseada no ID da sua planilha)
     const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?gid=0&single=true&output=csv';
 
-    // Lista de Professores Válidos (TA excluído)
-    const TEACHERS = [
+    // Lista de Professores Válidos e Cores
+    const VALID_TEACHERS = [
         { name: 'MYCAEL', color: '#FF6B6B' },
         { name: 'RAFAEL', color: '#4ECDC4' },
         { name: 'HOPE', color: '#FFE66D' },
@@ -189,213 +204,213 @@
         { name: 'CAROL', color: '#5f27cd' }
     ];
 
-    const DAYS_PT = {
-        'Mon': 'Segunda-feira', 'Tue': 'Terça-feira', 'Wed': 'Quarta-feira',
-        'Thu': 'Quinta-feira', 'Fri': 'Sexta-feira', 'Sat': 'Sábado'
+    const DAYS_MAP = {
+        'Monday': 'Segunda-feira',
+        'Tuesday': 'Terça-feira',
+        'Wednesday': 'Quarta-feira',
+        'Thursday': 'Quinta-feira',
+        'Friday': 'Sexta-feira'
     };
 
-    let globalData = [];
+    let allClasses = [];
 
-    // Inicialização
-    window.onload = async () => {
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchSchedule();
+    });
+
+    async function fetchSchedule() {
         try {
             const response = await fetch(SHEET_URL);
             if (!response.ok) throw new Error('Falha na conexão');
             
             const csvText = await response.text();
-            processCSV(csvText);
-            renderTeacherList();
-        } catch (err) {
-            console.error(err);
-            document.getElementById('loading-msg').style.display = 'none';
-            const errDiv = document.getElementById('error-msg');
-            errDiv.style.display = 'block';
-            errDiv.textContent = 'Erro ao carregar a planilha. Tente novamente mais tarde.';
+            parseCSV(csvText);
+            renderTeacherSelection();
+        } catch (error) {
+            console.error(error);
+            document.getElementById('loading').style.display = 'none';
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.style.display = 'block';
+            errorDiv.innerHTML = `Erro ao carregar a planilha.<br>Tente recarregar a página.<br><small>${error.message}</small>`;
         }
-    };
+    }
 
-    function processCSV(text) {
-        // Divide em linhas e remove vazias
+    function parseCSV(text) {
         const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
         if (lines.length < 2) return;
 
-        // Cabeçalho (Linha 0)
-        // Exemplo esperado: ⌚,Mon 17TH,Tue 18TH...
-        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+        // Mapeamento das colunas baseado na sua descrição:
+        // B=Book(1), C=Group(2), D=Room(3), E=Modalidade(4), F=Horário(5), G=Mon(6)...
+        // Índice no array (0-based): Book=1, Group=2, Room=3, Modal=4, Time=5, Mon=6, Tue=7...
         
-        // Mapear índices dos dias (procura por Mon, Tue, etc no cabeçalho)
-        const dayIndices = {};
-        headers.forEach((h, index) => {
-            const dayKey = Object.keys(DAYS_PT).find(k => h.includes(k));
-            if (dayKey) dayIndices[dayKey] = index;
-        });
+        const COL_BOOK = 1;
+        const COL_GROUP = 2;
+        const COL_ROOM = 3;
+        const COL_MODAL = 4;
+        const COL_TIME = 5;
+        const COL_MON = 6;
 
-        globalData = [];
+        allClasses = [];
 
-        // Processar linhas de dados (começa na 1)
         for (let i = 1; i < lines.length; i++) {
-            // Regex robusto para CSV que pode ter vírgulas dentro de aspas
+            // Divisão segura considerando aspas no CSV
             const row = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
             
-            // Limpeza básica se o regex falhar em casos simples
+            // Limpeza básica das células (remove aspas extras)
             const cleanRow = row.map(cell => cell ? cell.replace(/^"|"$/g, '').trim() : '');
 
-            const timeSlot = cleanRow[0]; // Coluna 0 é horário
-            if (!timeSlot) continue;
+            const timeSlot = cleanRow[COL_TIME];
+            const book = cleanRow[COL_BOOK] || '';
+            const group = cleanRow[COL_GROUP] || '';
+            const room = cleanRow[COL_ROOM] || 'N/A';
+            const modal = cleanRow[COL_MODAL] || '';
 
-            // Iterar sobre os dias encontrados
-            for (const [dayKey, colIndex] of Object.entries(dayIndices)) {
-                const cellContent = cleanRow[colIndex];
-                
-                if (cellContent && cellContent !== '') {
-                    // Tentar identificar o professor nesta célula
-                    let foundTeacher = null;
-                    let teacherNameClean = '';
+            if (!timeSlot) continue; // Pula linhas sem horário
 
-                    for (const t of TEACHERS) {
-                        if (cellContent.toUpperCase().includes(t.name)) {
-                            foundTeacher = t;
-                            teacherNameClean = t.name;
-                            break;
-                        }
-                    }
+            // Dias da semana (índices 6 a 10)
+            const daysData = [
+                { day: 'Monday', val: cleanRow[COL_MON] },
+                { day: 'Tuesday', val: cleanRow[COL_MON + 1] },
+                { day: 'Wednesday', val: cleanRow[COL_MON + 2] },
+                { day: 'Thursday', val: cleanRow[COL_MON + 3] },
+                { day: 'Friday', val: cleanRow[COL_MON + 4] }
+            ];
 
-                    if (foundTeacher) {
-                        // Extrair informações
-                        // Formato provável na célula: "Group - Teacher - Room - Mod"
-                        // Ou variações. Vamos dividir por '-'
-                        const parts = cellContent.split('-').map(p => p.trim());
-                        
-                        let groupFull = parts[0] || '';
-                        let room = parts[2] || 'N/A';
-                        let mod = parts[3] || '';
-
-                        // Se a estrutura for diferente, tentamos achar a sala (geralmente número curto)
-                        // Mas vamos confiar na ordem padrão do Sheets: Group | Teacher | Room | Mod
-                        
-                        // Parsing do Group (Turma + Book)
-                        // Ex: "Dune G1", "G1 Dune", "Flyers G2"
-                        const bookPattern = /\b(G\d|AW|Starter|Movers|Flyers|KET|PET|FCE|CAE|IELTS|TOEFL)\b/i;
-                        const matchBook = groupFull.match(bookPattern);
-                        
-                        let bookName = matchBook ? matchBook[0].toUpperCase() : '';
-                        let groupName = groupFull.replace(bookPattern, '').trim();
-                        
-                        // Limpar groupName de hífens extras ou espaços
-                        groupName = groupName.replace(/^-|-$/, '').trim();
-                        if(groupName === '') groupName = 'Geral';
-
-                        globalData.push({
-                            day: dayKey,
+            daysData.forEach(item => {
+                if (item.val && item.val.trim() !== '') {
+                    // Encontrar qual professor está nesta célula
+                    const teacherName = findTeacher(item.val);
+                    
+                    if (teacherName) {
+                        allClasses.push({
+                            day: item.day,
                             time: timeSlot,
-                            teacher: teacherNameClean,
-                            group: groupName,
-                            book: bookName,
+                            teacher: teacherName,
+                            book: book,
+                            group: group,
                             room: room,
-                            mod: mod
+                            modal: modal
                         });
                     }
                 }
-            }
+            });
         }
     }
 
-    function renderTeacherList() {
-        document.getElementById('loading-msg').style.display = 'none';
-        const list = document.getElementById('teachers-list');
-        list.innerHTML = '';
+    function findTeacher(cellText) {
+        const upperText = cellText.toUpperCase();
+        for (const t of VALID_TEACHERS) {
+            if (upperText.includes(t.name)) {
+                return t.name;
+            }
+        }
+        return null;
+    }
 
-        // Ordenar alfabeticamente
-        TEACHERS.sort((a, b) => a.name.localeCompare(b.name)).forEach(t => {
-            // Verifica se tem aula
-            const hasClass = globalData.some(d => d.teacher === t.name);
+    function renderTeacherSelection() {
+        const grid = document.getElementById('teachers-grid');
+        document.getElementById('loading').style.display = 'none';
+        grid.innerHTML = '';
+
+        VALID_TEACHERS.sort((a, b) => a.name.localeCompare(b.name)).forEach(teacher => {
+            const classesCount = allClasses.filter(c => c.teacher === teacher.name).length;
             
             const card = document.createElement('div');
             card.className = 'teacher-card';
-            card.style.borderBottomColor = t.color;
-            card.style.color = t.color;
-            card.innerHTML = `${t.name} <div style="font-size:0.8rem; font-weight:normal; margin-top:5px; color:#666">${hasClass ? 'Ver Agenda' : 'Sem aulas'}</div>`;
-            
-            card.onclick = () => showSchedule(t.name, t.color);
-            list.appendChild(card);
+            card.style.borderBottomColor = teacher.color;
+            card.innerHTML = `
+                <div class="teacher-name" style="color: ${teacher.color}">${teacher.name}</div>
+                <div class="teacher-count">${classesCount} aulas esta semana</div>
+            `;
+            card.onclick = () => showTeacherSchedule(teacher.name, teacher.color);
+            grid.appendChild(card);
         });
     }
 
-    function showSchedule(name, color) {
-        // Filtrar dados
-        const myClasses = globalData.filter(d => d.teacher === name);
+    function showTeacherSchedule(teacherName, teacherColor) {
+        const teacherClasses = allClasses.filter(c => c.teacher === teacherName);
         
-        if (myClasses.length === 0) {
-            alert("Nenhuma aula encontrada para esta semana.");
+        if (teacherClasses.length === 0) {
+            alert(`${teacherName} não tem aulas registradas.`);
             return;
         }
 
         // Agrupar por dia
         const byDay = {};
-        Object.keys(DAYS_PT).forEach(k => byDay[k] = []);
-        myClasses.forEach(c => {
-            if(byDay[c.day]) byDay[c.day].push(c);
+        Object.keys(DAYS_MAP).forEach(k => byDay[k] = []);
+        
+        teacherClasses.forEach(cls => {
+            if(byDay[cls.day]) byDay[cls.day].push(cls);
         });
 
         // Ordenar por horário
-        Object.keys(byDay).forEach(k => {
-            byDay[k].sort((a, b) => a.time.localeCompare(b.time));
+        Object.keys(byDay).forEach(day => {
+            byDay[day].sort((a, b) => a.time.localeCompare(b.time));
         });
 
-        // Renderizar
-        document.getElementById('selection-view').style.display = 'none';
-        document.getElementById('details-view').style.display = 'block';
-        
-        const title = document.getElementById('teacher-title');
-        title.textContent = `Agenda de ${name}`;
-        title.style.color = color;
+        // Atualizar Header
+        document.getElementById('header-name').textContent = `Cronograma de ${teacherName}`;
+        document.getElementById('teacher-header').style.borderLeftColor = teacherColor;
 
         const content = document.getElementById('schedule-content');
         content.innerHTML = '';
 
-        const daysOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
-        daysOrder.forEach(day => {
-            if (byDay[day].length > 0) {
-                const dayBlock = document.createElement('div');
-                dayBlock.className = 'day-block';
+        daysOrder.forEach(dayKey => {
+            const classes = byDay[dayKey];
+            if (classes.length > 0) {
+                const section = document.createElement('div');
+                section.className = 'day-section';
                 
                 const header = document.createElement('div');
                 header.className = 'day-header';
-                header.style.backgroundColor = color;
-                header.textContent = DAYS_PT[day];
-                dayBlock.appendChild(header);
+                header.style.backgroundColor = teacherColor;
+                header.textContent = DAYS_MAP[dayKey];
+                section.appendChild(header);
 
-                const grid = document.createElement('div');
-                grid.className = 'classes-grid';
+                const list = document.createElement('div');
+                list.className = 'classes-list';
 
-                byDay[day].forEach(cls => {
-                    const item = document.createElement('div');
-                    item.className = 'class-item';
-                    item.style.borderLeftColor = color;
+                classes.forEach(cls => {
+                    const card = document.createElement('div');
+                    card.className = 'class-card';
+                    card.style.borderLeftColor = teacherColor;
 
-                    let badges = '';
-                    if(cls.group) badges += `<span class="tag tag-group">${cls.group}</span> `;
-                    if(cls.book) badges += `<span class="tag tag-book">${cls.book}</span> `;
-                    if(cls.mod) badges += `<span class="tag tag-mod">${cls.mod}</span> `;
-                    if(cls.room) badges += `<span class="tag tag-room">📍 ${cls.room}</span>`;
+                    card.innerHTML = `
+                        <span class="class-time">⏰ ${cls.time}</span>
+                        
+                        <div style="margin-bottom: 10px;">
+                            ${cls.book ? `<span class="badge badge-book">📚 ${cls.book}</span>` : ''}
+                            ${cls.group ? `<span class="badge badge-group">👥 ${cls.group}</span>` : ''}
+                            ${cls.modal ? `<span class="badge badge-modal">📝 ${cls.modal}</span>` : ''}
+                        </div>
 
-                    item.innerHTML = `
-                        <span class="time-badge">⏰ ${cls.time}</span>
-                        <div class="info-row">${badges}</div>
+                        <div class="info-row">
+                            <span class="info-label">Sala:</span>
+                            <span class="info-value"><strong>${cls.room}</strong></span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Prof:</span>
+                            <span class="info-value">${cls.teacher}</span>
+                        </div>
                     `;
-                    grid.appendChild(item);
+                    list.appendChild(card);
                 });
 
-                dayBlock.appendChild(grid);
-                content.appendChild(dayBlock);
+                section.appendChild(list);
+                content.appendChild(section);
             }
         });
+
+        document.getElementById('selection-screen').style.display = 'none';
+        document.getElementById('schedule-screen').style.display = 'block';
+        window.scrollTo(0, 0);
     }
 
-    function voltarParaInicio() {
-        document.getElementById('details-view').style.display = 'none';
-        document.getElementById('selection-view').style.display = 'block';
+    function showSelection() {
+        document.getElementById('schedule-screen').style.display = 'none';
+        document.getElementById('selection-screen').style.display = 'block';
     }
 </script>
 
