@@ -1,589 +1,110 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cronograma Semanal - Escola de Inglês</title>
-    <style>
-        :root {
-            --primary: #2c3e50;
-            --secondary: #34495e;
-            --accent: #3498db;
-            --light: #ecf0f1;
-            --dark: #2c3e50;
-            --white: #ffffff;
-            --shadow: 0 4px 6px rgba(0,0,0,0.1);
-            --radius: 12px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: #f4f7f6;
-            color: var(--dark);
-            line-height: 1.6;
-        }
-
-        header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: var(--white);
-            padding: 2rem 1rem;
-            text-align: center;
-            box-shadow: var(--shadow);
-        }
-
-        header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        header p {
-            opacity: 0.9;
-            font-size: 1rem;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
-        }
-
-        /* Tela de Seleção */
-        #selection-screen {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .teachers-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .teacher-card {
-            background: var(--white);
-            border-radius: var(--radius);
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: var(--shadow);
-            border-bottom: 5px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .teacher-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-        }
-
-        .teacher-name {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--dark);
-            text-transform: uppercase;
-        }
-
-        .teacher-role {
-            font-size: 0.9rem;
-            color: #7f8c8d;
-            margin-top: 0.5rem;
-        }
-
-        /* Tela do Cronograma */
-        #schedule-screen {
-            display: none;
-            animation: slideUp 0.5s ease;
-        }
-
-        .back-btn {
-            background: var(--white);
-            color: var(--primary);
-            border: 2px solid var(--primary);
-            padding: 0.8rem 1.5rem;
-            border-radius: 50px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .back-btn:hover {
-            background: var(--primary);
-            color: var(--white);
-        }
-
-        .current-teacher-header {
-            text-align: center;
-            margin-bottom: 2rem;
-            padding: 1.5rem;
-            background: var(--white);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            border-left: 10px solid var(--accent);
-        }
-
-        .current-teacher-header h2 {
-            font-size: 2rem;
-            color: var(--primary);
-        }
-
-        /* Dias da Semana */
-        .days-container {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        .day-section {
-            background: var(--white);
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-        }
-
-        .day-header {
-            padding: 1rem 1.5rem;
-            color: var(--white);
-            font-size: 1.2rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .classes-list {
-            padding: 1.5rem;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .class-card {
-            border: 1px solid #eee;
-            border-radius: 8px;
-            padding: 1.2rem;
-            background: #fafafa;
-            transition: transform 0.2s;
-            border-left: 4px solid var(--accent);
-        }
-
-        .class-card:hover {
-            transform: scale(1.02);
-            background: #fff;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-
-        .class-time {
-            font-weight: bold;
-            color: var(--primary);
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        .class-details {
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-            font-size: 0.95rem;
-        }
-
-        .detail-row {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.2rem 0.6rem;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .badge-group {
-            background-color: #e3f2fd;
-            color: #1565c0;
-        }
-
-        .badge-book {
-            background-color: #fff3e0;
-            color: #ef6c00;
-        }
-
-        .badge-modal {
-            background-color: #f3e5f5;
-            color: #7b1fa2;
-        }
-
-        .badge-room {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 3rem;
-            font-size: 1.2rem;
-            color: var(--secondary);
-        }
-
-        .error-msg {
-            background: #ffebee;
-            color: #c62828;
-            padding: 1rem;
-            border-radius: var(--radius);
-            text-align: center;
-            margin-top: 1rem;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Cores dos Professores */
-        .color-MYCAEL { border-color: #FF6B6B; background-color: #FF6B6B; }
-        .color-RAFAEL { border-color: #4ECDC4; background-color: #4ECDC4; }
-        .color-HOPE { border-color: #FFE66D; background-color: #FFE66D; color: #333; }
-        .color-PEDRO { border-color: #F38181; background-color: #F38181; }
-        .color-DIOGO { border-color: #AA96DA; background-color: #AA96DA; }
-        .color-LIVIA { border-color: #FCBAD3; background-color: #FCBAD3; }
-        .color-TOSCA { border-color: #A8D8EA; background-color: #A8D8EA; }
-        .color-IAGO { border-color: #FF9F43; background-color: #FF9F43; }
-        .color-SARA { border-color: #54a0ff; background-color: #54a0ff; }
-        .color-CAROL { border-color: #5f27cd; background-color: #5f27cd; }
-
-    </style>
-</head>
-<body>
-
-<header>
-    <h1>Cronograma Semanal</h1>
-    <p>Selecione seu nome para ver suas aulas</p>
-</header>
-
-<div class="container">
-    <!-- Tela de Seleção -->
-    <div id="selection-screen">
-        <div id="loading" class="loading">Carregando cronograma...</div>
-        <div id="teachers-grid" class="teachers-grid"></div>
-        <div id="error-message" class="error-msg" style="display:none;"></div>
-    </div>
-
-    <!-- Tela do Cronograma Individual -->
-    <div id="schedule-screen">
-        <button class="back-btn" onclick="showSelection()">
-            ← Voltar para Seleção
-        </button>
-        
-        <div class="current-teacher-header" id="teacher-header">
-            <!-- Preenchido via JS -->
-        </div>
-
-        <div id="schedule-content" class="days-container">
-            <!-- Preenchido via JS -->
-        </div>
-    </div>
-</div>
-
-<script>
-    // URL CSV Correta baseada na estrutura da planilha
-    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?gid=0&single=true&output=csv';
-
-    // Lista de Professores Válidos e suas Cores
-    const VALID_TEACHERS = [
-        { name: 'MYCAEL', color: '#FF6B6B' },
-        { name: 'RAFAEL', color: '#4ECDC4' },
-        { name: 'HOPE', color: '#FFE66D' },
-        { name: 'PEDRO', color: '#F38181' },
-        { name: 'DIOGO', color: '#AA96DA' },
-        { name: 'LIVIA', color: '#FCBAD3' },
-        { name: 'TOSCA', color: '#A8D8EA' },
-        { name: 'IAGO', color: '#FF9F43' },
-        { name: 'SARA', color: '#54a0ff' },
-        { name: 'CAROL', color: '#5f27cd' }
-    ];
-
-    const DAYS_MAP = {
-        'Monday': 'Segunda-feira',
-        'Tuesday': 'Terça-feira',
-        'Wednesday': 'Quarta-feira',
-        'Thursday': 'Quinta-feira',
-        'Friday': 'Sexta-feira',
-        'Saturday': 'Sábado'
-    };
-
-    let allClasses = [];
-
-    document.addEventListener('DOMContentLoaded', () => {
-        fetchSchedule();
-    });
-
-    async function fetchSchedule() {
-        try {
-            const response = await fetch(SHEET_URL);
-            if (!response.ok) throw new Error('Erro ao carregar planilha');
-            
-            const csvText = await response.text();
-            parseCSV(csvText);
-            renderTeacherSelection();
-        } catch (error) {
-            console.error(error);
-            document.getElementById('loading').style.display = 'none';
-            const errorDiv = document.getElementById('error-message');
-            errorDiv.style.display = 'block';
-            errorDiv.textContent = 'Erro ao carregar a planilha. Tente novamente mais tarde.';
-        }
-    }
-
-    function parseCSV(text) {
-        const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-        if (lines.length < 2) return;
-
-        // Parse simples de CSV (assume que não há vírgulas dentro das células de texto livre)
-        // Se houver vírgulas nas células, o Google Sheets CSV geralmente usa aspas, mas vamos simplificar
-        const parseLine = (line) => {
-            // Divide por vírgula, mas ignora vírgulas dentro de aspas se existirem
-            const result = [];
-            let start = 0;
-            let inQuotes = false;
-            for (let i = 0; i < line.length; i++) {
-                if (line[i] === '"') inQuotes = !inQuotes;
-                if (line[i] === ',' && !inQuotes) {
-                    result.push(line.substring(start, i).trim().replace(/^"|"$/g, ''));
-                    start = i + 1;
-                }
-            }
-            result.push(line.substring(start).trim().replace(/^"|"$/g, ''));
-            return result;
-        };
-
-        const headers = parseLine(lines[0]);
-        
-        // Mapeamento de colunas baseado na sua descrição:
-        // B: Book (idx 1), C: Group (idx 2), D: Room (idx 3), E: Modalidade (idx 4), F: Horário (idx 5)
-        // G: Monday (idx 6), H: Tuesday (idx 7), I: Wednesday (idx 8), J: Thursday (idx 9), K: Friday (idx 10)
-        
-        const COL_BOOK = 1;
-        const COL_GROUP = 2;
-        const COL_ROOM = 3;
-        const COL_MODAL = 4;
-        const COL_TIME = 5;
-        
-        const DAY_COLS = {
-            'Monday': 6,
-            'Tuesday': 7,
-            'Wednesday': 8,
-            'Thursday': 9,
-            'Friday': 10
-            // Se tiver sábado na coluna L, seria índice 11
-        };
-
-        allClasses = [];
-
-        for (let i = 1; i < lines.length; i++) {
-            const row = parseLine(lines[i]);
-            
-            // Dados fixos da linha
-            const bookRaw = row[COL_BOOK] || '';
-            const groupRaw = row[COL_GROUP] || '';
-            const roomRaw = row[COL_ROOM] || '';
-            const modalRaw = row[COL_MODAL] || '';
-            const timeRaw = row[COL_TIME] || '';
-
-            if (!timeRaw) continue; // Pula linhas sem horário
-
-            // Iterar sobre os dias
-            for (const [dayName, colIndex] of Object.entries(DAY_COLS)) {
-                const cellContent = row[colIndex];
-                
-                if (cellContent && cellContent.trim() !== '') {
-                    // A célula contém o nome do professor (e talvez outras infos separadas por hífen)
-                    // Ex: "MYCAEL" ou "MYCAEL - Extra"
-                    const teacherName = findTeacherInString(cellContent);
-
-                    if (teacherName) {
-                        // Processar nome da turma (Group)
-                        let finalGroupName = groupRaw.trim();
-                        
-                        // Regra: Se a turma for "Bridge", mostrar "TPWER Bridge"
-                        if (finalGroupName.toLowerCase() === 'bridge') {
-                            finalGroupName = 'TPWER Bridge';
-                        } else if (finalGroupName.toLowerCase().includes('bridge')) {
-                             // Caso venha algo como "Bridge 1", transforma em "TPWER Bridge 1"
-                             finalGroupName = finalGroupName.replace(/bridge/gi, 'TPWER Bridge');
-                        }
-
-                        // Se o nome da turma estiver vazio, usar um padrão
-                        if (!finalGroupName) finalGroupName = 'Geral';
-
-                        allClasses.push({
-                            day: dayName,
-                            time: timeRaw,
-                            teacher: teacherName,
-                            group: finalGroupName,
-                            book: bookRaw.trim(),
-                            modal: modalRaw.trim(),
-                            room: roomRaw.trim()
-                        });
-                    }
-                }
-            }
-        }
-    }
-
-    function findTeacherInString(str) {
-        if (!str) return null;
-        const upperStr = str.toUpperCase();
-        for (const t of VALID_TEACHERS) {
-            if (upperStr.includes(t.name)) {
-                return t.name;
-            }
-        }
-        return null;
-    }
-
-    function renderTeacherSelection() {
-        const grid = document.getElementById('teachers-grid');
-        document.getElementById('loading').style.display = 'none';
-        grid.innerHTML = '';
-
-        const sortedTeachers = [...VALID_TEACHERS].sort((a, b) => a.name.localeCompare(b.name));
-
-        sortedTeachers.forEach(teacher => {
-            const hasClasses = allClasses.some(c => c.teacher === teacher.name);
-            
-            const card = document.createElement('div');
-            card.className = 'teacher-card';
-            card.style.borderBottomColor = teacher.color;
-            
-            card.innerHTML = `
-                <div class="teacher-name" style="color: ${teacher.color}">${teacher.name}</div>
-                <div class="teacher-role">${hasClasses ? 'Clique para ver aulas' : 'Sem aulas esta semana'}</div>
-            `;
-            
-            card.onclick = () => showTeacherSchedule(teacher.name, teacher.color);
-            grid.appendChild(card);
-        });
-    }
-
-    function showTeacherSchedule(teacherName, teacherColor) {
-        const teacherClasses = allClasses.filter(c => c.teacher === teacherName);
-        
-        if (teacherClasses.length === 0) {
-            alert(`${teacherName} não possui aulas registradas nesta semana.`);
-            return;
-        }
-
-        const byDay = {};
-        Object.keys(DAYS_MAP).forEach(key => byDay[key] = []);
-        
-        teacherClasses.forEach(cls => {
-            if (byDay[cls.day]) {
-                byDay[cls.day].push(cls);
-            }
-        });
-
-        Object.keys(byDay).forEach(day => {
-            byDay[day].sort((a, b) => a.time.localeCompare(b.time));
-        });
-
-        const header = document.getElementById('teacher-header');
-        header.style.borderLeftColor = teacherColor;
-        header.innerHTML = `<h2 style="color: ${teacherColor}">Cronograma de ${teacherName}</h2>`;
-
-        const content = document.getElementById('schedule-content');
-        content.innerHTML = '';
-
-        const daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-        daysOrder.forEach(dayKey => {
-            const classes = byDay[dayKey];
-            if (classes.length > 0) {
-                const daySection = document.createElement('div');
-                daySection.className = 'day-section';
-                
-                const dayHeader = document.createElement('div');
-                dayHeader.className = 'day-header';
-                dayHeader.style.backgroundColor = teacherColor;
-                dayHeader.textContent = DAYS_MAP[dayKey];
-                daySection.appendChild(dayHeader);
-
-                const list = document.createElement('div');
-                list.className = 'classes-list';
-
-                classes.forEach(cls => {
-                    const card = document.createElement('div');
-                    card.className = 'class-card';
-                    card.style.borderLeftColor = teacherColor;
-
-                    let badgesHtml = '';
-                    
-                    // Badge da Turma (Group)
-                    if (cls.group) {
-                        badgesHtml += `<span class="badge badge-group" title="Turma">🏫 ${cls.group}</span>`;
-                    }
-                    
-                    // Badge do Book
-                    if (cls.book) {
-                        badgesHtml += `<span class="badge badge-book" title="Book/Módulo">📚 ${cls.book}</span>`;
-                    }
-                    
-                    // Badge da Modalidade
-                    if (cls.modal) {
-                        badgesHtml += `<span class="badge badge-modal" title="Modalidade">💡 ${cls.modal}</span>`;
-                    }
-                    
-                    // Badge da Sala (Room)
-                    if (cls.room) {
-                        badgesHtml += `<span class="badge badge-room" title="Sala">🚪 ${cls.room}</span>`;
-                    }
-
-                    card.innerHTML = `
-                        <span class="class-time">⏰ ${cls.time}</span>
-                        <div class="class-details">
-                            ${badgesHtml ? `<div class="detail-row">${badgesHtml}</div>` : ''}
-                            <div class="detail-row" style="margin-top:5px; font-style:italic; color:#666;">
-                                Prof. ${cls.teacher}
-                            </div>
-                        </div>
-                    `;
-                    list.appendChild(card);
-                });
-
-                daySection.appendChild(list);
-                content.appendChild(daySection);
-            }
-        });
-
-        document.getElementById('selection-screen').style.display = 'none';
-        document.getElementById('schedule-screen').style.display = 'block';
-        window.scrollTo(0, 0);
-    }
-
-    function showSelection() {
-        document.getElementById('schedule-screen').style.display = 'none';
-        document.getElementById('selection-screen').style.display = 'block';
-    }
-</script>
-
-</body>
-</html>
+ADVENTURE TIME
+Beatriz Melo De Matos
+Enzo Haas Goetten
+Isabela Nishimura Pereira
+Victor Hugo Clasen
+BITA WORLD
+Alice Marion
+Maria Carolina Crespo Candido Alves
+Valentina De Sousa Vidigal
+BREAKING BAD
+Geovanna Boaventura de Oliveira
+BROOKLYN 99
+Bruna Araújo Blumer
+Giuliane Wrzecionel Dal Berto
+Jessica Aline Bernardi
+Katherine Koch Carballo
+Miguel Anastásio Costa Junior
+COLEGIO CONNECT
+Gabriel Moreira Todeschini
+Maria Helena Tuchinski Oliveira
+Victor Leandro Tumelero Bandiera
+COLEGIO CONNECT KIDS
+Adan Afonso Perazzoli
+Alice Moura Gama Tales
+Alice Vinotti Meneguzzi
+Eduarda Tumelero Bandiera
+Luiza Tuchinski Oliveira
+DEXTER LAB
+Alice Ciprini de Quadros
+Letícia Beninica Adriano
+DUNE
+Ana Paula Pizzetti Meller Remisio
+Sofia Sayuri Iyama
+FROZEN (FRIENDSHIP)
+Maria Giovanna Cunnha Cardoso Lobato
+Sofia Rodrigues Fortes Marques
+GAME OF THRONES
+Bethina Rocha Semolini
+Miguel Bilbio de Andrade
+KILL BILL
+Thalita Aliny Medeiros
+Yasmin Deotti
+MINIONS
+Betina Guedes Cristovão
+Pérola Alvarez Garcia
+Pietra de Oliveira de Lima
+PHINEAS & FERB
+Enrico Goldoni Boschini
+Valentina Goldoni Boschini
+SCANDAL
+Fabricio Blesmann Kazapi
+Marina Barreto dos Santos Vargas
+Mirelle Barreto dos Santos Kazapi
+Rogério Vargas
+SHREK
+Eduardo Teixeira Dallago
+STRANGER THINGS
+Aline Araujo de Melo
+SUITS
+Bernardo Correia Pereira
+Matheus Henrique da Silva Tres
+Vinicius Estuqui Galandrini
+THE 100
+Caio Jazar Rodrigues
+Flavia de Andrade Lima
+Luiz Carlos Ferreira Hada
+THE CHOSEN
+Davi Rosa Larini
+Enzo Cardoso Pereira
+Karina Pereira dos Santos
+Maria Fernanda Crespo Cândido Alves
+THE CROWN
+Lara Becker
+Lorena Becker
+THE GODFATHER
+Gustavo Da Costa Schnaider
+Matheus Guilherme Sartor
+THE LAST OF US
+Bernardo Krieger Cordeiro
+Davi Knapp Dassoler
+THE OFFICE
+Ana Julia Cruz Da Silva
+Bruno Luiz Zeferino
+Julia de Almeida Antunes
+Nicole Mattos Paiva
+Nicoly Cantareli Hamade
+THIS IS US
+Andreia Campagnim
+Sueli Marta do Nascimento de Souza
+TITANIC
+Hector Augusto Ferreira Machado
+VIP / TURMAS INDIVIDUAIS
+Brenda Camargo Petri de Oliveira (Turma: BRENDA VOSS)
+Julia Viana Linhares Pereira (Turma: JULIA VIANNA LINHARES)
+ALUNOS KIDS (Turma específica a confirmar no cronograma)
+Antonella Kfouri Botelho
+Davi Pereira Hilgemberg
+Giullia Mmartins de Lara
+Lucca Kfouri Botelho
+Luíza Mussolini Ribeiro
+ALUNOS COM MODALIDADE IDENTIFICADA (Turma a confirmar)
+Eduardo Medrade Hosang (Flex 2)
+Eduarda Borges Vespa (Intensive)
+João Henrique Cenci (Flex 2)
+Maria Fernanda Spagnol (Flex 2)
+IN COMPANY / LOCAIS DE AULA
+Aventura Jurássica
+Hotel Melo
+Hotel Negrini
+Get it Timbó
