@@ -9,14 +9,14 @@
             --primary: #2c3e50;
             --secondary: #34495e;
             --accent: #3498db;
-            --light: #f8f9fa;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #c0392b;
+            --light: #ecf0f1;
             --dark: #2c3e50;
             --white: #ffffff;
             --shadow: 0 4px 6px rgba(0,0,0,0.1);
             --radius: 12px;
-            --success: #2ecc71;
-            --danger: #e74c3c;
-            --warning: #f1c40f;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -35,8 +35,9 @@
         .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
 
         /* Telas */
-        #selection-screen, #schedule-screen { animation: fadeIn 0.5s ease; }
-        #schedule-screen { display: none; }
+        #selection-screen { display: block; animation: fadeIn 0.5s ease; }
+        #schedule-screen { display: none; animation: slideUp 0.5s ease; }
+        #finance-screen { display: none; animation: slideUp 0.5s ease; }
 
         /* Grid de Professores */
         .teachers-grid {
@@ -45,7 +46,6 @@
             gap: 1.5rem;
             margin-top: 2rem;
         }
-
         .teacher-card {
             background: var(--white);
             border-radius: var(--radius);
@@ -57,15 +57,13 @@
             border-bottom: 5px solid transparent;
         }
         .teacher-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
-        .teacher-name { font-size: 1.5rem; font-weight: bold; text-transform: uppercase; }
+        .teacher-name { font-size: 1.5rem; font-weight: bold; color: var(--dark); text-transform: uppercase; }
         .teacher-role { font-size: 0.9rem; color: #7f8c8d; margin-top: 0.5rem; }
 
-        /* Navegação */
-        .back-btn {
-            background: var(--white);
-            color: var(--primary);
-            border: 2px solid var(--primary);
+        /* Botões Gerais */
+        .btn {
             padding: 0.8rem 1.5rem;
+            border: none;
             border-radius: 50px;
             font-weight: bold;
             cursor: pointer;
@@ -73,10 +71,50 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            margin-bottom: 2rem;
+            font-size: 1rem;
         }
-        .back-btn:hover { background: var(--primary); color: var(--white); }
+        .btn-back { background: var(--white); color: var(--primary); border: 2px solid var(--primary); margin-bottom: 2rem; }
+        .btn-back:hover { background: var(--primary); color: var(--white); }
+        
+        .btn-finance { 
+            background: var(--success); 
+            color: white; 
+            margin-bottom: 2rem; 
+            width: 100%; 
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
+        }
+        .btn-finance:hover { background: #219150; transform: translateY(-2px); }
 
+        .btn-rad {
+            background: var(--accent);
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        .btn-rad:hover { background: #2980b9; }
+
+        .btn-check {
+            background: var(--success);
+            color: white;
+            width: 100%;
+            margin-top: 5px;
+            justify-content: center;
+        }
+        .btn-check.done { background: #95a5a6; cursor: default; }
+
+        .btn-clear {
+            background: var(--danger);
+            color: white;
+            width: 100%;
+            margin-top: 5px;
+            font-size: 0.8rem;
+            padding: 0.5rem;
+        }
+
+        /* Header do Professor */
         .current-teacher-header {
             text-align: center;
             margin-bottom: 2rem;
@@ -95,7 +133,6 @@
             border-radius: var(--radius);
             overflow: hidden;
             box-shadow: var(--shadow);
-            margin-bottom: 1rem;
         }
         .day-header {
             padding: 1rem 1.5rem;
@@ -108,108 +145,41 @@
         .classes-list {
             padding: 1.5rem;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 1.5rem;
         }
-
         .class-card {
             border: 1px solid #eee;
             border-radius: 8px;
             padding: 1.2rem;
             background: #fafafa;
-            transition: all 0.2s;
-            border-left: 5px solid var(--accent);
+            transition: transform 0.2s;
+            border-left: 4px solid var(--accent);
             position: relative;
         }
-        .class-card.completed { background: #e8f8f5; border-left-color: var(--success); opacity: 0.9; }
-        .class-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-
-        .class-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 0.8rem;
-        }
-        .class-time { font-weight: bold; color: var(--primary); font-size: 1.1rem; }
+        .class-card.completed { border-left-color: var(--success); background: #e8f8f5; }
+        .class-card:hover { transform: scale(1.02); background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         
-        .check-btn {
-            background: none;
-            border: 2px solid #ddd;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: transparent;
-            transition: all 0.2s;
-        }
-        .class-card.completed .check-btn {
-            background: var(--success);
-            border-color: var(--success);
-            color: white;
-        }
-
-        .badges-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.8rem; }
-        .badge {
-            padding: 0.25rem 0.6rem;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
+        .class-time { font-weight: bold; color: var(--primary); font-size: 1.1rem; margin-bottom: 0.5rem; display: block; }
+        .class-details { display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.95rem; }
+        .detail-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        
+        .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600; }
         .badge-group { background-color: #e3f2fd; color: #1565c0; }
         .badge-book { background-color: #fff3e0; color: #ef6c00; }
         .badge-modal { background-color: #f3e5f5; color: #7b1fa2; }
         .badge-room { background-color: #e8f5e9; color: #2e7d32; }
-
-        .rad-actions {
-            margin-top: 1rem;
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-        .btn-rad {
-            flex: 1;
-            padding: 0.6rem;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.9rem;
-        }
-        .btn-rad-open { background: var(--primary); color: white; }
-        .btn-rad-open:hover { background: var(--secondary); }
-        .btn-rad-clear { background: #ffebee; color: var(--danger); }
-        .btn-rad-clear:hover { background: #ffcdd2; }
-        
-        .rad-status {
-            font-size: 0.8rem;
-            color: var(--success);
-            font-weight: bold;
-            margin-top: 0.5rem;
-            display: none;
-        }
-        .class-card.has-rad .rad-status { display: block; }
+        .badge-incompany { background-color: #ffebee; color: #c62828; border: 1px solid #c62828; }
 
         /* Modal RAD */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            display: none; justify-content: center; align-items: center; z-index: 1000;
         }
         .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: var(--radius);
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
+            background: white; padding: 2rem; border-radius: var(--radius);
+            width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;
             position: relative;
         }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
@@ -217,41 +187,58 @@
         
         .form-group { margin-bottom: 1rem; }
         .form-group label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
-        .form-group input, .form-group select {
-            width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 6px;
-        }
+        .form-group input, .form-group select { width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 6px; }
         
-        .student-list {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #eee;
-            border-radius: 6px;
-            padding: 0.5rem;
-        }
-        .student-item {
-            display: flex;
-            align-items: center;
-            padding: 0.5rem;
-            border-bottom: 1px solid #f9f9f9;
-        }
+        .student-list { max-height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius: 6px; padding: 0.5rem; }
+        .student-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid #f9f9f9; }
         .student-item:last-child { border-bottom: none; }
-        .student-item input { margin-right: 10px; }
 
-        .modal-actions { margin-top: 1.5rem; display: flex; gap: 1rem; }
-        .btn-save { flex: 1; background: var(--success); color: white; padding: 0.8rem; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-cancel { flex: 1; background: #eee; color: var(--dark); padding: 0.8rem; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        /* Tela Financeira */
+        .finance-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .finance-card {
+            background: white; padding: 1.5rem; border-radius: var(--radius);
+            box-shadow: var(--shadow); text-align: center;
+        }
+        .finance-value { font-size: 2rem; font-weight: bold; color: var(--success); margin: 0.5rem 0; }
+        .finance-label { color: #7f8c8d; font-size: 0.9rem; text-transform: uppercase; }
+        
+        .rate-editor {
+            background: #fff3cd; padding: 1rem; border-radius: var(--radius);
+            margin-bottom: 2rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;
+        }
+        .rate-input-group { display: flex; flex-direction: column; flex: 1; min-width: 200px; }
+        .rate-input-group label { font-size: 0.8rem; font-weight: bold; margin-bottom: 0.3rem; }
+        .rate-input-group input { padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; }
 
         .loading { text-align: center; padding: 3rem; font-size: 1.2rem; color: var(--secondary); }
         .error-msg { background: #ffebee; color: #c62828; padding: 1rem; border-radius: var(--radius); text-align: center; margin-top: 1rem; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Cores Dinâmicas */
+        .color-MYCAEL { border-color: #FF6B6B; background-color: #FF6B6B; }
+        .color-RAFAEL { border-color: #4ECDC4; background-color: #4ECDC4; }
+        .color-HOPE { border-color: #FFE66D; background-color: #FFE66D; color: #333; }
+        .color-PEDRO { border-color: #F38181; background-color: #F38181; }
+        .color-DIOGO { border-color: #AA96DA; background-color: #AA96DA; }
+        .color-LIVIA { border-color: #FCBAD3; background-color: #FCBAD3; }
+        .color-TOSCA { border-color: #A8D8EA; background-color: #A8D8EA; }
+        .color-IAGO { border-color: #FF9F43; background-color: #FF9F43; }
+        .color-SARA { border-color: #54a0ff; background-color: #54a0ff; }
+        .color-CAROL { border-color: #5f27cd; background-color: #5f27cd; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>Cronograma Semanal</h1>
-    <p>Selecione seu nome para ver suas aulas e registrar o RAD</p>
+    <p>Selecione seu nome para ver suas aulas e registros</p>
 </header>
 
 <div class="container">
@@ -264,13 +251,60 @@
 
     <!-- Tela do Cronograma Individual -->
     <div id="schedule-screen">
-        <button class="back-btn" onclick="showSelection()">← Voltar</button>
+        <button class="btn btn-back" onclick="showSelection()">← Voltar para Seleção</button>
         
         <div class="current-teacher-header" id="teacher-header">
-            <h2 id="teacher-title">Cronograma</h2>
+            <!-- Preenchido via JS -->
         </div>
 
-        <div id="schedule-content" class="days-container"></div>
+        <button class="btn btn-finance" onclick="showFinance()">💰 Ver Meus Ganhos (Class Close)</button>
+
+        <div id="schedule-content" class="days-container">
+            <!-- Preenchido via JS -->
+        </div>
+    </div>
+
+    <!-- Tela Financeira -->
+    <div id="finance-screen">
+        <button class="btn btn-back" onclick="showScheduleFromFinance()">← Voltar para Cronograma</button>
+        
+        <div class="current-teacher-header" style="border-left-color: var(--success);">
+            <h2 style="color: var(--success);">Resumo Financeiro - <span id="fin-teacher-name"></span></h2>
+            <p>Mês de Referência: <span id="fin-current-month"></span></p>
+        </div>
+
+        <div class="rate-editor">
+            <div class="rate-input-group">
+                <label>Valor Aula Escola (R$)</label>
+                <input type="number" id="rate-school" value="25" step="0.50" onchange="calculateFinance()">
+            </div>
+            <div class="rate-input-group">
+                <label>Valor Aula In-Company (R$)</label>
+                <input type="number" id="rate-company" value="30" step="0.50" onchange="calculateFinance()">
+            </div>
+            <div style="font-size: 0.8rem; color: #666; width: 100%;">
+                * Edite os valores acima conforme o contrato do professor. O cálculo atualiza automaticamente.
+            </div>
+        </div>
+
+        <div class="finance-summary">
+            <div class="finance-card">
+                <div class="finance-label">Aulas na Escola</div>
+                <div class="finance-value" id="count-school">0</div>
+                <div style="color: #7f8c8d;" id="total-school">R$ 0,00</div>
+            </div>
+            <div class="finance-card">
+                <div class="finance-label">Aulas In-Company</div>
+                <div class="finance-value" id="count-company">0</div>
+                <div style="color: #7f8c8d;" id="total-company">R$ 0,00</div>
+            </div>
+            <div class="finance-card" style="border: 2px solid var(--success);">
+                <div class="finance-label">Total a Receber</div>
+                <div class="finance-value" id="total-final">R$ 0,00</div>
+            </div>
+        </div>
+
+        <button class="btn btn-clear" style="background: #7f8c8d;" onclick="resetMonthData()">⚠️ Limpar Dados do Mês (Fechar Mês)</button>
     </div>
 </div>
 
@@ -278,109 +312,95 @@
 <div id="rad-modal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>Registro de Aula (RAD)</h3>
+            <h3>Registro de Aula Diária (RAD)</h3>
             <button class="close-modal" onclick="closeRadModal()">&times;</button>
         </div>
-        
-        <input type="hidden" id="rad-class-id">
-        
-        <div class="form-group">
-            <label>Book / Módulo</label>
-            <input type="text" id="rad-book" readonly>
-        </div>
-        
-        <div class="form-group">
-            <label>Turma</label>
-            <input type="text" id="rad-group" readonly>
-        </div>
-
-        <div class="form-group">
-            <label>Lição Trabalhada (Lesson)</label>
-            <input type="text" id="rad-lesson" placeholder="Ex: Unit 3, Page 45...">
-        </div>
-
-        <div class="form-group">
-            <label>Lista de Presença</label>
-            <div id="rad-student-list" class="student-list">
-                <!-- Alunos carregados via JS -->
+        <div id="rad-form">
+            <div class="form-group">
+                <label>Turma / Group</label>
+                <input type="text" id="rad-group" disabled style="background: #eee;">
             </div>
-        </div>
+            <div class="form-group">
+                <label>Book / Módulo</label>
+                <input type="text" id="rad-book" placeholder="Ex: G1, Starters...">
+            </div>
+            <div class="form-group">
+                <label>Lição (Lesson)</label>
+                <input type="text" id="rad-lesson" placeholder="Ex: Unit 3, Pages 10-12">
+            </div>
+            
+            <div class="form-group">
+                <label>Lista de Presença</label>
+                <div id="rad-students" class="student-list">
+                    <!-- Alunos carregados via JS -->
+                </div>
+            </div>
 
-        <div class="modal-actions">
-            <button class="btn-cancel" onclick="closeRadModal()">Cancelar</button>
-            <button class="btn-save" onclick="saveRad()">Salvar RAD</button>
+            <div id="rad-actions" style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn btn-check" id="btn-complete-class" onclick="completeClass()">✅ Marcar Aula como Realizada</button>
+                <button class="btn btn-clear" onclick="clearRadData()">🗑️ Limpar RAD desta aula</button>
+            </div>
+            <div id="rad-status-msg" style="margin-top: 10px; text-align: center; font-weight: bold; color: var(--success); display: none;">
+                Aula registrada com sucesso!
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // URL ATUALIZADA PARA O NOVO FORMATO (A=Book, B=Group, etc)
-    // Usamos o link de exportação CSV direto para garantir parsing correto
-    const SHEET_ID = '1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal'; 
-    // Nota: O ID acima é uma estimativa baseada na URL fornecida anteriormente. 
-    // Se falhar, usaremos a URL completa fornecida pelo usuário como fallback.
+    // Configuração
     const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
 
     const VALID_TEACHERS = [
-        { name: 'MYCAEL', color: '#FF6B6B' },
-        { name: 'RAFAEL', color: '#4ECDC4' },
-        { name: 'HOPE', color: '#FFE66D' },
-        { name: 'PEDRO', color: '#F38181' },
-        { name: 'DIOGO', color: '#AA96DA' },
-        { name: 'LIVIA', color: '#FCBAD3' },
-        { name: 'TOSCA', color: '#A8D8EA' },
-        { name: 'IAGO', color: '#FF9F43' },
-        { name: 'SARA', color: '#54a0ff' },
-        { name: 'CAROL', color: '#5f27cd' }
+        { name: 'MYCAEL', color: '#FF6B6B' }, { name: 'RAFAEL', color: '#4ECDC4' },
+        { name: 'HOPE', color: '#FFE66D' }, { name: 'PEDRO', color: '#F38181' },
+        { name: 'DIOGO', color: '#AA96DA' }, { name: 'LIVIA', color: '#FCBAD3' },
+        { name: 'TOSCA', color: '#A8D8EA' }, { name: 'IAGO', color: '#FF9F43' },
+        { name: 'SARA', color: '#54a0ff' }, { name: 'CAROL', color: '#5f27cd' }
     ];
 
-    const DAYS_MAP = {
-        'Mon': 'Segunda-feira',
-        'Tue': 'Terça-feira',
-        'Wed': 'Quarta-feira',
-        'Thu': 'Quinta-feira',
-        'Fri': 'Sexta-feira',
-        'Sat': 'Sábado'
-    };
-
-    // Mapeamento de Turmas para Nomes Completos e Alunos
-    const CLASS_DATA = {
-        "ADVENTURE TIME": { fullName: "Adventure Time", students: ["Beatriz Melo De Matos", "Enzo Haas Goetten", "Isabela Nishimura Pereira", "Victor Hugo Clasen"] },
-        "BITA WORLD": { fullName: "Bita World", students: ["Alice Marion", "Maria Carolina Crespo Candido Alves", "Valentina De Sousa Vidigal"] },
-        "BREAKING BAD": { fullName: "Breaking Bad", students: ["Geovanna Boaventura de Oliveira"] },
-        "BROOKLYN 99": { fullName: "Brooklyn 99", students: ["Bruna Araújo Blumer", "Giuliane Wrzecionel Dal Berto", "Jessica Aline Bernardi", "Katherine Koch Carballo", "Miguel Anastásio Costa Junior"] },
-        "COLEGIO CONNECT": { fullName: "Colégio Connect", students: ["Gabriel Moreira Todeschini", "Maria Helena Tuchinski Oliveira", "Victor Leandro Tumelero Bandiera"] },
-        "COLEGIO CONNECT KIDS": { fullName: "Colégio Connect Kids", students: ["Adan Afonso Perazzoli", "Alice Moura Gama Tales", "Alice Vinotti Meneguzzi", "Eduarda Tumelero Bandiera", "Luiza Tuchinski Oliveira"] },
-        "DEXTER LAB": { fullName: "Dexter Lab", students: ["Alice Ciprini de Quadros", "Letícia Beninica Adriano"] },
-        "DUNE": { fullName: "TPWER Dune", students: ["Ana Paula Pizzetti Meller Remisio", "Sofia Sayuri Iyama"] },
-        "FROZEN (FRIENDSHIP)": { fullName: "Frozen (Friendship)", students: ["Maria Giovanna Cunnha Cardoso Lobato", "Sofia Rodrigues Fortes Marques"] },
-        "GAME OF THRONES": { fullName: "Game of Thrones", students: ["Bethina Rocha Semolini", "Miguel Bilbio de Andrade"] },
-        "KILL BILL": { fullName: "Kill Bill", students: ["Thalita Aliny Medeiros", "Yasmin Deotti"] },
-        "MINIONS": { fullName: "Minions", students: ["Betina Guedes Cristovão", "Pérola Alvarez Garcia", "Pietra de Oliveira de Lima"] },
-        "PHINEAS & FERB": { fullName: "Phineas & Ferb", students: ["Enrico Goldoni Boschini", "Valentina Goldoni Boschini"] },
-        "SCANDAL": { fullName: "Scandal", students: ["Fabricio Blesmann Kazapi", "Marina Barreto dos Santos Vargas", "Mirelle Barreto dos Santos Kazapi", "Rogério Vargas"] },
-        "SHREK": { fullName: "Shrek", students: ["Eduardo Teixeira Dallago"] },
-        "STRANGER THINGS": { fullName: "Stranger Things", students: ["Aline Araujo de Melo"] },
-        "SUITS": { fullName: "Suits", students: ["Bernardo Correia Pereira", "Matheus Henrique da Silva Tres", "Vinicius Estuqui Galandrini"] },
-        "THE 100": { fullName: "The 100", students: ["Caio Jazar Rodrigues", "Flavia de Andrade Lima", "Luiz Carlos Ferreira Hada"] },
-        "THE CHOSEN": { fullName: "The Chosen", students: ["Davi Rosa Larini", "Enzo Cardoso Pereira", "Karina Pereira dos Santos", "Maria Fernanda Crespo Cândido Alves"] },
-        "THE CROWN": { fullName: "The Crown", students: ["Lara Becker", "Lorena Becker"] },
-        "THE GODFATHER": { fullName: "The Godfather", students: ["Gustavo Da Costa Schnaider", "Matheus Guilherme Sartor"] },
-        "THE LAST OF US": { fullName: "The Last of Us", students: ["Bernardo Krieger Cordeiro", "Davi Knapp Dassoler"] },
-        "THE OFFICE": { fullName: "The Office", students: ["Ana Julia Cruz Da Silva", "Bruno Luiz Zeferino", "Julia de Almeida Antunes", "Nicole Mattos Paiva", "Nicoly Cantareli Hamade"] },
-        "THIS IS US": { fullName: "This Is Us", students: ["Andreia Campagnim", "Sueli Marta do Nascimento de Souza"] },
-        "TITANIC": { fullName: "Titanic", students: ["Hector Augusto Ferreira Machado"] },
-        "VIP / TURMAS INDIVIDUAIS": { fullName: "VIP", students: ["Brenda Camargo Petri de Oliveira", "Julia Viana Linhares Pereira"] },
-        "ALUNOS KIDS": { fullName: "Alunos Kids", students: ["Antonella Kfouri Botelho", "Davi Pereira Hilgemberg", "Giullia Mmartins de Lara", "Lucca Kfouri Botelho", "Luíza Mussolini Ribeiro"] },
-        "IN COMPANY": { fullName: "In Company", students: [] } // Locais não têm lista fixa aqui
+    const DAYS_MAP = { 'Mon': 'Segunda-feira', 'Tue': 'Terça-feira', 'Wed': 'Quarta-feira', 'Thu': 'Quinta-feira', 'Fri': 'Sexta-feira', 'Sat': 'Sábado' };
+    
+    // Lista de Alunos por Turma (Mapeamento Manual baseado na sua lista)
+    const STUDENTS_DB = {
+        "ADVENTURE TIME": ["Beatriz Melo De Matos", "Enzo Haas Goetten", "Isabela Nishimura Pereira", "Victor Hugo Clasen"],
+        "BITA WORLD": ["Alice Marion", "Maria Carolina Crespo Candido Alves", "Valentina De Sousa Vidigal"],
+        "BREAKING BAD": ["Geovanna Boaventura de Oliveira"],
+        "BROOKLYN 99": ["Bruna Araújo Blumer", "Giuliane Wrzecionel Dal Berto", "Jessica Aline Bernardi", "Katherine Koch Carballo", "Miguel Anastásio Costa Junior"],
+        "COLEGIO CONNECT": ["Gabriel Moreira Todeschini", "Maria Helena Tuchinski Oliveira", "Victor Leandro Tumelero Bandiera"],
+        "COLEGIO CONNECT KIDS": ["Adan Afonso Perazzoli", "Alice Moura Gama Tales", "Alice Vinotti Meneguzzi", "Eduarda Tumelero Bandiera", "Luiza Tuchinski Oliveira"],
+        "DEXTER LAB": ["Alice Ciprini de Quadros", "Letícia Beninica Adriano"],
+        "DUNE": ["Ana Paula Pizzetti Meller Remisio", "Sofia Sayuri Iyama"],
+        "FROZEN (FRIENDSHIP)": ["Maria Giovanna Cunnha Cardoso Lobato", "Sofia Rodrigues Fortes Marques"],
+        "GAME OF THRONES": ["Bethina Rocha Semolini", "Miguel Bilbio de Andrade"],
+        "KILL BILL": ["Thalita Aliny Medeiros", "Yasmin Deotti"],
+        "MINIONS": ["Betina Guedes Cristovão", "Pérola Alvarez Garcia", "Pietra de Oliveira de Lima"],
+        "PHINEAS & FERB": ["Enrico Goldoni Boschini", "Valentina Goldoni Boschini"],
+        "SCANDAL": ["Fabricio Blesmann Kazapi", "Marina Barreto dos Santos Vargas", "Mirelle Barreto dos Santos Kazapi", "Rogério Vargas"],
+        "SHREK": ["Eduardo Teixeira Dallago"],
+        "STRANGER THINGS": ["Aline Araujo de Melo"],
+        "SUITS": ["Bernardo Correia Pereira", "Matheus Henrique da Silva Tres", "Vinicius Estuqui Galandrini"],
+        "THE 100": ["Caio Jazar Rodrigues", "Flavia de Andrade Lima", "Luiz Carlos Ferreira Hada"],
+        "THE CHOSEN": ["Davi Rosa Larini", "Enzo Cardoso Pereira", "Karina Pereira dos Santos", "Maria Fernanda Crespo Cândido Alves"],
+        "THE CROWN": ["Lara Becker", "Lorena Becker"],
+        "THE GODFATHER": ["Gustavo Da Costa Schnaider", "Matheus Guilherme Sartor"],
+        "THE LAST OF US": ["Bernardo Krieger Cordeiro", "Davi Knapp Dassoler"],
+        "THE OFFICE": ["Ana Julia Cruz Da Silva", "Bruno Luiz Zeferino", "Julia de Almeida Antunes", "Nicole Mattos Paiva", "Nicoly Cantareli Hamade"],
+        "THIS IS US": ["Andreia Campagnim", "Sueli Marta do Nascimento de Souza"],
+        "TITANIC": ["Hector Augusto Ferreira Machado"],
+        "VIP / TURMAS INDIVIDUAIS": ["Brenda Camargo Petri de Oliveira", "Julia Viana Linhares Pereira"],
+        "ALUNOS KIDS": ["Antonella Kfouri Botelho", "Davi Pereira Hilgemberg", "Giullia Mmartins de Lara", "Lucca Kfouri Botelho", "Luíza Mussolini Ribeiro"],
+        "AVENTURA JURÁSSICA": ["Aluno Único"], // In Company
+        "HOTEL MELO": ["Aluno Único"], // In Company
+        "HOTEL NEGRINI": ["Aluno Único"], // In Company
+        "GET IT TIMBÓ": ["Aluno Único"] // In Company
     };
 
     let allClasses = [];
-    let radData = JSON.parse(localStorage.getItem('schoolRadData')) || {};
+    let currentTeacher = null;
+    let currentClassKey = null; // Chave única para salvar o RAD
 
-    document.addEventListener('DOMContentLoaded', () => {
-        fetchSchedule();
-    });
+    document.addEventListener('DOMContentLoaded', () => { fetchSchedule(); });
 
     async function fetchSchedule() {
         try {
@@ -402,16 +422,10 @@
         const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
         if (lines.length < 2) return;
 
-        // Cabeçalhos: A=Book, B=Group, C=Room, D=Modal, E=Time, F=Mon, G=Tue, H=Wed, I=Thu, J=Fri
+        // Nova Estrutura: A=Book, B=Group, C=Room, D=Modal, E=Horário, F=Mon, G=Tue...
         // Índices base 0: 0=Book, 1=Group, 2=Room, 3=Modal, 4=Time, 5=Mon, 6=Tue, 7=Wed, 8=Thu, 9=Fri
         
-        const dayColumns = {
-            'Mon': 5,
-            'Tue': 6,
-            'Wed': 7,
-            'Thu': 8,
-            'Fri': 9
-        };
+        const dayColumns = { 'Mon': 5, 'Tue': 6, 'Wed': 7, 'Thu': 8, 'Fri': 9 };
 
         allClasses = [];
 
@@ -419,38 +433,45 @@
             // Split simples considerando aspas básicas
             const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.trim().replace(/^"|"$/g, '').replace(/<.*?>/g, ''));
             
-            const book = row[0] || '';
-            const groupRaw = row[1] || '';
-            const room = row[2] || 'N/A';
-            const modal = row[3] || '';
-            const time = row[4] || '';
+            const bookRaw = row[0];
+            const groupRaw = row[1];
+            const roomRaw = row[2];
+            const modalRaw = row[3];
+            const timeSlot = row[4];
 
-            if (!time) continue;
-
-            // Processar nomes de turma (ex: "Dune" -> "TPWER Dune")
-            let groupName = groupRaw;
-            let bookName = book;
-            
-            // Lógica para limpar e formatar nomes
-            if (groupRaw.includes("Dune")) groupName = "TPWER Dune";
-            // Adicione outras regras de formatação se necessário
+            if (!timeSlot) continue;
 
             for (const [dayKey, colIndex] of Object.entries(dayColumns)) {
-                const cellContent = row[colIndex];
-                
-                if (cellContent && cellContent.trim() !== '') {
-                    const teacherName = findTeacherInString(cellContent);
+                const cellData = row[colIndex];
+                if (cellData && cellData.trim() !== '') {
+                    const teacherName = findTeacherInString(cellData);
                     
                     if (teacherName) {
+                        // Processar Grupo e Book
+                        let cleanGroup = groupRaw || '';
+                        let cleanBook = bookRaw || '';
+                        
+                        // Lógica de nomenclatura TPWER
+                        if (cleanGroup.toLowerCase().includes('bridge')) cleanGroup = 'TPWER Bridge';
+                        if (cleanGroup.toLowerCase().includes('dune')) cleanGroup = 'TPWER Dune';
+                        // Adicione mais regras aqui se necessário
+
+                        // Detectar In-Company
+                        const isInCompany = modalRaw.toUpperCase().includes('IN-C') || 
+                                            cleanGroup.toUpperCase().includes('HOTEL') || 
+                                            cleanGroup.toUpperCase().includes('AVENTURA') ||
+                                            cleanGroup.toUpperCase().includes('GET IT');
+
                         allClasses.push({
-                            id: `${dayKey}-${time}-${teacherName}-${groupName}`.replace(/\s+/g, ''),
+                            id: `${dayKey}-${timeSlot}-${teacherName}-${cleanGroup}`, // ID Único
                             day: dayKey,
-                            time: time,
+                            time: timeSlot,
                             teacher: teacherName,
-                            group: groupName,
-                            book: bookName,
-                            modal: modal,
-                            room: room
+                            group: cleanGroup,
+                            book: cleanBook,
+                            modal: modalRaw,
+                            room: roomRaw || 'N/A',
+                            isInCompany: isInCompany
                         });
                     }
                 }
@@ -471,41 +492,34 @@
         document.getElementById('loading').style.display = 'none';
         grid.innerHTML = '';
 
-        const sortedTeachers = [...VALID_TEACHERS].sort((a, b) => a.name.localeCompare(b.name));
-
-        sortedTeachers.forEach(teacher => {
+        [...VALID_TEACHERS].sort((a, b) => a.name.localeCompare(b.name)).forEach(teacher => {
             const hasClasses = allClasses.some(c => c.teacher === teacher.name);
             const card = document.createElement('div');
             card.className = 'teacher-card';
             card.style.borderBottomColor = teacher.color;
             card.innerHTML = `
                 <div class="teacher-name" style="color: ${teacher.color}">${teacher.name}</div>
-                <div class="teacher-role">${hasClasses ? 'Ver Cronograma' : 'Sem aulas'}</div>
+                <div class="teacher-role">${hasClasses ? 'Clique para ver aulas' : 'Sem aulas esta semana'}</div>
             `;
-            if(hasClasses) {
-                card.onclick = () => showTeacherSchedule(teacher.name, teacher.color);
-            }
+            card.onclick = () => showTeacherSchedule(teacher.name, teacher.color);
             grid.appendChild(card);
         });
     }
 
     function showTeacherSchedule(teacherName, teacherColor) {
+        currentTeacher = { name: teacherName, color: teacherColor };
         const teacherClasses = allClasses.filter(c => c.teacher === teacherName);
+        
+        if (teacherClasses.length === 0) { alert(`${teacherName} não possui aulas.`); return; }
+
         const byDay = {};
         Object.keys(DAYS_MAP).forEach(key => byDay[key] = []);
-        
-        teacherClasses.forEach(cls => {
-            if (byDay[cls.day]) byDay[cls.day].push(cls);
-        });
-
-        Object.keys(byDay).forEach(day => {
-            byDay[day].sort((a, b) => a.time.localeCompare(b.time));
-        });
+        teacherClasses.forEach(cls => { if (byDay[cls.day]) byDay[cls.day].push(cls); });
+        Object.keys(byDay).forEach(day => byDay[day].sort((a, b) => a.time.localeCompare(b.time)));
 
         const header = document.getElementById('teacher-header');
         header.style.borderLeftColor = teacherColor;
-        document.getElementById('teacher-title').textContent = `Cronograma de ${teacherName}`;
-        document.getElementById('teacher-title').style.color = teacherColor;
+        header.innerHTML = `<h2 style="color: ${teacherColor}">Cronograma de ${teacherName}</h2>`;
 
         const content = document.getElementById('schedule-content');
         content.innerHTML = '';
@@ -515,43 +529,35 @@
             if (classes.length > 0) {
                 const daySection = document.createElement('div');
                 daySection.className = 'day-section';
+                daySection.innerHTML = `<div class="day-header" style="background-color: ${teacherColor}">${DAYS_MAP[dayKey]}</div>`;
                 
-                const dayHeader = document.createElement('div');
-                dayHeader.className = 'day-header';
-                dayHeader.style.backgroundColor = teacherColor;
-                dayHeader.textContent = DAYS_MAP[dayKey];
-                daySection.appendChild(dayHeader);
-
                 const list = document.createElement('div');
                 list.className = 'classes-list';
 
                 classes.forEach(cls => {
-                    const isCompleted = radData[cls.id]?.completed || false;
-                    const hasRad = !!radData[cls.id]?.lesson;
-                    
+                    const isDone = isClassCompleted(cls.id);
                     const card = document.createElement('div');
-                    card.className = `class-card ${isCompleted ? 'completed' : ''} ${hasRad ? 'has-rad' : ''}`;
+                    card.className = `class-card ${isDone ? 'completed' : ''}`;
                     card.style.borderLeftColor = teacherColor;
 
-                    let badgesHtml = `
-                        <span class="badge badge-group">${cls.group}</span>
-                        <span class="badge badge-book">${cls.book}</span>
-                    `;
+                    let badgesHtml = `<span class="badge badge-group">${cls.group}</span>`;
+                    if (cls.book) badgesHtml += `<span class="badge badge-book">${cls.book}</span>`;
                     if (cls.modal) badgesHtml += `<span class="badge badge-modal">${cls.modal}</span>`;
+                    if (cls.isInCompany) badgesHtml += `<span class="badge badge-incompany">IN-COMPANY</span>`;
                     badgesHtml += `<span class="badge badge-room">📍 ${cls.room}</span>`;
 
+                    const btnText = isDone ? 'Aula Realizada ✅' : '📝 Preencher RAD';
+                    const btnClass = isDone ? 'btn-check done' : 'btn-rad';
+                    const action = isDone ? '' : `onclick="openRadModal('${cls.id}', '${cls.group}', '${cls.book}')"`;
+                    const clearBtn = isDone ? `<button class="btn btn-clear" onclick="clearRadData('${cls.id}')">Limpar RAD</button>` : '';
+
                     card.innerHTML = `
-                        <div class="class-header">
-                            <span class="class-time">⏰ ${cls.time}</span>
-                            <button class="check-btn" onclick="toggleComplete('${cls.id}')" title="Marcar como realizada">
-                                ✓
-                            </button>
-                        </div>
-                        <div class="badges-row">${badgesHtml}</div>
-                        <div class="rad-status">RAD Preenchido ✅</div>
-                        <div class="rad-actions">
-                            <button class="btn-rad btn-rad-open" onclick="openRadModal('${cls.id}', '${cls.book}', '${cls.group}')">📝 RAD</button>
-                            <button class="btn-rad btn-rad-clear" onclick="clearRad('${cls.id}')">🗑️ Limpar</button>
+                        <span class="class-time">⏰ ${cls.time}</span>
+                        <div class="class-details">
+                            <div class="detail-row">${badgesHtml}</div>
+                            <div style="margin-top:5px; font-style:italic; color:#666;">Prof. ${cls.teacher}</div>
+                            <button class="btn ${btnClass}" ${action} id="btn-rad-${cls.id}">${btnText}</button>
+                            ${clearBtn}
                         </div>
                     `;
                     list.appendChild(card);
@@ -564,123 +570,203 @@
 
         document.getElementById('selection-screen').style.display = 'none';
         document.getElementById('schedule-screen').style.display = 'block';
+        document.getElementById('finance-screen').style.display = 'none';
         window.scrollTo(0, 0);
     }
 
-    function showSelection() {
-        document.getElementById('schedule-screen').style.display = 'none';
-        document.getElementById('selection-screen').style.display = 'block';
+    // --- Lógica do RAD e Armazenamento ---
+
+    function getStorageKey(id) { return `rad_${currentTeacher.name}_${id}`; }
+    function getMonthKey() { 
+        const date = new Date();
+        return `finance_${currentTeacher.name}_${date.getMonth()}_${date.getFullYear()}`;
     }
 
-    // Funções RAD
-    function openRadModal(classId, book, group) {
-        document.getElementById('rad-class-id').value = classId;
-        document.getElementById('rad-book').value = book;
-        document.getElementById('rad-group').value = group;
-        
-        // Carregar dados salvos se existirem
-        const saved = radData[classId] || {};
-        document.getElementById('rad-lesson').value = saved.lesson || '';
-        
-        // Gerar lista de alunos
-        const studentListEl = document.getElementById('rad-student-list');
-        studentListEl.innerHTML = '';
-        
-        // Encontrar turma na base de dados (busca parcial)
-        let students = [];
-        const groupKey = Object.keys(CLASS_DATA).find(key => group.toUpperCase().includes(key) || key.includes(group.toUpperCase()));
-        
-        if (groupKey) {
-            students = CLASS_DATA[groupKey].students;
-        } else {
-            // Fallback ou mensagem
-            studentListEl.innerHTML = '<div style="padding:10px; color:#666;">Nenhum aluno cadastrado para esta turma.</div>';
-        }
+    function isClassCompleted(id) {
+        const data = localStorage.getItem(getStorageKey(id));
+        return data ? JSON.parse(data).completed : false;
+    }
 
-        students.forEach((student, index) => {
-            const isChecked = saved.attendance && saved.attendance.includes(student);
+    function openRadModal(id, group, book) {
+        currentClassKey = id;
+        const modal = document.getElementById('rad-modal');
+        const stored = localStorage.getItem(getStorageKey(id));
+        const data = stored ? JSON.parse(stored) : { book: book, lesson: '', students: {}, completed: false };
+
+        document.getElementById('rad-group').value = group;
+        document.getElementById('rad-book').value = data.book || '';
+        document.getElementById('rad-lesson').value = data.lesson || '';
+        document.getElementById('rad-status-msg').style.display = 'none';
+
+        // Carregar Alunos
+        const studentListDiv = document.getElementById('rad-students');
+        studentListDiv.innerHTML = '';
+        
+        // Tentar achar alunos pelo nome exato da turma ou parte do nome
+        let students = [];
+        const groupUpper = group.toUpperCase();
+        for (const [tName, sList] of Object.entries(STUDENTS_DB)) {
+            if (groupUpper.includes(tName) || tName.includes(groupUpper)) {
+                students = sList;
+                break;
+            }
+        }
+        // Fallback se não achar exato (tentativa genérica)
+        if (students.length === 0) students = ["Aluno Não Listado"];
+
+        students.forEach((name, idx) => {
+            const isChecked = data.students[name] ? 'checked' : '';
             const div = document.createElement('div');
             div.className = 'student-item';
             div.innerHTML = `
-                <input type="checkbox" id="stud-${index}" value="${student}" ${isChecked ? 'checked' : ''}>
-                <label for="stud-${index}">${student}</label>
+                <input type="checkbox" id="stu-${idx}" ${isChecked} onchange="toggleStudent('${name}')">
+                <label for="stu-${idx}" style="margin:0; cursor:pointer; font-weight:normal;">${name}</label>
             `;
-            studentListEl.appendChild(div);
+            studentListDiv.appendChild(div);
         });
 
-        document.getElementById('rad-modal').style.display = 'flex';
+        // Atualizar estado do botão principal
+        const btnComplete = document.getElementById('btn-complete-class');
+        if (data.completed) {
+            btnComplete.textContent = '✅ Aula Realizada';
+            btnComplete.classList.add('done');
+            btnComplete.disabled = true;
+            document.getElementById('rad-status-msg').style.display = 'block';
+        } else {
+            btnComplete.textContent = '✅ Marcar Aula como Realizada';
+            btnComplete.classList.remove('done');
+            btnComplete.disabled = false;
+        }
+
+        modal.style.display = 'flex';
     }
 
-    function closeRadModal() {
-        document.getElementById('rad-modal').style.display = 'none';
+    function closeRadModal() { document.getElementById('rad-modal').style.display = 'none'; }
+    
+    function toggleStudent(name) {
+        // Apenas prepara o terreno, o save real acontece no complete ou auto-save se quisermos
+        // Aqui vamos apenas ler no momento de salvar
     }
 
-    function saveRad() {
-        const classId = document.getElementById('rad-class-id').value;
+    function collectRadData() {
+        const book = document.getElementById('rad-book').value;
         const lesson = document.getElementById('rad-lesson').value;
-        
-        const attendance = [];
-        document.querySelectorAll('#rad-student-list input[type="checkbox"]:checked').forEach(cb => {
-            attendance.push(cb.value);
+        const students = {};
+        document.querySelectorAll('#rad-students input[type="checkbox"]').forEach(chk => {
+            const label = chk.nextElementSibling.innerText;
+            students[label] = chk.checked;
         });
+        return { book, lesson, students, completed: true, timestamp: new Date().toISOString() };
+    }
 
-        radData[classId] = {
-            lesson: lesson,
-            attendance: attendance,
-            completed: radData[classId]?.completed || false,
-            timestamp: new Date().toISOString()
-        };
-
-        localStorage.setItem('schoolRadData', JSON.stringify(radData));
-        closeRadModal();
+    function completeClass() {
+        if (!currentClassKey) return;
+        const data = collectRadData();
+        localStorage.setItem(getStorageKey(currentClassKey), JSON.stringify(data));
         
-        // Atualizar visualização
-        const currentScreen = document.getElementById('schedule-screen');
-        if(currentScreen.style.display === 'block') {
-            // Recarrega a tela atual para mostrar o status
-            const teacherName = document.getElementById('teacher-title').textContent.replace('Cronograma de ', '');
-            const teacherObj = VALID_TEACHERS.find(t => t.name === teacherName);
-            if(teacherObj) showTeacherSchedule(teacherName, teacherObj.color);
+        document.getElementById('rad-status-msg').style.display = 'block';
+        const btn = document.getElementById('btn-complete-class');
+        btn.textContent = '✅ Aula Realizada';
+        btn.classList.add('done');
+        btn.disabled = true;
+
+        // Atualizar UI do card imediatamente
+        setTimeout(() => {
+            closeRadModal();
+            showTeacherSchedule(currentTeacher.name, currentTeacher.color); // Recarrega para mostrar check
+        }, 1000);
+    }
+
+    function clearRadData(idOverride = null) {
+        const id = idOverride || currentClassKey;
+        if (!id) return;
+        if (!confirm("Tem certeza que deseja limpar os dados desta aula?")) return;
+        
+        localStorage.removeItem(getStorageKey(id));
+        if (!idOverride) {
+            closeRadModal();
+            showTeacherSchedule(currentTeacher.name, currentTeacher.color);
+        } else {
+            showTeacherSchedule(currentTeacher.name, currentTeacher.color);
         }
     }
 
-    function clearRad(classId) {
-        if(confirm('Tem certeza que deseja limpar os dados do RAD desta aula?')) {
-            if(radData[classId]) {
-                radData[classId].lesson = '';
-                radData[classId].attendance = [];
-                // Mantém o completed? Geralmente limpar RAD implica desmarcar conclusão também, mas vamos manter o completed separado se quiser
-                // Opção: desmarcar tudo
-                delete radData[classId]; 
-                
-                localStorage.setItem('schoolRadData', JSON.stringify(radData));
-                
-                const teacherName = document.getElementById('teacher-title').textContent.replace('Cronograma de ', '');
-                const teacherObj = VALID_TEACHERS.find(t => t.name === teacherName);
-                if(teacherObj) showTeacherSchedule(teacherName, teacherObj.color);
+    // --- Lógica Financeira ---
+
+    function showFinance() {
+        document.getElementById('schedule-screen').style.display = 'none';
+        document.getElementById('finance-screen').style.display = 'block';
+        
+        document.getElementById('fin-teacher-name').textContent = currentTeacher.name;
+        const date = new Date();
+        document.getElementById('fin-current-month').textContent = date.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+
+        calculateFinance();
+    }
+
+    function showScheduleFromFinance() {
+        document.getElementById('finance-screen').style.display = 'none';
+        document.getElementById('schedule-screen').style.display = 'block';
+    }
+
+    function calculateFinance() {
+        const rateSchool = parseFloat(document.getElementById('rate-school').value) || 25;
+        const rateCompany = parseFloat(document.getElementById('rate-company').value) || 30;
+
+        let countSchool = 0;
+        let countCompany = 0;
+
+        // Varre todas as chaves do localStorage deste professor neste mês
+        const prefix = `rad_${currentTeacher.name}_`;
+        const monthKeyBase = getMonthKey(); // finance_NAME_M_Y
+
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith(prefix)) {
+                const data = JSON.parse(localStorage.getItem(key));
+                if (data.completed) {
+                    // Precisamos saber se essa aula era In-Company
+                    // Vamos extrair o ID da chave e buscar na lista allClasses
+                    const classId = key.replace(prefix, '');
+                    const cls = allClasses.find(c => c.id === classId);
+                    
+                    if (cls) {
+                        if (cls.isInCompany) countCompany++;
+                        else countSchool++;
+                    }
+                }
             }
         }
+
+        const totalSchool = countSchool * rateSchool;
+        const totalCompany = countCompany * rateCompany;
+        const totalFinal = totalSchool + totalCompany;
+
+        document.getElementById('count-school').textContent = countSchool;
+        document.getElementById('total-school').textContent = totalSchool.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        
+        document.getElementById('count-company').textContent = countCompany;
+        document.getElementById('total-company').textContent = totalCompany.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        
+        document.getElementById('total-final').textContent = totalFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
-    function toggleComplete(classId) {
-        if(!radData[classId]) radData[classId] = {};
-        radData[classId].completed = !radData[classId].completed;
-        radData[classId].timestamp = new Date().toISOString();
+    function resetMonthData() {
+        if (!confirm("ATENÇÃO: Isso apagará TODOS os registros de aulas realizadas deste mês para este professor. Esta ação não pode ser desfeita. Deseja continuar?")) return;
         
-        localStorage.setItem('schoolRadData', JSON.stringify(radData));
-        
-        const teacherName = document.getElementById('teacher-title').textContent.replace('Cronograma de ', '');
-        const teacherObj = VALID_TEACHERS.find(t => t.name === teacherName);
-        if(teacherObj) showTeacherSchedule(teacherName, teacherObj.color);
-    }
-
-    // Fechar modal ao clicar fora
-    window.onclick = function(event) {
-        if (event.target == document.getElementById('rad-modal')) {
-            closeRadModal();
+        const prefix = `rad_${currentTeacher.name}_`;
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith(prefix)) keysToRemove.push(key);
         }
+        
+        keysToRemove.forEach(k => localStorage.removeItem(k));
+        alert("Dados do mês limpos com sucesso!");
+        calculateFinance();
+        showScheduleFromFinance();
     }
-</script>
 
+</script>
 </body>
 </html>
