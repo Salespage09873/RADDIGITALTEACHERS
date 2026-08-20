@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Portal | Cronograma & Stats</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-glass: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.3);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: rgba(255, 255, 255, 0.1);
+            --radius: 12px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.1) 0%, transparent 20%),
+                              radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 20%);
+        }
+
+        /* Header */
+        header {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-primary { background: var(--accent); color: var(--bg-dark); box-shadow: 0 0 15px var(--accent-glow); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 25px var(--accent-glow); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+        .btn-outline:hover { border-color: var(--text-main); color: var(--text-main); }
+        .btn-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .btn-danger:hover { background: var(--danger); color: white; }
+
+        /* Teacher Grid */
+        .teachers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .teacher-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .teacher-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 4px;
+            background: var(--teacher-color);
+            transition: height 0.3s;
+        }
+
+        .teacher-card:hover {
+            transform: translateY(-5px);
+            background: rgba(30, 41, 59, 0.9);
+            border-color: var(--teacher-color);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .teacher-card:hover::before { height: 100%; opacity: 0.05; }
+
+        .teacher-name { font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem; }
+        .teacher-role { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Schedule View */
+        #schedule-view, #stats-view { display: none; animation: fadeIn 0.4s ease; }
+        
+        .view-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .day-section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .day-header {
+            background: rgba(255,255,255,0.03);
+            padding: 1rem 1.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .classes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            padding: 1.5rem;
+        }
+
+        .class-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .class-card.completed { border-color: var(--success); background: rgba(16, 185, 129, 0.05); }
+        .class-card.no-show { border-color: var(--warning); background: rgba(245, 158, 11, 0.05); }
+
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+        .class-time { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+        .class-lang { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--text-muted); text-transform: uppercase; }
+
+        .info-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+        .badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 600; }
+        .badge-book { background: rgba(56, 189, 248, 0.15); color: #7dd3fc; }
+        .badge-group { background: rgba(255, 255, 255, 0.1); color: #e2e8f0; }
+        .badge-room { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+        .badge-modal { background: rgba(245, 158, 11, 0.15); color: #fcd34d; }
+
+        .card-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border);
+            padding-top: 1rem;
+        }
+
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 6px; }
+        .btn-rad { background: var(--bg-card); border: 1px solid var(--accent); color: var(--accent); }
+        .btn-rad:hover { background: var(--accent); color: var(--bg-dark); }
+        
+        .btn-check { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+        .btn-check.active { background: var(--success); border-color: var(--success); color: white; }
+        
+        .btn-noshow { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+        .btn-noshow.active { background: var(--warning); border-color: var(--warning); color: black; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            width: 90%; max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-title { font-size: 1.25rem; font-weight: 700; color: var(--accent); }
+        .close-modal { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem; }
+        .form-input { width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main); }
+        .form-input:focus { outline: none; border-color: var(--accent); }
+
+        .student-list { max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+        .student-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem; border-bottom: 1px solid var(--border);
+        }
+        .student-item:last-child { border-bottom: none; }
+        .checkbox-custom { width: 20px; height: 20px; accent-color: var(--success); cursor: pointer; }
+
+        /* Stats Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .stat-value { font-size: 2.5rem; font-weight: 700; color: var(--text-main); margin: 0.5rem 0; }
+        .stat-label { color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; }
+        
+        .stat-card.school { border-top: 3px solid var(--accent); }
+        .stat-card.company { border-top: 3px solid var(--warning); }
+        .stat-card.noshow { border-top: 3px solid var(--danger); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Utilities */
+        .hidden { display: none !important; }
+        .text-accent { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>TEACHER PORTAL</h1>
+    <button id="home-btn" class="btn btn-outline hidden" onclick="goHome()">← Voltar</button>
+</header>
+
+<div class="container">
+    <!-- Selection Screen -->
+    <div id="selection-screen">
+        <div id="loading" style="text-align:center; padding: 3rem; color: var(--text-muted);">Carregando dados...</div>
+        <div id="teachers-grid" class="teachers-grid"></div>
+        <div id="error-msg" class="hidden" style="color: var(--danger); text-align: center; margin-top: 2rem;"></div>
+    </div>
+
+    <!-- Schedule Screen -->
+    <div id="schedule-view">
+        <div class="view-header">
+            <h2 id="teacher-title" class="text-accent"></h2>
+            <button class="btn btn-outline" onclick="showStats()">📊 Class Calculator</button>
+        </div>
+        <div id="schedule-content"></div>
+    </div>
+
+    <!-- Stats Screen -->
+    <div id="stats-view">
+        <div class="view-header">
+            <h2 class="text-accent">Class Calculator</h2>
+            <button class="btn btn-outline" onclick="showSchedule()">← Voltar ao Cronograma</button>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card school">
+                <div class="stat-label">Aulas Realizadas (Escola)</div>
+                <div class="stat-value" id="stat-school-done">0</div>
+                <div class="stat-sub">Presença confirmada</div>
+            </div>
+            <div class="stat-card company">
+                <div class="stat-label">Aulas Realizadas (In Company)</div>
+                <div class="stat-value" id="stat-company-done">0</div>
+                <div class="stat-sub">Presença confirmada</div>
+            </div>
+            <div class="stat-card noshow">
+                <div class="stat-label">No Show (Escola)</div>
+                <div class="stat-value" id="stat-school-noshow">0</div>
+                <div class="stat-sub">Aluno não compareceu</div>
+            </div>
+            <div class="stat-card noshow" style="border-top-color: var(--warning);">
+                <div class="stat-label">No Show (In Company)</div>
+                <div class="stat-value" id="stat-company-noshow">0</div>
+                <div class="stat-sub">Aluno não compareceu</div>
+            </div>
+        </div>
+
+        <div style="background: var(--bg-card); padding: 2rem; border-radius: var(--radius); border: 1px solid var(--border);">
+            <h3 style="margin-bottom: 1rem; color: var(--text-main);">Resumo do Mês</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">Total de aulas registradas no sistema (Realizadas + No Show): <strong id="stat-total-registered" style="color: var(--text-main)">0</strong></p>
+            <button class="btn btn-danger" onclick="clearMonthData()">⚠️ Limpar Dados do Mês</button>
+        </div>
+    </div>
+</div>
+
+<!-- RAD Modal -->
+<div id="rad-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Registro de Aula (RAD)</h3>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        
+        <input type="hidden" id="rad-class-id">
+        
+        <div class="form-group">
+            <label class="form-label">Book / Material</label>
+            <input type="text" id="rad-book" class="form-input">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Lesson / Conteúdo</label>
+            <input type="text" id="rad-lesson" class="form-input" placeholder="Ex: Unit 3, Pages 10-12">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Lista de Presença</label>
+            <div id="rad-student-list" class="student-list">
+                <!-- Students injected here -->
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button class="btn btn-primary" style="flex: 1;" onclick="saveRad()">Salvar Registro</button>
+            <button class="btn btn-danger" style="flex: 1;" onclick="clearRad()">Limpar RAD</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // CONFIGURAÇÃO
+    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
+    
+    // Estrutura Nova: A=Idioma, B=Book, C=Group, D=Room, E=Modal, F=Horario, G-K=Seg-Sex
+    const COLS = { LANG: 0, BOOK: 1, GROUP: 2, ROOM: 3, MODAL: 4, TIME: 5 };
+    const DAYS_MAP = { 6: 'Mon', 7: 'Tue', 8: 'Wed', 9: 'Thu', 10: 'Fri' };
+    const DAYS_LABEL = { 'Mon': 'Segunda-feira', 'Tue': 'Terça-feira', 'Wed': 'Quarta-feira', 'Thu': 'Quinta-feira', 'Fri': 'Sexta-feira' };
+
+    const VALID_TEACHERS = [
+        { name: 'MYCAEL', color: '#FF6B6B' }, { name: 'RAFAEL', color: '#4ECDC4' },
+        { name: 'HOPE', color: '#FFE66D' }, { name: 'PEDRO', color: '#F38181' },
+        { name: 'DIOGO', color: '#AA96DA' }, { name: 'LIVIA', color: '#FCBAD3' },
+        { name: 'TOSCA', color: '#A8D8EA' }, { name: 'IAGO', color: '#FF9F43' },
+        { name: 'SARA', color: '#54a0ff' }, { name: 'CAROL', color: '#5f27cd' }
+    ];
+
+    // DATABASE DE ALUNOS (Normalizado)
+    const STUDENTS_DB = {
+        "ADVENTURE TIME": ["Beatriz Melo De Matos", "Enzo Haas Goetten", "Isabela Nishimura Pereira", "Victor Hugo Clasen"],
+        "BITA WORLD": ["Alice Marion", "Maria Carolina Crespo Candido Alves", "Valentina De Sousa Vidigal"],
+        "BREAKING BAD": ["Geovanna Boaventura de Oliveira"],
+        "BROOKLYN 99": ["Bruna Araújo Blumer", "Giuliane Wrzecionel Dal Berto", "Jessica Aline Bernardi", "Katherine Koch Carballo", "Miguel Anastásio Costa Junior"],
+        "COLEGIO CONNECT": ["Gabriel Moreira Todeschini", "Maria Helena Tuchinski Oliveira", "Victor Leandro Tumelero Bandiera"],
+        "COLEGIO CONNECT KIDS": ["Adan Afonso Perazzoli", "Alice Moura Gama Tales", "Alice Vinotti Meneguzzi", "Eduarda Tumelero Bandiera", "Luiza Tuchinski Oliveira"],
+        "DEXTER LAB": ["Alice Ciprini de Quadros", "Letícia Beninica Adriano"],
+        "DUNE": ["Ana Paula Pizzetti Meller Remisio", "Sofia Sayuri Iyama"],
+        "FROZEN (FRIENDSHIP)": ["Maria Giovanna Cunnha Cardoso Lobato", "Sofia Rodrigues Fortes Marques"],
+        "GAME OF THRONES": ["Bethina Rocha Semolini", "Miguel Bilbio de Andrade"],
+        "KILL BILL": ["Thalita Aliny Medeiros", "Yasmin Deotti"],
+        "MINIONS": ["Betina Guedes Cristovão", "Pérola Alvarez Garcia", "Pietra de Oliveira de Lima"],
+        "PHINEAS & FERB": ["Enrico Goldoni Boschini", "Valentina Goldoni Boschini"],
+        "SCANDAL": ["Fabricio Blesmann Kazapi", "Marina Barreto dos Santos Vargas", "Mirelle Barreto dos Santos Kazapi", "Rogério Vargas"],
+        "SHREK": ["Eduardo Teixeira Dallago"],
+        "STRANGER THINGS": ["Aline Araujo de Melo"],
+        "SUITS": ["Bernardo Correia Pereira", "Matheus Henrique da Silva Tres", "Vinicius Estuqui Galandrini"],
+        "THE 100": ["Caio Jazar Rodrigues", "Flavia de Andrade Lima", "Luiz Carlos Ferreira Hada"],
+        "THE CHOSEN": ["Davi Rosa Larini", "Enzo Cardoso Pereira", "Karina Pereira dos Santos", "Maria Fernanda Crespo Cândido Alves"],
+        "THE CROWN": ["Lara Becker", "Lorena Becker"],
+        "THE GODFATHER": ["Gustavo Da Costa Schnaider", "Matheus Guilherme Sartor"],
+        "THE LAST OF US": ["Bernardo Krieger Cordeiro", "Davi Knapp Dassoler"],
+        "THE OFFICE": ["Ana Julia Cruz Da Silva", "Bruno Luiz Zeferino", "Julia de Almeida Antunes", "Nicole Mattos Paiva", "Nicoly Cantareli Hamade"],
+        "THIS IS US": ["Andreia Campagnim", "Sueli Marta do Nascimento de Souza"],
+        "TITANIC": ["Hector Augusto Ferreira Machado"],
+        "VIP / TURMAS INDIVIDUAIS": ["Brenda Camargo Petri de Oliveira", "Julia Viana Linhares Pereira"],
+        "ALUNOS KIDS": ["Antonella Kfouri Botelho", "Davi Pereira Hilgemberg", "Giullia Mmartins de Lara", "Lucca Kfouri Botelho", "Luíza Mussolini Ribeiro"],
+        "ALUNOS COM MODALIDADE IDENTIFICADA": ["Eduardo Medrade Hosang", "Eduarda Borges Vespa", "João Henrique Cenci", "Maria Fernanda Spagnol"],
+        "IN COMPANY / LOCAIS DE AULA": ["Aventura Jurássica", "Hotel Melo", "Hotel Negrini", "Get it Timbó"]
+    };
+
+    let allClasses = [];
+    let currentTeacher = null;
+
+    // INIT
+    document.addEventListener('DOMContentLoaded', () => fetchSchedule());
+
+    async function fetchSchedule() {
+        try {
+            const res = await fetch(SHEET_URL);
+            if (!res.ok) throw new Error('Falha na conexão');
+            const csv = await res.text();
+            parseCSV(csv);
+            renderTeachers();
+        } catch (e) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error-msg').textContent = "Erro ao carregar planilha. Verifique a internet.";
+            document.getElementById('error-msg').classList.remove('hidden');
+        }
+    }
+
+    function parseCSV(text) {
+        const lines = text.split('\n').filter(l => l.trim());
+        if (lines.length < 2) return;
+        
+        allClasses = [];
+        // Ignora cabeçalho (linha 0)
+        for (let i = 1; i < lines.length; i++) {
+            // Split simples considerando aspas básicas
+            const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim().replace(/^"|"$/g, ''));
+            
+            const lang = row[COLS.LANG] || '';
+            const book = row[COLS.BOOK] || '';
+            const groupRaw = row[COLS.GROUP] || '';
+            const room = row[COLS.ROOM] || 'N/A';
+            const modal = row[COLS.MODAL] || '';
+            const time = row[COLS.TIME] || '';
+
+            if (!time || !groupRaw) continue;
+
+            // Normalizar nome da turma (TPWER Bridge etc)
+            let groupName = groupRaw.toUpperCase();
+            if (groupName.includes('BRIDGE') && !groupName.includes('TPWER')) groupName = 'TPWER ' + groupName;
+            if (groupName.includes('DUNE') && !groupName.includes('TPWER')) groupName = 'TPWER ' + groupName;
+            // Adicione mais regras se necessário
+
+            // Identificar Professor nas colunas de dia
+            for (let col = 6; col <= 10; col++) {
+                const cell = row[col] || '';
+                if (!cell) continue;
+
+                const teacherName = findTeacher(cell);
+                if (teacherName) {
+                    const isCompany = modal.toLowerCase().includes('in company') || modal.toLowerCase().includes('in-c') || room.toLowerCase().includes('hotel') || room.toLowerCase().includes('jurássica') || room.toLowerCase().includes('timbó');
+                    
+                    allClasses.push({
+                        id: `cls_${i}_${col}`,
+                        dayCode: DAYS_MAP[col],
+                        dayLabel: DAYS_LABEL[DAYS_MAP[col]],
+                        time,
+                        lang,
+                        book,
+                        group: groupName,
+                        room,
+                        modal,
+                        teacher: teacherName,
+                        isCompany
+                    });
+                }
+            }
+        }
+    }
+
+    function findTeacher(str) {
+        str = str.toUpperCase();
+        for (const t of VALID_TEACHERS) {
+            if (str.includes(t.name)) return t.name;
+        }
+        return null;
+    }
+
+    function renderTeachers() {
+        const grid = document.getElementById('teachers-grid');
+        document.getElementById('loading').style.display = 'none';
+        grid.innerHTML = '';
+
+        VALID_TEACHERS.sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
+            const hasClass = allClasses.some(c => c.teacher === t.name);
+            const card = document.createElement('div');
+            card.className = 'teacher-card';
+            card.style.setProperty('--teacher-color', t.color);
+            card.innerHTML = `
+                <div class="teacher-name" style="color:${t.color}">${t.name}</div>
+                <div class="teacher-role">${hasClass ? 'Ver Cronograma' : 'Sem aulas'}</div>
+            `;
+            if(hasClass) card.onclick = () => selectTeacher(t);
+            grid.appendChild(card);
+        });
+    }
+
+    function selectTeacher(teacherObj) {
+        currentTeacher = teacherObj;
+        document.getElementById('selection-screen').style.display = 'none';
+        document.getElementById('schedule-view').style.display = 'block';
+        document.getElementById('home-btn').classList.remove('hidden');
+        
+        document.getElementById('teacher-title').textContent = `Cronograma: ${teacherObj.name}`;
+        renderSchedule();
+    }
+
+    function renderSchedule() {
+        const container = document.getElementById('schedule-content');
+        container.innerHTML = '';
+        
+        const myClasses = allClasses.filter(c => c.teacher === currentTeacher.name);
+        const daysOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
+        daysOrder.forEach(day => {
+            const dayClasses = myClasses.filter(c => c.dayCode === day).sort((a,b) => a.time.localeCompare(b.time));
+            if (dayClasses.length === 0) return;
+
+            const section = document.createElement('div');
+            section.className = 'day-section';
+            section.innerHTML = `<div class="day-header">${DAYS_LABEL[day]}</div>`;
+            
+            const grid = document.createElement('div');
+            grid.className = 'classes-grid';
+
+            dayClasses.forEach(cls => {
+                const radData = getRadData(cls.id);
+                const isDone = radData?.status === 'done';
+                const isNoShow = radData?.status === 'noshow';
+                
+                let statusClass = '';
+                if (isDone) statusClass = 'completed';
+                else if (isNoShow) statusClass = 'no-show';
+
+                const card = document.createElement('div');
+                card.className = `class-card ${statusClass}`;
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span class="class-time">⏰ ${cls.time}</span>
+                        <span class="class-lang">${cls.lang}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="badge badge-group">${cls.group}</span>
+                        ${cls.book ? `<span class="badge badge-book">${cls.book}</span>` : ''}
+                        <span class="badge badge-room">📍 ${cls.room}</span>
+                        ${cls.isCompany ? '<span class="badge badge-modal">🏢 In Company</span>' : ''}
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-sm btn-rad" onclick="openRad('${cls.id}')">📝 RAD</button>
+                        <button class="btn btn-sm btn-check ${isDone ? 'active' : ''}" onclick="toggleStatus('${cls.id}', 'done')" title="Aula Realizada">✓</button>
+                        <button class="btn btn-sm btn-noshow ${isNoShow ? 'active' : ''}" onclick="toggleStatus('${cls.id}', 'noshow')" title="No Show">⚠</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            section.appendChild(grid);
+            container.appendChild(section);
+        });
+    }
+
+    // --- RAD LOGIC ---
+    function openRad(classId) {
+        const cls = allClasses.find(c => c.id === classId);
+        if (!cls) return;
+
+        document.getElementById('rad-class-id').value = classId;
+        const saved = getRadData(classId) || {};
+        
+        document.getElementById('rad-book').value = saved.book || cls.book;
+        document.getElementById('rad-lesson').value = saved.lesson || '';
+        
+        // Load Students
+        const listContainer = document.getElementById('rad-student-list');
+        listContainer.innerHTML = '';
+        
+        // Tenta achar alunos pelo nome da turma (parcial match)
+        let students = [];
+        const groupKey = Object.keys(STUDENTS_DB).find(k => cls.group.includes(k) || k.includes(cls.group.split(' ')[0]));
+        if (groupKey) students = STUDENTS_DB[groupKey];
+        
+        // Fallback ou lista vazia se não achar
+        if (students.length === 0) {
+            listContainer.innerHTML = '<div style="padding:1rem; color:var(--text-muted)">Nenhum aluno cadastrado para esta turma.</div>';
+        } else {
+            students.forEach((name, idx) => {
+                const present = saved.attendance ? saved.attendance[idx] : true; // Default true
+                const item = document.createElement('div');
+                item.className = 'student-item';
+                item.innerHTML = `
+                    <span>${name}</span>
+                    <input type="checkbox" class="checkbox-custom" ${present ? 'checked' : ''} data-idx="${idx}">
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        document.getElementById('rad-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('rad-modal').style.display = 'none';
+    }
+
+    function saveRad() {
+        const id = document.getElementById('rad-class-id').value;
+        const book = document.getElementById('rad-book').value;
+        const lesson = document.getElementById('rad-lesson').value;
+        
+        const attendance = [];
+        document.querySelectorAll('.checkbox-custom').forEach(cb => {
+            attendance.push(cb.checked);
+        });
+
+        const data = { book, lesson, attendance, status: 'pending' }; // Status mantido ou atualizado separadamente
+        
+        // Merge com status existente se houver
+        const existing = getRadData(id) || {};
+        if (existing.status) data.status = existing.status;
+
+        localStorage.setItem(`rad_${id}`, JSON.stringify(data));
+        closeModal();
+        renderSchedule(); // Refresh UI
+        alert('RAD Salvo com sucesso!');
+    }
+
+    function clearRad() {
+        const id = document.getElementById('rad-class-id').value;
+        localStorage.removeItem(`rad_${id}`);
+        closeModal();
+        renderSchedule();
+    }
+
+    function toggleStatus(id, status) {
+        const data = getRadData(id) || { book: '', lesson: '', attendance: [] };
+        // Se clicar no mesmo status, remove (toggle off)
+        if (data.status === status) {
+            data.status = null;
+        } else {
+            data.status = status;
+        }
+        localStorage.setItem(`rad_${id}`, JSON.stringify(data));
+        renderSchedule();
+    }
+
+    function getRadData(id) {
+        const raw = localStorage.getItem(`rad_${id}`);
+        return raw ? JSON.parse(raw) : null;
+    }
+
+    // --- STATS LOGIC ---
+    function showStats() {
+        document.getElementById('schedule-view').style.display = 'none';
+        document.getElementById('stats-view').style.display = 'block';
+        calculateStats();
+    }
+
+    function showSchedule() {
+        document.getElementById('stats-view').style.display = 'none';
+        document.getElementById('schedule-view').style.display = 'block';
+    }
+
+    function goHome() {
+        document.getElementById('schedule-view').style.display = 'none';
+        document.getElementById('stats-view').style.display = 'none';
+        document.getElementById('selection-screen').style.display = 'block';
+        document.getElementById('home-btn').classList.add('hidden');
+        currentTeacher = null;
+    }
+
+    function calculateStats() {
+        let schoolDone = 0, companyDone = 0;
+        let schoolNoShow = 0, companyNoShow = 0;
+        let totalRegistered = 0;
+
+        // Filtra apenas aulas do teacher atual
+        const myClassesIds = allClasses.filter(c => c.teacher === currentTeacher.name).map(c => c.id);
+
+        myClassesIds.forEach(id => {
+            const data = getRadData(id);
+            if (!data) return;
+
+            const cls = allClasses.find(c => c.id === id);
+            if (!cls) return;
+
+            // Conta se tem algum registro (aula realizada ou no show conta como "registrada")
+            if (data.status === 'done' || data.status === 'noshow') {
+                totalRegistered++;
+                
+                if (data.status === 'done') {
+                    if (cls.isCompany) companyDone++;
+                    else schoolDone++;
+                } else if (data.status === 'noshow') {
+                    if (cls.isCompany) companyNoShow++;
+                    else schoolNoShow++;
+                }
+            }
+        });
+
+        document.getElementById('stat-school-done').textContent = schoolDone;
+        document.getElementById('stat-company-done').textContent = companyDone;
+        document.getElementById('stat-school-noshow').textContent = schoolNoShow;
+        document.getElementById('stat-company-noshow').textContent = companyNoShow;
+        document.getElementById('stat-total-registered').textContent = totalRegistered;
+    }
+
+    function clearMonthData() {
+        if(confirm("Tem certeza? Isso apagará todos os registros de RAD deste mês.")) {
+            // Limpa apenas os Rads do teacher atual para segurança
+            const myClassesIds = allClasses.filter(c => c.teacher === currentTeacher.name).map(c => c.id);
+            myClassesIds.forEach(id => localStorage.removeItem(`rad_${id}`));
+            calculateStats();
+            alert("Dados limpos.");
+        }
+    }
+
+    // Close modal on outside click
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('rad-modal')) closeModal();
+    }
+</script>
+
+</body>
+</html>
