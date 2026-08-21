@@ -1,1 +1,1 @@
-(index.html is a source file, so no need for .gitignore)
+Nothing needs to be added to the .gitignore file since the only change is the addition of the .gitignore file itself, and there are no other files in the change list that match the criteria for ignoring.
