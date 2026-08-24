@@ -3,22 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal do Professor | Gestão Escolar</title>
+    <title>Portal do Professor | Cronograma & RAD</title>
     <style>
         :root {
             --bg-color: #050505;
             --card-bg: #121212;
-            --input-bg: #1e1e1e;
-            --text-main: #ffffff;
+            --text-main: #e0e0e0;
             --text-muted: #a0a0a0;
-            --accent-blue: #00f2ff;
-            --accent-blue-dim: rgba(0, 242, 255, 0.1);
-            --border-color: #333333;
-            --danger: #ff4d4d;
+            --accent: #00f2ff; /* Azul Neon Futurista */
+            --accent-dim: rgba(0, 242, 255, 0.1);
+            --danger: #ff3b3b;
             --success: #00ff9d;
             --warning: #ffcc00;
-            --radius: 4px; /* Bordas menos arredondadas */
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --border-radius: 4px; /* Bordas menos arredondadas */
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
@@ -30,60 +28,51 @@
             overflow-x: hidden;
         }
 
-        /* Scrollbar Personalizada */
+        /* Scrollbar Customizada */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-color); }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: var(--radius); }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent-blue); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
         header {
             background: linear-gradient(180deg, #0a0a0a 0%, var(--bg-color) 100%);
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid #333;
             padding: 1.5rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
             backdrop-filter: blur(10px);
         }
 
-        h1 { font-size: 1.5rem; font-weight: 300; letter-spacing: 1px; text-transform: uppercase; }
-        h1 span { color: var(--accent-blue); font-weight: 700; }
+        h1 { font-size: 1.5rem; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); text-shadow: 0 0 10px rgba(0, 242, 255, 0.3); }
+        
+        .nav-tabs { display: flex; gap: 1rem; }
+        .nav-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: var(--text-muted);
+            padding: 0.5rem 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            border-radius: var(--border-radius);
+        }
+        .nav-btn:hover, .nav-btn.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-dim);
+        }
 
         .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
 
-        /* Botões */
-        .btn {
-            padding: 0.8rem 1.5rem;
-            border: 1px solid var(--accent-blue);
-            background: transparent;
-            color: var(--accent-blue);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: var(--transition);
-            border-radius: var(--radius);
-            font-size: 0.9rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn:hover { background: var(--accent-blue); color: #000; box-shadow: 0 0 15px var(--accent-blue-dim); }
-        .btn-danger { border-color: var(--danger); color: var(--danger); }
-        .btn-danger:hover { background: var(--danger); color: #fff; box-shadow: 0 0 15px rgba(255, 77, 77, 0.3); }
-        .btn-success { border-color: var(--success); color: var(--success); }
-        .btn-success:hover { background: var(--success); color: #000; }
-
-        /* Telas e Transições */
-        .screen { display: none; animation: fadeIn 0.5s ease; }
-        .screen.active { display: block; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        /* Animações de Transição */
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; opacity: 0; transform: translateY(10px); }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
 
         /* Grid de Professores */
         .teachers-grid {
@@ -95,12 +84,12 @@
 
         .teacher-card {
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
+            border: 1px solid #333;
             padding: 2rem;
             text-align: center;
             cursor: pointer;
             transition: var(--transition);
-            border-radius: var(--radius);
+            border-radius: var(--border-radius);
             position: relative;
             overflow: hidden;
         }
@@ -108,903 +97,719 @@
         .teacher-card::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; width: 4px; height: 100%;
-            background: var(--teacher-color, var(--accent-blue));
-            transition: var(--transition);
+            top: 0; left: 0; width: 100%; height: 3px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
         }
 
         .teacher-card:hover {
             transform: translateY(-5px);
-            border-color: var(--teacher-color, var(--accent-blue));
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
+        .teacher-card:hover::before { transform: scaleX(1); }
 
-        .teacher-name { font-size: 1.2rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; }
-        .teacher-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; }
+        .teacher-name { font-size: 1.2rem; font-weight: 600; color: var(--text-main); text-transform: uppercase; }
+        .teacher-status { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; }
 
-        /* Dashboard & Cronograma */
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* Cronograma */
+        .schedule-view { display: none; }
+        .back-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.6rem 1.5rem;
+            cursor: pointer;
             margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border-color);
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: var(--transition);
+            border-radius: var(--border-radius);
         }
-
-        .days-container { display: flex; flex-direction: column; gap: 2rem; }
+        .back-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 20px var(--accent-dim); }
 
         .day-section {
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
+            border: 1px solid #222;
+            margin-bottom: 2rem;
+            border-radius: var(--border-radius);
             overflow: hidden;
         }
 
         .day-header {
             background: #1a1a1a;
             padding: 1rem 1.5rem;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--accent-blue);
+            color: var(--accent);
+            font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #333;
         }
 
-        .classes-list {
+        .classes-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1rem;
+            gap: 1.5rem;
             padding: 1.5rem;
         }
 
         .class-card {
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
+            background: #0f0f0f;
+            border: 1px solid #222;
             padding: 1.2rem;
+            border-radius: var(--border-radius);
             transition: var(--transition);
             position: relative;
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
         }
 
-        .class-card:hover { border-color: var(--accent-blue); }
+        .class-card:hover { border-color: #444; background: #141414; }
         .class-card.completed { border-left: 4px solid var(--success); }
-        .class-card.no-show { border-left: 4px solid var(--danger); }
-        .class-card.cancelled { border-left: 4px solid var(--warning); }
+        .class-card.cancelled { border-left: 4px solid var(--danger); opacity: 0.7; }
+        .class-card.noshow { border-left: 4px solid var(--warning); }
 
-        .class-time { font-size: 1.1rem; font-weight: 700; color: var(--accent-blue); }
-        .class-info { font-size: 0.9rem; color: var(--text-muted); }
+        .class-time { font-size: 1.1rem; font-weight: bold; color: var(--accent); margin-bottom: 0.5rem; display: block; }
+        .class-info { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.3rem; }
         .class-info strong { color: var(--text-main); }
         
-        .badges { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+        .badges { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.8rem 0; }
         .badge {
-            padding: 0.25rem 0.6rem;
             font-size: 0.75rem;
-            border-radius: var(--radius);
-            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 2px;
             text-transform: uppercase;
-            border: 1px solid var(--border-color);
+            font-weight: bold;
         }
-        .badge-book { color: var(--accent-blue); border-color: var(--accent-blue); }
-        .badge-room { color: var(--text-muted); }
-        .badge-modal { color: var(--warning); border-color: var(--warning); }
-        .badge-incompany { background: var(--accent-blue-dim); color: var(--accent-blue); border: none; }
+        .badge-book { background: rgba(0, 242, 255, 0.1); color: var(--accent); border: 1px solid rgba(0, 242, 255, 0.3); }
+        .badge-room { background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid #333; }
+        .badge-modal { background: rgba(255, 255, 255, 0.05); color: #ccc; border: 1px solid #333; font-style: italic; }
 
-        .card-actions {
-            margin-top: auto;
+        .action-btn {
+            width: 100%;
+            padding: 0.8rem;
+            margin-top: 1rem;
+            background: transparent;
+            border: 1px solid #333;
+            color: var(--text-main);
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: var(--transition);
+            border-radius: var(--border-radius);
             display: flex;
+            align-items: center;
+            justify-content: center;
             gap: 0.5rem;
-            pt-2;
         }
-        .card-actions .btn { flex: 1; justify-content: center; font-size: 0.75rem; padding: 0.5rem; }
+        .action-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
+        .action-btn.rad-btn { border-color: var(--accent); color: var(--accent); }
+        .action-btn.rad-btn:hover { background: var(--accent); color: #000; }
+
+        /* Modal RAD */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none; justify-content: center; align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: #111;
+            border: 1px solid #333;
+            width: 90%; max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: 0 0 50px rgba(0, 242, 255, 0.1);
+            position: relative;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #333; padding-bottom: 1rem; }
+        .modal-title { color: var(--accent); font-size: 1.4rem; text-transform: uppercase; }
+        .close-modal { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+
+        .form-group { margin-bottom: 1.2rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; }
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            color: var(--text-main);
+            padding: 0.8rem;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none; border-color: var(--accent); box-shadow: 0 0 10px var(--accent-dim);
+        }
+        .form-textarea { resize: vertical; min-height: 100px; }
+
+        .student-list { max-height: 300px; overflow-y: auto; border: 1px solid #333; border-radius: var(--border-radius); margin-top: 0.5rem; }
+        .student-item {
+            display: flex; align-items: center; padding: 0.8rem;
+            border-bottom: 1px solid #222;
+            transition: background 0.2s;
+        }
+        .student-item:last-child { border-bottom: none; }
+        .student-item:hover { background: #1a1a1a; }
+        .student-checkbox { margin-right: 1rem; accent-color: var(--accent); width: 18px; height: 18px; }
+        .student-name { color: var(--text-main); }
+        .student-absent { color: var(--danger); text-decoration: line-through; opacity: 0.6; }
+
+        .status-options { display: flex; gap: 1rem; margin-top: 0.5rem; }
+        .status-btn {
+            flex: 1; padding: 0.8rem; border: 1px solid #333; background: #0a0a0a;
+            color: var(--text-muted); cursor: pointer; text-transform: uppercase; font-weight: bold;
+            border-radius: var(--border-radius); transition: var(--transition);
+        }
+        .status-btn.active-realized { background: var(--success); color: #000; border-color: var(--success); }
+        .status-btn.active-cancelled { background: var(--danger); color: #fff; border-color: var(--danger); }
+        .status-btn.active-noshow { background: var(--warning); color: #000; border-color: var(--warning); }
+
+        .modal-actions { display: flex; gap: 1rem; margin-top: 2rem; }
+        .btn-save { flex: 2; background: var(--accent); color: #000; border: none; padding: 1rem; font-weight: bold; text-transform: uppercase; cursor: pointer; border-radius: var(--border-radius); }
+        .btn-clear { flex: 1; background: transparent; border: 1px solid #333; color: var(--text-muted); padding: 1rem; cursor: pointer; text-transform: uppercase; border-radius: var(--border-radius); }
+        .btn-save:hover { box-shadow: 0 0 20px var(--accent-dim); }
+        .btn-clear:hover { border-color: var(--danger); color: var(--danger); }
 
         /* Class Calculator */
-        .calculator-grid {
+        .calculator-view { display: none; }
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
-
         .stat-card {
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
+            border: 1px solid #333;
             padding: 1.5rem;
-            border-radius: var(--radius);
+            border-radius: var(--border-radius);
             text-align: center;
         }
-
-        .stat-value { font-size: 2.5rem; font-weight: 700; color: var(--accent-blue); margin: 0.5rem 0; }
-        .stat-label { color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
-        .stat-card.danger .stat-value { color: var(--danger); }
-        .stat-card.warning .stat-value { color: var(--warning); }
-
-        .month-selector {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            background: var(--card-bg);
-            padding: 1rem;
-            border-radius: var(--radius);
-            border: 1px solid var(--border-color);
-            margin-bottom: 2rem;
-        }
-        .month-selector select {
-            background: var(--input-bg);
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-            padding: 0.5rem;
-            border-radius: var(--radius);
-            font-size: 1rem;
-        }
-
-        /* Modal RAD & Lesson Plan */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(5px);
-            z-index: 1000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .modal-overlay.open { display: flex; opacity: 1; }
-
-        .modal-content {
-            background: #111;
-            border: 1px solid var(--accent-blue);
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            border-radius: var(--radius);
-            box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
-            animation: slideIn 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .modal-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #1a1a1a;
-        }
-        .modal-title { font-size: 1.2rem; color: var(--accent-blue); text-transform: uppercase; }
-        .close-modal { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
-        .close-modal:hover { color: var(--text-main); }
-
-        .modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.2rem; }
-
-        .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-        .form-label { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+        .stat-value { font-size: 2.5rem; font-weight: bold; color: var(--accent); margin: 0.5rem 0; }
+        .stat-label { color: var(--text-muted); text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
         
-        .form-control, select, textarea {
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 0.8rem;
-            border-radius: var(--radius);
-            font-size: 0.95rem;
+        .month-selector {
+            display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem;
+            background: #111; padding: 1rem; border-radius: var(--border-radius); border: 1px solid #333;
+        }
+        .month-btn {
+            background: transparent; border: 1px solid #333; color: var(--text-muted);
+            padding: 0.5rem 1rem; cursor: pointer; border-radius: var(--border-radius);
             transition: var(--transition);
         }
-        .form-control:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 10px var(--accent-blue-dim);
-        }
-        textarea { resize: vertical; min-height: 100px; }
+        .month-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
 
-        .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-top: 0.5rem;
+        .loading-spinner {
+            text-align: center; padding: 3rem; color: var(--accent);
+            font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px;
         }
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: var(--input-bg);
-            padding: 0.5rem 1rem;
-            border-radius: var(--radius);
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-            user-select: none;
-        }
-        .checkbox-item input { accent-color: var(--accent-blue); }
-        .checkbox-item:hover { border-color: var(--accent-blue); }
+        .error-msg { color: var(--danger); text-align: center; padding: 2rem; border: 1px solid var(--danger); border-radius: var(--border-radius); margin-top: 2rem; }
 
-        .student-list {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            padding: 0.5rem;
-            background: var(--input-bg);
+        /* Lesson Plan Box inside Modal */
+        .lesson-plan-box {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1.5rem;
         }
-        .student-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem;
-            border-bottom: 1px solid #333;
-            font-size: 0.9rem;
-        }
-        .student-item:last-child { border-bottom: none; }
-        .student-item.present { color: var(--success); }
-        .student-item.absent { color: var(--danger); text-decoration: line-through; opacity: 0.6; }
-
-        .modal-footer {
-            padding: 1.5rem;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            gap: 1rem;
-            background: #1a1a1a;
-        }
-        .modal-footer .btn { flex: 1; }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .teachers-grid { grid-template-columns: 1fr 1fr; }
-            .classes-list { grid-template-columns: 1fr; }
-            .dashboard-header { flex-direction: column; gap: 1rem; align-items: flex-start; }
-            .month-selector { flex-direction: column; align-items: stretch; }
-        }
+        .lesson-plan-box label { color: var(--accent); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 0.5rem; display: block; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Portal <span>Professor</span></h1>
-    <button id="logout-btn" class="btn" style="display:none;" onclick="showSelection()">Sair</button>
+    <h1>Portal <span style="color:#fff">Professor</span></h1>
+    <nav class="nav-tabs">
+        <button class="nav-btn active" onclick="switchTab('selection')">Cronograma</button>
+        <button class="nav-btn" onclick="switchTab('calculator')">Class Calculator</button>
+    </nav>
 </header>
 
 <div class="container">
-    <!-- Tela de Seleção -->
-    <div id="selection-screen" class="screen active">
-        <div id="loading" style="text-align:center; padding: 3rem; color: var(--text-muted);">Carregando dados...</div>
-        <div id="teachers-grid" class="teachers-grid"></div>
-        <div id="error-msg" style="color: var(--danger); text-align: center; margin-top: 2rem; display: none;"></div>
+    <!-- Loading -->
+    <div id="loading" class="loading-spinner">Carregando Dados...</div>
+    <div id="error-display" class="error-msg" style="display:none;"></div>
+
+    <!-- Selection Screen -->
+    <div id="selection-screen" style="display:none;">
+        <div class="teachers-grid" id="teachers-grid"></div>
     </div>
 
-    <!-- Tela do Professor (Dashboard + Cronograma) -->
-    <div id="dashboard-screen" class="screen">
-        <div class="dashboard-header">
-            <div>
-                <h2 id="teacher-greeting" style="font-size: 1.8rem; margin-bottom: 0.5rem;">Olá, Professor</h2>
-                <p style="color: var(--text-muted);">Gerencie suas aulas, planos e relatórios.</p>
-            </div>
-            <div style="display: flex; gap: 1rem;">
-                <button class="btn" onclick="showCalculator()">Class Calculator</button>
-                <button class="btn" onclick="showSchedule()">Cronograma</button>
-            </div>
+    <!-- Schedule Screen -->
+    <div id="schedule-screen" class="schedule-view fade-in">
+        <button class="back-btn" onclick="showSelection()">← Voltar</button>
+        <h2 id="teacher-schedule-title" style="margin-bottom: 2rem; color: var(--accent); text-transform: uppercase;"></h2>
+        <div id="schedule-content"></div>
+    </div>
+
+    <!-- Calculator Screen -->
+    <div id="calculator-screen" class="calculator-view fade-in">
+        <h2 style="margin-bottom: 1rem; color: var(--accent); text-transform: uppercase;">Class Calculator</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Selecione o mês para visualizar o desempenho.</p>
+        
+        <div class="month-selector" id="month-selector">
+            <!-- Generated by JS -->
         </div>
 
-        <!-- Aba Cronograma -->
-        <div id="schedule-view" class="days-container"></div>
-
-        <!-- Aba Calculadora -->
-        <div id="calculator-view" style="display: none;">
-            <div class="month-selector">
-                <label class="form-label">Período:</label>
-                <select id="month-select" onchange="updateCalculator()"></select>
-                <select id="year-select" onchange="updateCalculator()"></select>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Aulas Realizadas (Escola)</div>
+                <div class="stat-value" id="stat-school-done">0</div>
             </div>
-
-            <div class="calculator-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Aulas na Escola</div>
-                    <div class="stat-value" id="stat-school">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Aulas In Company</div>
-                    <div class="stat-value" id="stat-company">0</div>
-                </div>
-                <div class="stat-card danger">
-                    <div class="stat-label">No Show (Escola)</div>
-                    <div class="stat-value" id="stat-school-no-show">0</div>
-                </div>
-                <div class="stat-card danger">
-                    <div class="stat-label">No Show (In Company)</div>
-                    <div class="stat-value" id="stat-company-no-show">0</div>
-                </div>
+            <div class="stat-card">
+                <div class="stat-label">Aulas In-Company</div>
+                <div class="stat-value" id="stat-company-done">0</div>
             </div>
-            
-            <div style="background: var(--card-bg); padding: 2rem; border-radius: var(--radius); border: 1px solid var(--border-color);">
-                <h3 style="color: var(--accent-blue); margin-bottom: 1rem;">Detalhamento do Mês</h3>
-                <div id="monthly-details" style="color: var(--text-muted); font-size: 0.9rem;"></div>
+            <div class="stat-card">
+                <div class="stat-label">No Show (Escola)</div>
+                <div class="stat-value" id="stat-school-noshow" style="color: var(--warning)">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">No Show (In-Company)</div>
+                <div class="stat-value" id="stat-company-noshow" style="color: var(--warning)">0</div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal RAD / Lesson Plan -->
-<div id="rad-modal" class="modal-overlay">
+<!-- RAD Modal -->
+<div class="modal-overlay" id="rad-modal">
     <div class="modal-content">
         <div class="modal-header">
-            <div class="modal-title">Registro de Aula (RAD)</div>
+            <div class="modal-title">RAD - Registro de Aula</div>
             <button class="close-modal" onclick="closeModal()">&times;</button>
         </div>
-        <div class="modal-body">
-            <input type="hidden" id="rad-class-id">
-            
-            <!-- Status -->
+        
+        <div id="rad-form">
             <div class="form-group">
                 <label class="form-label">Status da Aula</label>
-                <select id="rad-status" onchange="toggleRadFields()">
-                    <option value="realized">Realizada</option>
-                    <option value="no-show">No Show (Aluno não veio)</option>
-                    <option value="cancelled">Cancelada</option>
-                </select>
+                <div class="status-options">
+                    <button type="button" class="status-btn" data-status="realized" onclick="setStatus('realized')">Realizada</button>
+                    <button type="button" class="status-btn" data-status="cancelled" onclick="setStatus('cancelled')">Cancelada</button>
+                    <button type="button" class="status-btn" data-status="noshow" onclick="setStatus('noshow')">No Show</button>
+                </div>
+                <input type="hidden" id="rad-status">
             </div>
 
-            <!-- Tipo de Aula -->
-            <div class="form-group">
-                <label class="form-label">Tipo de Aula</label>
-                <div class="checkbox-group">
-                    <label class="checkbox-item">
-                        <input type="radio" name="rad-type" value="school" checked> Escola
-                    </label>
-                    <label class="checkbox-item">
-                        <input type="radio" name="rad-type" value="in-company"> In Company
-                    </label>
-                    <label class="checkbox-item">
-                        <input type="radio" name="rad-type" value="online"> Online
-                    </label>
-                </div>
+            <div class="lesson-plan-box">
+                <label>Lesson Plan / Descrição da Aula</label>
+                <textarea id="rad-lesson" class="form-textarea" placeholder="Descreva o que foi feito na aula (Book, Página, Atividades...)"></textarea>
             </div>
 
-            <!-- Conteúdo (Só aparece se não for No Show/Cancelada) -->
-            <div id="content-fields" style="display: flex; flex-direction: column; gap: 1rem;">
-                <div class="form-group">
-                    <label class="form-label">Lesson Plan / Conteúdo Realizado</label>
-                    <textarea id="rad-lesson-plan" placeholder="Descreva a lição realizada, objetivos e atividades..."></textarea>
+            <div id="attendance-section">
+                <label class="form-label">Lista de Presença</label>
+                <div class="student-list" id="student-list-container">
+                    <!-- Students injected here -->
                 </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group">
-                        <label class="form-label">Book / Material</label>
-                        <input type="text" id="rad-book" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Unit / Lesson</label>
-                        <input type="text" id="rad-unit" class="form-control" placeholder="Ex: Unit 4, Lesson 2">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Página (Page)</label>
-                    <input type="text" id="rad-page" class="form-control">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Homework (Tarefa de Casa)</label>
-                    <input type="text" id="rad-homework" class="form-control" placeholder="Ex: Workbook p. 20">
-                </div>
-
-                <!-- Lista de Presença -->
-                <div class="form-group">
-                    <label class="form-label">Lista de Presença</label>
-                    <div id="attendance-list" class="student-list">
-                        <!-- Preenchido via JS -->
-                    </div>
-                    <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
-                        <button class="btn" style="font-size: 0.7rem; padding: 0.3rem;" onclick="markAllPresent()">Marcar Todos Presentes</button>
-                        <button class="btn btn-danger" style="font-size: 0.7rem; padding: 0.3rem;" onclick="markAllAbsent()">Marcar Todos Ausentes</button>
-                    </div>
-                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">* Marque apenas os presentes. Desmarcados são considerados ausentes.</p>
             </div>
 
-            <!-- Observações -->
-            <div class="form-group">
-                <label class="form-label">Observações / Comportamento</label>
-                <textarea id="rad-obs" style="min-height: 60px;" placeholder="Anote qualquer ocorrência relevante..."></textarea>
+            <div class="modal-actions">
+                <button class="btn-clear" onclick="clearRadData()">Limpar RAD</button>
+                <button class="btn-save" onclick="saveRad()">Salvar Registro</button>
             </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-danger" onclick="clearRad()">Limpar RAD</button>
-            <button class="btn btn-success" onclick="saveRad()">Salvar Registro</button>
         </div>
     </div>
 </div>
 
 <script>
-    // --- DADOS ---
-    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
-    
-    // Lista de Alunos por Turma (Mapeamento Manual baseado na sua lista)
-    const STUDENTS_DB = {
-        "ADVENTURE TIME": ["Beatriz Melo De Matos", "Enzo Haas Goetten", "Isabela Nishimura Pereira", "Victor Hugo Clasen"],
-        "BITA WORLD": ["Alice Marion", "Maria Carolina Crespo Candido Alves", "Valentina De Sousa Vidigal"],
-        "BREAKING BAD": ["Geovanna Boaventura de Oliveira"],
-        "BROOKLYN 99": ["Bruna Araújo Blumer", "Giuliane Wrzecionel Dal Berto", "Jessica Aline Bernardi", "Katherine Koch Carballo", "Miguel Anastásio Costa Junior"],
-        "COLEGIO CONNECT": ["Gabriel Moreira Todeschini", "Maria Helena Tuchinski Oliveira", "Victor Leandro Tumelero Bandiera"],
-        "COLEGIO CONNECT KIDS": ["Adan Afonso Perazzoli", "Alice Moura Gama Tales", "Alice Vinotti Meneguzzi", "Eduarda Tumelero Bandiera", "Luiza Tuchinski Oliveira"],
-        "DEXTER LAB": ["Alice Ciprini de Quadros", "Letícia Beninica Adriano"],
-        "DUNE": ["Ana Paula Pizzetti Meller Remisio", "Sofia Sayuri Iyama"],
-        "FROZEN (FRIENDSHIP)": ["Maria Giovanna Cunnha Cardoso Lobato", "Sofia Rodrigues Fortes Marques"],
-        "GAME OF THRONES": ["Bethina Rocha Semolini", "Miguel Bilbio de Andrade"],
-        "KILL BILL": ["Thalita Aliny Medeiros", "Yasmin Deotti"],
-        "MINIONS": ["Betina Guedes Cristovão", "Pérola Alvarez Garcia", "Pietra de Oliveira de Lima"],
-        "PHINEAS & FERB": ["Enrico Goldoni Boschini", "Valentina Goldoni Boschini"],
-        "SCANDAL": ["Fabricio Blesmann Kazapi", "Marina Barreto dos Santos Vargas", "Mirelle Barreto dos Santos Kazapi", "Rogério Vargas"],
-        "SHREK": ["Eduardo Teixeira Dallago"],
-        "STRANGER THINGS": ["Aline Araujo de Melo"],
-        "SUITS": ["Bernardo Correia Pereira", "Matheus Henrique da Silva Tres", "Vinicius Estuqui Galandrini"],
-        "THE 100": ["Caio Jazar Rodrigues", "Flavia de Andrade Lima", "Luiz Carlos Ferreira Hada"],
-        "THE CHOSEN": ["Davi Rosa Larini", "Enzo Cardoso Pereira", "Karina Pereira dos Santos", "Maria Fernanda Crespo Cândido Alves"],
-        "THE CROWN": ["Lara Becker", "Lorena Becker"],
-        "THE GODFATHER": ["Gustavo Da Costa Schnaider", "Matheus Guilherme Sartor"],
-        "THE LAST OF US": ["Bernardo Krieger Cordeiro", "Davi Knapp Dassoler"],
-        "THE OFFICE": ["Ana Julia Cruz Da Silva", "Bruno Luiz Zeferino", "Julia de Almeida Antunes", "Nicole Mattos Paiva", "Nicoly Cantareli Hamade"],
-        "THIS IS US": ["Andreia Campagnim", "Sueli Marta do Nascimento de Souza"],
-        "TITANIC": ["Hector Augusto Ferreira Machado"],
-        "VIP / TURMAS INDIVIDUAIS": ["Brenda Camargo Petri de Oliveira", "Julia Viana Linhares Pereira"],
-        "ALUNOS KIDS": ["Antonella Kfouri Botelho", "Davi Pereira Hilgemberg", "Giullia Mmartins de Lara", "Lucca Kfouri Botelho", "Luíza Mussolini Ribeiro"],
-        "AVENTURA JURÁSSICA": ["Eduardo Medrade Hosang"], // Exemplo
-        "HOTEL MELO": [],
-        "HOTEL NEGRINI": [],
-        "GET IT TIMBÓ": []
-    };
+    // CONFIGURAÇÕES
+    const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
+    const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
 
+    // PROFESSORES VÁLIDOS (Rafael removido)
     const VALID_TEACHERS = [
-        { name: 'MYCAEL', color: '#FF6B6B' },
-        { name: 'HOPE', color: '#FFE66D' },
-        { name: 'PEDRO', color: '#F38181' },
-        { name: 'DIOGO', color: '#AA96DA' },
-        { name: 'LIVIA', color: '#FCBAD3' },
-        { name: 'TOSCA', color: '#A8D8EA' },
-        { name: 'IAGO', color: '#FF9F43' },
-        { name: 'SARA', color: '#54a0ff' },
-        { name: 'CAROL', color: '#5f27cd' }
+        'MYCAEL', 'HOPE', 'PEDRO', 'DIOGO', 'LIVIA', 'TOSCA', 'IAGO', 'SARA', 'CAROL'
     ];
 
     const DAYS_MAP = {
-        'Mon': 'Segunda-feira',
-        'Tue': 'Terça-feira',
-        'Wed': 'Quarta-feira',
-        'Thu': 'Quinta-feira',
-        'Fri': 'Sexta-feira'
+        'Monday': 'Segunda-feira',
+        'Tuesday': 'Terça-feira',
+        'Wednesday': 'Quarta-feira',
+        'Thursday': 'Quinta-feira',
+        'Friday': 'Sexta-feira'
     };
-    const DAY_KEYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    
+    const MONTHS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
     let allClasses = [];
+    let studentsDB = {}; // { "TURMA": ["Aluno 1", "Aluno 2"] }
     let currentTeacher = null;
+    let currentClassId = null; // ID único para salvar o RAD
 
-    // --- INICIALIZAÇÃO ---
+    // Inicialização
     document.addEventListener('DOMContentLoaded', () => {
-        initMonthSelectors();
-        fetchSchedule();
+        Promise.all([fetchSchedule(), fetchStudents()])
+            .then(() => {
+                document.getElementById('loading').style.display = 'none';
+                renderTeacherSelection();
+                initCalculator();
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error-display').style.display = 'block';
+                document.getElementById('error-display').textContent = 'Erro ao carregar dados. Verifique sua conexão.';
+            });
     });
 
-    function initMonthSelectors() {
-        const monthSel = document.getElementById('month-select');
-        const yearSel = document.getElementById('year-select');
-        const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-        
-        months.forEach((m, i) => {
-            const opt = document.createElement('option');
-            opt.value = i;
-            opt.textContent = m;
-            monthSel.appendChild(opt);
-        });
-
-        const currentYear = new Date().getFullYear();
-        for (let y = currentYear - 1; y <= currentYear + 1; y++) {
-            const opt = document.createElement('option');
-            opt.value = y;
-            opt.textContent = y;
-            yearSel.appendChild(opt);
-        }
-
-        const now = new Date();
-        monthSel.value = now.getMonth();
-        yearSel.value = now.getFullYear();
-    }
-
     async function fetchSchedule() {
-        try {
-            const res = await fetch(SHEET_URL);
-            if (!res.ok) throw new Error('Erro na conexão');
-            const csv = await res.text();
-            parseCSV(csv);
-            renderTeachers();
-        } catch (e) {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('error-msg').style.display = 'block';
-            document.getElementById('error-msg').textContent = 'Erro ao carregar planilha. Verifique a URL.';
-        }
+        const res = await fetch(SCHEDULE_URL);
+        if (!res.ok) throw new Error('Schedule Fetch Failed');
+        const csv = await res.text();
+        parseSchedule(csv);
     }
 
-    function parseCSV(text) {
-        const lines = text.split('\n').filter(l => l.trim());
+    async function fetchStudents() {
+        const res = await fetch(STUDENTS_URL);
+        if (!res.ok) throw new Error('Students Fetch Failed');
+        const csv = await res.text();
+        parseStudents(csv);
+    }
+
+    function parseSchedule(csv) {
+        const lines = csv.split('\n').map(l => l.trim()).filter(l => l);
         if (lines.length < 2) return;
+
+        // Estrutura: A(Lang), B(Book), C(Group), D(Room), E(Mod), F(Time), G(Mon), H(Tue)...
+        const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
         
-        // Estrutura: A(Lang), B(Book), C(Group), D(Room), E(Mod), F(Time), G(Mon)...K(Fri)
-        // Índices: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
-        
+        // Mapeamento de índices baseado na nova estrutura (0-based)
+        // A=0, B=1, C=2, D=3, E=4, F=5, G=6(Mon), H=7(Tue), I=8(Wed), J=9(Thu), K=10(Fri)
+        const idx = {
+            book: 1, group: 2, room: 3, mod: 4, time: 5,
+            days: { 'Monday': 6, 'Tuesday': 7, 'Wednesday': 8, 'Thursday': 9, 'Friday': 10 }
+        };
+
         allClasses = [];
-        
+
         for (let i = 1; i < lines.length; i++) {
-            // Split simples, assumindo que não há vírgulas dentro das células (comum em pub/csv simples)
-            // Se houver vírgulas complexas, precisaria de regex, mas vamos tentar o split direto primeiro
-            const row = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, '').replace(/<.*?>/g, ''));
+            // Split simples considerando aspas básicas
+            const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
             
-            if (row.length < 6) continue;
+            const time = row[idx.time];
+            const book = row[idx.book];
+            const groupRaw = row[idx.group];
+            const room = row[idx.room];
+            const mod = row[idx.mod];
 
-            const book = row[1] || '';
-            const groupRaw = row[2] || '';
-            const room = row[3] || 'N/A';
-            const modal = row[4] || '';
-            const time = row[5] || '';
+            if (!time || !groupRaw) continue;
 
-            // Extrair nome da turma limpo (remover Book e Modal se estiverem colados)
-            let groupName = groupRaw;
-            // Lógica simples de limpeza se necessário, mas usaremos o raw para buscar alunos
-            
-            // Iterar dias (Colunas G a K -> índices 6 a 10)
-            DAY_KEYS.forEach((dayKey, idx) => {
-                const cellContent = row[6 + idx]; // G=6, H=7...
-                if (!cellContent) return;
+            // Normalizar nome da turma para busca no DB de alunos
+            const groupName = groupRaw.toUpperCase().trim();
 
-                // Encontrar professor na célula
-                const teacherObj = VALID_TEACHERS.find(t => cellContent.toUpperCase().includes(t.name));
-                if (!teacherObj) return;
+            for (const [dayEn, colIdx] of Object.entries(idx.days)) {
+                const cellContent = row[colIdx];
+                if (!cellContent) continue;
 
-                // Verificar se é In Company
-                const isInCompany = modal.toUpperCase().includes('IN COMPANY') || 
-                                    room.toUpperCase().includes('HOTEL') || 
-                                    room.toUpperCase().includes('TIMBÓ') ||
-                                    groupRaw.toUpperCase().includes('IN COMPANY');
+                // Verificar se algum professor válido está na célula
+                const foundTeacher = VALID_TEACHERS.find(t => cellContent.toUpperCase().includes(t));
+                
+                if (foundTeacher) {
+                    // Identificar se é In-Company
+                    const isCompany = mod.toUpperCase().includes('IN-C') || 
+                                      mod.toUpperCase().includes('IN COMPANY') ||
+                                      groupRaw.toLowerCase().includes('hotel') || 
+                                      groupRaw.toLowerCase().includes('aventura') ||
+                                      groupRaw.toLowerCase().includes('get it');
 
-                allClasses.push({
-                    id: `${dayKey}-${time}-${groupRaw}-${teacherObj.name}-${i}`, // ID único
-                    day: dayKey,
-                    time: time,
-                    teacher: teacherObj.name,
-                    color: teacherObj.color,
-                    book: book,
-                    group: groupName,
-                    room: room,
-                    modal: modal,
-                    isInCompany: isInCompany,
-                    rawGroup: groupRaw // Para buscar alunos
-                });
-            });
+                    allClasses.push({
+                        id: `${foundTeacher}-${dayEn}-${time}-${groupName}`, // ID Único
+                        day: dayEn,
+                        dayPt: DAYS_MAP[dayEn],
+                        time: time,
+                        teacher: foundTeacher,
+                        book: book || 'N/A',
+                        group: groupRaw, // Nome original para exibição
+                        groupKey: groupName, // Chave normalizada para alunos
+                        room: room || 'N/A',
+                        mod: mod || 'Normal',
+                        isCompany: isCompany
+                    });
+                }
+            }
         }
     }
 
-    function renderTeachers() {
-        const grid = document.getElementById('teachers-grid');
-        document.getElementById('loading').style.display = 'none';
-        grid.innerHTML = '';
+    function parseStudents(csv) {
+        const lines = csv.split('\n').map(l => l.trim()).filter(l => l);
+        if (lines.length < 2) return;
 
-        VALID_TEACHERS.sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
-            const hasClass = allClasses.some(c => c.teacher === t.name);
+        // Coluna A: Turma, Coluna B: Aluno
+        for (let i = 1; i < lines.length; i++) {
+            const parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            if (parts.length >= 2) {
+                const turma = parts[0].replace(/^"|"$/g, '').trim().toUpperCase();
+                const aluno = parts[1].replace(/^"|"$/g, '').trim();
+                
+                if (!studentsDB[turma]) studentsDB[turma] = [];
+                studentsDB[turma].push(aluno);
+            }
+        }
+    }
+
+    function renderTeacherSelection() {
+        const grid = document.getElementById('teachers-grid');
+        grid.innerHTML = '';
+        
+        // Ordenar alfabeticamente
+        const sortedTeachers = [...VALID_TEACHERS].sort();
+
+        sortedTeachers.forEach(teach => {
+            const hasClasses = allClasses.some(c => c.teacher === teach);
             const card = document.createElement('div');
             card.className = 'teacher-card';
-            card.style.setProperty('--teacher-color', t.color);
             card.innerHTML = `
-                <div class="teacher-name" style="color:${t.color}">${t.name}</div>
-                <div class="teacher-sub">${hasClass ? 'Ver Cronograma' : 'Sem aulas'}</div>
+                <div class="teacher-name">${teach}</div>
+                <div class="teacher-status">${hasClasses ? 'Ver Cronograma' : 'Sem aulas'}</div>
             `;
-            card.onclick = () => selectTeacher(t);
+            if (hasClasses) {
+                card.onclick = () => showSchedule(teach);
+            } else {
+                card.style.opacity = '0.5';
+                card.style.cursor = 'default';
+            }
             grid.appendChild(card);
         });
     }
 
-    function selectTeacher(teacher) {
+    function showSchedule(teacher) {
         currentTeacher = teacher;
-        document.getElementById('selection-screen').classList.remove('active');
-        document.getElementById('dashboard-screen').classList.add('active');
-        document.getElementById('logout-btn').style.display = 'inline-flex';
-        document.getElementById('teacher-greeting').innerHTML = `Olá, <span style="color:${teacher.color}">${teacher.name}</span>`;
+        document.getElementById('selection-screen').style.display = 'none';
+        document.getElementById('schedule-screen').style.display = 'block';
+        document.getElementById('teacher-schedule-title').textContent = `Cronograma: ${teacher}`;
         
-        showSchedule();
-    }
+        const content = document.getElementById('schedule-content');
+        content.innerHTML = '';
 
-    function showSelection() {
-        document.getElementById('dashboard-screen').classList.remove('active');
-        document.getElementById('selection-screen').classList.add('active');
-        document.getElementById('logout-btn').style.display = 'none';
-        currentTeacher = null;
-    }
-
-    function showSchedule() {
-        document.getElementById('calculator-view').style.display = 'none';
-        document.getElementById('schedule-view').style.display = 'flex';
-        document.getElementById('schedule-view').style.flexDirection = 'column';
-        document.getElementById('schedule-view').style.gap = '2rem';
+        const daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
         
-        renderScheduleGrid();
-    }
-
-    function showCalculator() {
-        document.getElementById('schedule-view').style.display = 'none';
-        document.getElementById('calculator-view').style.display = 'block';
-        updateCalculator();
-    }
-
-    function renderScheduleGrid() {
-        const container = document.getElementById('schedule-view');
-        container.innerHTML = '';
-
-        DAY_KEYS.forEach(dayKey => {
-            const dayClasses = allClasses.filter(c => c.teacher === currentTeacher.name && c.day === dayKey);
+        daysOrder.forEach(day => {
+            const dayClasses = allClasses.filter(c => c.teacher === teacher && c.day === day);
             if (dayClasses.length === 0) return;
 
-            // Ordenar por horário
-            dayClasses.sort((a,b) => a.time.localeCompare(b.time));
-
             const section = document.createElement('div');
-            section.className = 'day-section';
+            section.className = 'day-section fade-in';
             
             const header = document.createElement('div');
             header.className = 'day-header';
-            header.textContent = DAYS_MAP[dayKey];
+            header.textContent = DAYS_MAP[day];
             section.appendChild(header);
 
-            const list = document.createElement('div');
-            list.className = 'classes-list';
+            const grid = document.createElement('div');
+            grid.className = 'classes-grid';
 
             dayClasses.forEach(cls => {
-                const savedData = getSavedRad(cls.id);
-                const status = savedData ? savedData.status : null;
+                // Buscar status salvo
+                const savedData = getRadData(cls.id);
+                const statusClass = savedData ? savedData.status : '';
                 
-                let cardClass = 'class-card';
-                if (status === 'realized') cardClass += ' completed';
-                if (status === 'no-show') cardClass += ' no-show';
-                if (status === 'cancelled') cardClass += ' cancelled';
-
                 const card = document.createElement('div');
-                card.className = cardClass;
+                card.className = `class-card ${statusClass}`;
                 
                 let badgesHtml = `
-                    <span class="badge badge-book">${cls.book || 'Geral'}</span>
+                    <span class="badge badge-book">${cls.book}</span>
                     <span class="badge badge-room">📍 ${cls.room}</span>
+                    ${cls.isCompany ? '<span class="badge badge-modal" style="border-color:#ff3b3b; color:#ff3b3b">IN-COMPANY</span>' : ''}
+                    <span class="badge badge-modal">${cls.mod}</span>
                 `;
-                if (cls.modal) badgesHtml += `<span class="badge badge-modal">${cls.modal}</span>`;
-                if (cls.isInCompany) badgesHtml += `<span class="badge badge-incompany">In Company</span>`;
-
-                let actionBtnText = 'RAD';
-                let actionBtnClass = 'btn';
-                if (status) {
-                    if (status === 'realized') { actionBtnText = 'Concluída'; actionBtnClass += ' btn-success'; }
-                    else if (status === 'no-show') { actionBtnText = 'No Show'; actionBtnClass += ' btn-danger'; }
-                    else { actionBtnText = 'Cancelada'; actionBtnClass += ' btn-warning'; }
-                }
 
                 card.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:start;">
-                        <div>
-                            <div class="class-time">⏰ ${cls.time}</div>
-                            <div class="class-info"><strong>Turma:</strong> ${cls.group}</div>
-                        </div>
-                        <div style="text-align:right;">
-                             <div style="font-size:0.7rem; color:${status ? 'var(--success)' : 'var(--text-muted)'}">
-                                ${status ? '● Registrado' : '○ Pendente'}
-                             </div>
-                        </div>
-                    </div>
+                    <span class="class-time">⏰ ${cls.time}</span>
+                    <div class="class-info"><strong>Turma:</strong> ${cls.group}</div>
                     <div class="badges">${badgesHtml}</div>
-                    <div class="card-actions">
-                        <button class="${actionBtnClass}" onclick="openRad('${cls.id}')">${actionBtnText}</button>
-                    </div>
+                    <button class="action-btn rad-btn" onclick="openRad('${cls.id}', '${cls.groupKey}')">
+                        ${savedData ? '✏️ Editar RAD' : '📝 Preencher RAD'}
+                    </button>
                 `;
-                list.appendChild(card);
+                grid.appendChild(card);
             });
 
-            section.appendChild(list);
-            container.appendChild(section);
+            section.appendChild(grid);
+            content.appendChild(section);
         });
     }
 
-    // --- LÓGICA DO RAD ---
-    function openRad(classId) {
-        const cls = allClasses.find(c => c.id === classId);
-        if (!cls) return;
+    function showSelection() {
+        document.getElementById('schedule-screen').style.display = 'none';
+        document.getElementById('selection-screen').style.display = 'block';
+        currentTeacher = null;
+    }
 
-        document.getElementById('rad-class-id').value = classId;
-        const saved = getSavedRad(classId);
+    function switchTab(tab) {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('selection-screen').style.display = 'none';
+        document.getElementById('schedule-screen').style.display = 'none';
+        document.getElementById('calculator-screen').style.display = 'none';
 
-        // Preencher campos
-        document.getElementById('rad-status').value = saved ? saved.status : 'realized';
-        
-        // Tipo
-        const typeRadios = document.getElementsByName('rad-type');
-        typeRadios.forEach(r => {
-            r.checked = (saved && saved.type === r.value) ? true : (r.value === 'school' && !saved);
-            if(cls.isInCompany && !saved) r.checked = (r.value === 'in-company');
-        });
+        if (tab === 'selection') {
+            document.querySelector('.nav-btn:nth-child(1)').classList.add('active');
+            if (currentTeacher) showSchedule(currentTeacher);
+            else document.getElementById('selection-screen').style.display = 'block';
+        } else if (tab === 'calculator') {
+            document.querySelector('.nav-btn:nth-child(2)').classList.add('active');
+            document.getElementById('calculator-screen').style.display = 'block';
+            updateCalculatorStats();
+        }
+    }
 
-        // Conteúdo
-        document.getElementById('rad-lesson-plan').value = saved ? saved.lessonPlan : '';
-        document.getElementById('rad-book').value = saved ? saved.book : cls.book;
-        document.getElementById('rad-unit').value = saved ? saved.unit : '';
-        document.getElementById('rad-page').value = saved ? saved.page : '';
-        document.getElementById('rad-homework').value = saved ? saved.homework : '';
-        document.getElementById('rad-obs').value = saved ? saved.obs : '';
+    // --- RAD LOGIC ---
 
-        // Lista de Alunos
-        renderAttendanceList(cls.rawGroup, saved ? saved.attendance : []);
-
-        toggleRadFields();
-        
+    function openRad(classId, groupKey) {
+        currentClassId = classId;
         const modal = document.getElementById('rad-modal');
-        modal.classList.add('open');
-    }
+        const data = getRadData(classId);
+        
+        // Reset form
+        document.querySelectorAll('.status-btn').forEach(b => b.className = 'status-btn');
+        document.getElementById('rad-status').value = '';
+        document.getElementById('rad-lesson').value = '';
+        
+        // Carregar dados existentes
+        if (data) {
+            if (data.status) setStatus(data.status);
+            if (data.lesson) document.getElementById('rad-lesson').value = data.lesson;
+        }
 
-    function renderAttendanceList(groupRaw, savedAttendance = []) {
-        const listContainer = document.getElementById('attendance-list');
+        // Carregar Alunos
+        const listContainer = document.getElementById('student-list-container');
         listContainer.innerHTML = '';
-
-        // Tentar encontrar alunos no DB
-        let students = [];
-        // Busca exata ou parcial
-        for (const [key, vals] of Object.entries(STUDENTS_DB)) {
-            if (groupRaw.toUpperCase().includes(key.toUpperCase()) || key.toUpperCase().includes(groupRaw.toUpperCase())) {
-                students = vals;
-                break;
-            }
-        }
         
-        // Se não achar no DB, usa lista genérica ou vazia
-        if (students.length === 0 && groupRaw) {
-            // Fallback: criar itens genéricos se necessário, ou deixar vazio
-            // Para este exemplo, se não tiver no DB, mostramos mensagem
-            listContainer.innerHTML = '<div style="padding:1rem; text-align:center; color:#666;">Nenhum aluno cadastrado para esta turma no sistema local.</div>';
-            return;
-        }
-
-        students.forEach((name, index) => {
-            const isPresent = savedAttendance.includes(name);
-            const item = document.createElement('div');
-            item.className = `student-item ${isPresent ? 'present' : 'absent'}`;
-            item.innerHTML = `
-                <span>${name}</span>
-                <input type="checkbox" ${isPresent ? 'checked' : ''} onchange="toggleStudent('${name}', this)">
-            `;
-            listContainer.appendChild(item);
-        });
-    }
-
-    function toggleStudent(name, checkbox) {
-        // Apenas visual, o save coleta tudo depois
-        if (checkbox.checked) checkbox.parentElement.classList.add('present');
-        else checkbox.parentElement.classList.remove('present');
-    }
-
-    function markAllPresent() {
-        const checkboxes = document.querySelectorAll('#attendance-list input[type="checkbox"]');
-        checkboxes.forEach(cb => { cb.checked = true; toggleStudent('', cb); });
-    }
-    function markAllAbsent() {
-        const checkboxes = document.querySelectorAll('#attendance-list input[type="checkbox"]');
-        checkboxes.forEach(cb => { cb.checked = false; toggleStudent('', cb); });
-    }
-
-    function toggleRadFields() {
-        const status = document.getElementById('rad-status').value;
-        const contentDiv = document.getElementById('content-fields');
-        contentDiv.style.display = (status === 'realized') ? 'flex' : 'none';
-    }
-
-    function saveRad() {
-        const id = document.getElementById('rad-class-id').value;
-        const status = document.getElementById('rad-status').value;
-        const type = document.querySelector('input[name="rad-type"]:checked').value;
+        const students = studentsDB[groupKey] || [];
         
-        const attendance = [];
-        document.querySelectorAll('#attendance-list input[type="checkbox"]:checked').forEach(cb => {
-            attendance.push(cb.parentElement.querySelector('span').textContent);
-        });
-
-        const data = {
-            status,
-            type,
-            lessonPlan: document.getElementById('rad-lesson-plan').value,
-            book: document.getElementById('rad-book').value,
-            unit: document.getElementById('rad-unit').value,
-            page: document.getElementById('rad-page').value,
-            homework: document.getElementById('rad-homework').value,
-            obs: document.getElementById('rad-obs').value,
-            attendance,
-            timestamp: new Date().toISOString()
-        };
-
-        localStorage.setItem(`rad_${id}`, JSON.stringify(data));
-        closeModal();
-        renderScheduleGrid(); // Atualiza UI
-        if(document.getElementById('calculator-view').style.display === 'block') updateCalculator();
-    }
-
-    function clearRad() {
-        if(confirm('Deseja limpar todos os dados deste RAD?')) {
-            const id = document.getElementById('rad-class-id').value;
-            localStorage.removeItem(`rad_${id}`);
-            openRad(id); // Recarrega limpo
+        if (students.length === 0) {
+            listContainer.innerHTML = '<p style="padding:1rem; color:#666;">Nenhum aluno encontrado para esta turma na base de dados.</p>';
+        } else {
+            students.forEach((student, idx) => {
+                const isChecked = data && data.attendance && data.attendance.includes(idx);
+                const item = document.createElement('div');
+                item.className = 'student-item';
+                item.innerHTML = `
+                    <input type="checkbox" class="student-checkbox" id="att-${idx}" ${isChecked ? 'checked' : ''}>
+                    <label class="student-name" for="att-${idx}">${student}</label>
+                `;
+                listContainer.appendChild(item);
+            });
         }
+
+        modal.style.display = 'flex';
     }
 
     function closeModal() {
-        document.getElementById('rad-modal').classList.remove('open');
+        document.getElementById('rad-modal').style.display = 'none';
+        currentClassId = null;
+        if (currentTeacher) showSchedule(currentTeacher); // Refresh para mostrar status
     }
 
-    function getSavedRad(id) {
-        const data = localStorage.getItem(`rad_${id}`);
-        return data ? JSON.parse(data) : null;
+    function setStatus(status) {
+        document.getElementById('rad-status').value = status;
+        document.querySelectorAll('.status-btn').forEach(b => {
+            b.classList.remove('active-realized', 'active-cancelled', 'active-noshow');
+            if (b.dataset.status === status) {
+                b.classList.add(`active-${status}`);
+            }
+        });
     }
 
-    // --- CALCULADORA ---
-    function updateCalculator() {
-        if (!currentTeacher) return;
+    function clearRadData() {
+        if (!confirm('Tem certeza que deseja limpar todos os dados deste RAD?')) return;
+        
+        localStorage.removeItem(`rad_${currentClassId}`);
+        closeModal();
+    }
 
-        const month = parseInt(document.getElementById('month-select').value);
-        const year = parseInt(document.getElementById('year-select').value);
+    function saveRad() {
+        const status = document.getElementById('rad-status').value;
+        const lesson = document.getElementById('rad-lesson').value;
+        
+        const attendance = [];
+        document.querySelectorAll('.student-checkbox:checked').forEach((cb, idx) => {
+            attendance.push(idx);
+        });
 
-        let schoolCount = 0;
-        let companyCount = 0;
+        if (!status) {
+            alert('Por favor, selecione o status da aula (Realizada, Cancelada ou No Show).');
+            return;
+        }
+
+        const data = { status, lesson, attendance, timestamp: new Date().toISOString() };
+        localStorage.setItem(`rad_${currentClassId}`, JSON.stringify(data));
+        
+        closeModal();
+        alert('RAD Salvo com Sucesso!');
+    }
+
+    function getRadData(classId) {
+        const raw = localStorage.getItem(`rad_${classId}`);
+        return raw ? JSON.parse(raw) : null;
+    }
+
+    // --- CALCULATOR LOGIC ---
+
+    let selectedMonthIndex = new Date().getMonth(); // Mês atual
+
+    function initCalculator() {
+        const container = document.getElementById('month-selector');
+        container.innerHTML = '';
+        MONTHS.forEach((m, idx) => {
+            const btn = document.createElement('button');
+            btn.className = `month-btn ${idx === selectedMonthIndex ? 'active' : ''}`;
+            btn.textContent = m;
+            btn.onclick = () => {
+                selectedMonthIndex = idx;
+                document.querySelectorAll('.month-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                updateCalculatorStats();
+            };
+            container.appendChild(btn);
+        });
+        updateCalculatorStats();
+    }
+
+    function updateCalculatorStats() {
+        // Contadores
+        let schoolDone = 0;
+        let companyDone = 0;
         let schoolNoShow = 0;
         let companyNoShow = 0;
 
-        // Filtrar todas as aulas do teacher
-        const teacherClasses = allClasses.filter(c => c.teacher === currentTeacher.name);
-        
-        // Nota: Como não temos data real na planilha (só dia da semana), 
-        // vamos simular a contagem baseada nos RADs salvos que possuem timestamp.
-        // Ou, se o usuário quiser contar baseado na estrutura fixa da semana, 
-        // precisaríamos de uma lógica diferente. 
-        // ASSUMINDO: O RAD é preenchido no dia real. Vamos filtrar RADs salvos pelo mês do timestamp.
+        // Percorrer todas as aulas do cronograma
+        allClasses.forEach(cls => {
+            const data = getRadData(cls.id);
+            if (!data || !data.status) return;
 
-        let detailsHtml = '<ul style="list-style:none; padding:0;">';
+            // Simulação simples de mês: 
+            // Como o CSV não tem data específica, estamos assumindo que o RAD salvo pertence ao "mês atual de visualização"
+            // Em um sistema real, precisaríamos salvar a data da aula no RAD.
+            // Para este MVP, vamos contar tudo o que foi marcado, pois o usuário pediu "calcular quantas aulas o teacher marcou".
+            // Se quiser filtrar por mês real, precisaria salvar a data no objeto RAD.
+            // Vamos assumir que o usuário usa o seletor para ver o acumulado geral ou que salvará a data futuramente.
+            // *Ajuste*: Vamos considerar que o RAD é atemporal neste MVP e mostra o total acumulado, 
+            // ou poderíamos pedir para o usuário inserir a data ao salvar. 
+            // Para atender o pedido "clicar e ver o mês", idealmente o RAD teria um campo de data.
+            // Vou implementar uma lógica onde o RAD salva a data atual do sistema ao ser preenchido.
+            
+            const radDate = new Date(data.timestamp);
+            if (radDate.getMonth() !== selectedMonthIndex) return; // Filtra pelo mês selecionado
 
-        teacherClasses.forEach(cls => {
-            const rad = getSavedRad(cls.id);
-            if (rad && rad.timestamp) {
-                const radDate = new Date(rad.timestamp);
-                if (radDate.getMonth() === month && radDate.getFullYear() === year) {
-                    
-                    const isCompany = cls.isInCompany || rad.type === 'in-company';
-                    
-                    if (rad.status === 'realized') {
-                        if (isCompany) companyCount++;
-                        else schoolCount++;
-                        
-                        detailsHtml += `<li style="padding:0.5rem 0; border-bottom:1px solid #333; display:flex; justify-content:space-between;">
-                            <span>${cls.day} ${cls.time} - ${cls.group}</span>
-                            <span style="color:var(--success)">Realizada (${isCompany ? 'In Company' : 'Escola'})</span>
-                        </li>`;
-                    } else if (rad.status === 'no-show') {
-                        if (isCompany) companyNoShow++;
-                        else schoolNoShow++;
-                        
-                        detailsHtml += `<li style="padding:0.5rem 0; border-bottom:1px solid #333; display:flex; justify-content:space-between;">
-                            <span>${cls.day} ${cls.time} - ${cls.group}</span>
-                            <span style="color:var(--danger)">No Show</span>
-                        </li>`;
-                    }
-                }
+            if (data.status === 'realized') {
+                if (cls.isCompany) companyDone++;
+                else schoolDone++;
+            } else if (data.status === 'noshow') {
+                if (cls.isCompany) companyNoShow++;
+                else schoolNoShow++;
             }
+            // Canceladas não entram na contagem de produtividade usualmente
         });
-        detailsHtml += '</ul>';
 
-        document.getElementById('stat-school').textContent = schoolCount;
-        document.getElementById('stat-company').textContent = companyCount;
-        document.getElementById('stat-school-no-show').textContent = schoolNoShow;
-        document.getElementById('stat-company-no-show').textContent = companyNoShow;
-        document.getElementById('monthly-details').innerHTML = detailsHtml;
+        document.getElementById('stat-school-done').textContent = schoolDone;
+        document.getElementById('stat-company-done').textContent = companyDone;
+        document.getElementById('stat-school-noshow').textContent = schoolNoShow;
+        document.getElementById('stat-company-noshow').textContent = companyNoShow;
     }
-
 </script>
 
 </body>
