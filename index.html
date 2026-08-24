@@ -3,42 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Portal | Class Manager</title>
+    <title>Teacher Portal | Dashboard & Planning</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --bg-glass: rgba(30, 41, 59, 0.7);
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --accent: #06b6d4;
-            --text-main: #f8fafc;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --bg-glass: rgba(15, 23, 42, 0.6);
+            --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.3);
+            --accent: #818cf8;
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --text-main: #f1f5f9;
             --text-muted: #94a3b8;
-            --border: #334155;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --radius: 12px;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --border: rgba(255, 255, 255, 0.1);
+            --radius: 16px;
+            --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 
         body {
             background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(129, 140, 248, 0.15) 0%, transparent 20%);
             color: var(--text-main);
             min-height: 100vh;
-            background-image: radial-gradient(circle at top right, #1e293b 0%, transparent 40%),
-                              radial-gradient(circle at bottom left, #0f172a 0%, transparent 40%);
+            line-height: 1.6;
         }
 
-        /* Header */
+        /* --- Header & Nav --- */
         header {
-            background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(10px);
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
-            padding: 1.5rem 2rem;
+            padding: 1rem 2rem;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -47,27 +49,80 @@
             align-items: center;
         }
 
-        h1 { font-size: 1.5rem; font-weight: 700; background: linear-gradient(to right, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
-        .nav-btn {
+        .brand h1 { font-size: 1.5rem; font-weight: 700; background: linear-gradient(to right, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .brand p { font-size: 0.85rem; color: var(--text-muted); }
+
+        nav button {
             background: transparent;
             border: 1px solid var(--border);
             color: var(--text-muted);
             padding: 0.5rem 1rem;
-            border-radius: var(--radius);
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            margin-left: 0.5rem;
             font-size: 0.9rem;
         }
-        .nav-btn:hover, .nav-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Container */
+        nav button.active, nav button:hover {
+            background: var(--primary);
+            color: var(--bg-dark);
+            border-color: var(--primary);
+            font-weight: 600;
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        /* --- Layout --- */
         .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        
+        .view-section { display: none; animation: fadeIn 0.4s ease; }
+        .view-section.active { display: block; }
 
-        /* Grid de Professores */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Dashboard Cards --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover { transform: translateY(-5px); border-color: var(--primary); }
+
+        .stat-card h3 { color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+        .stat-card .value { font-size: 2.5rem; font-weight: 700; color: var(--text-main); }
+        .stat-card .trend { font-size: 0.9rem; margin-top: 0.5rem; }
+        .trend.up { color: var(--success); }
+        .trend.down { color: var(--danger); }
+
+        .next-class-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(129, 140, 248, 0.1));
+            border-left: 4px solid var(--primary);
+        }
+
+        .next-class-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .next-class-time { font-size: 1.2rem; font-weight: 600; color: var(--primary); }
+        .next-class-details { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .badge { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .badge-group { background: rgba(56, 189, 248, 0.2); color: var(--primary); }
+        .badge-room { background: rgba(255, 255, 255, 0.1); color: var(--text-muted); }
+
+        /* --- Teacher Selection Grid --- */
         .teachers-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 1.5rem;
             margin-top: 2rem;
         }
@@ -79,7 +134,7 @@
             padding: 2rem;
             text-align: center;
             cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
         }
@@ -88,141 +143,96 @@
             content: '';
             position: absolute;
             top: 0; left: 0; width: 100%; height: 4px;
-            background: var(--teacher-color);
+            background: var(--teacher-color, var(--primary));
         }
 
         .teacher-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-            border-color: var(--teacher-color);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+            border-color: var(--teacher-color, var(--primary));
         }
 
-        .teacher-name { font-size: 1.25rem; font-weight: 600; color: var(--text-main); text-transform: uppercase; letter-spacing: 1px; }
-        .teacher-stat { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; }
+        .teacher-name { font-size: 1.25rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; }
+        .teacher-status { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; }
 
-        /* Telas */
-        .screen { display: none; animation: fadeIn 0.4s ease; }
-        .screen.active { display: block; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Dashboard do Professor */
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding: 1.5rem;
+        /* --- Schedule List --- */
+        .schedule-list { display: flex; flex-direction: column; gap: 1.5rem; }
+        
+        .day-block {
             background: var(--bg-card);
             border-radius: var(--radius);
-            border: 1px solid var(--border);
-        }
-
-        .back-btn {
-            background: var(--bg-dark);
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 0.6rem 1.2rem;
-            border-radius: var(--radius);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
-        }
-        .back-btn:hover { background: var(--border); }
-
-        /* Dias e Aulas */
-        .day-section {
-            margin-bottom: 2.5rem;
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
             overflow: hidden;
+            border: 1px solid var(--border);
         }
 
         .day-header {
+            background: rgba(255,255,255,0.03);
             padding: 1rem 1.5rem;
-            background: rgba(59, 130, 246, 0.1);
-            border-bottom: 1px solid var(--border);
-            font-weight: 600;
+            font-weight: 700;
             color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .classes-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
             padding: 1.5rem;
         }
 
-        .class-card {
-            background: var(--bg-dark);
+        .class-item {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 1rem;
             border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1.25rem;
             position: relative;
-            transition: all 0.2s;
         }
 
-        .class-card:hover { border-color: var(--primary); }
+        .class-item.has-rad { border-left: 3px solid var(--success); }
+        .class-item.status-cancelled { opacity: 0.6; border-left: 3px solid var(--danger); }
+        .class-item.status-noshow { opacity: 0.8; border-left: 3px solid var(--warning); }
 
-        .class-card.completed { border-left: 4px solid var(--success); }
-        .class-card.noshow { border-left: 4px solid var(--danger); }
-        .class-card.cancelled { border-left: 4px solid var(--warning); opacity: 0.7; }
+        .class-time { font-weight: 700; color: var(--text-main); font-size: 1.1rem; }
+        .class-info { margin: 0.5rem 0; font-size: 0.9rem; color: var(--text-muted); }
+        .class-actions { margin-top: 1rem; display: flex; gap: 0.5rem; }
 
-        .class-time { font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem; display: block; }
-        
-        .badges { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
-        .badge {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.6rem;
-            border-radius: 4px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .badge-book { background: rgba(6, 182, 212, 0.15); color: var(--accent); }
-        .badge-group { background: rgba(59, 130, 246, 0.15); color: var(--primary); }
-        .badge-room { background: rgba(148, 163, 184, 0.15); color: var(--text-muted); }
-        .badge-incompany { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid var(--warning); }
-
-        .rad-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .btn-rad {
-            flex: 1;
-            padding: 0.5rem;
-            border: none;
+        .btn {
+            padding: 0.5rem 1rem;
             border-radius: 6px;
-            font-weight: 600;
+            border: none;
             cursor: pointer;
+            font-weight: 600;
             font-size: 0.85rem;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-        .btn-rad-primary { background: var(--primary); color: white; }
-        .btn-rad-secondary { background: var(--bg-card); color: var(--text-muted); border: 1px solid var(--border); }
-        .btn-rad:hover { opacity: 0.9; }
 
-        /* Modal RAD */
+        .btn-primary { background: var(--primary); color: var(--bg-dark); }
+        .btn-primary:hover { background: #7dd3fc; }
+        
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+        .btn-outline:hover { border-color: var(--text-main); color: var(--text-main); }
+
+        .btn-sm { padding: 0.25rem 0.75rem; font-size: 0.75rem; }
+
+        /* --- Modal --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0,0,0,0.8);
             backdrop-filter: blur(5px);
             z-index: 1000;
             display: none;
             justify-content: center;
             align-items: center;
         }
+
         .modal-content {
-            background: var(--bg-card);
+            background: #1e293b;
             border: 1px solid var(--border);
             border-radius: var(--radius);
             width: 90%;
@@ -231,209 +241,279 @@
             overflow-y: auto;
             padding: 2rem;
             box-shadow: var(--shadow);
+            position: relative;
         }
 
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .modal-title { font-size: 1.25rem; font-weight: 700; color: var(--text-main); }
+        .modal-title { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
         .close-modal { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
 
         .form-group { margin-bottom: 1.2rem; }
-        .form-label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
-        .form-input, .form-select {
+        .form-label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem; }
+        .form-control {
             width: 100%;
             padding: 0.75rem;
-            background: var(--bg-dark);
+            background: rgba(0,0,0,0.2);
             border: 1px solid var(--border);
-            border-radius: 6px;
+            border-radius: 8px;
             color: var(--text-main);
-            font-size: 0.95rem;
+            font-size: 1rem;
         }
-        .form-input:focus, .form-select:focus { outline: none; border-color: var(--primary); }
+        .form-control:focus { outline: none; border-color: var(--primary); }
 
-        .attendance-list {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            background: var(--bg-dark);
-        }
+        .student-list { max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem; }
         .student-item {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem;
-            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         .student-item:last-child { border-bottom: none; }
-        .student-checkbox { margin-right: 0.75rem; accent-color: var(--success); transform: scale(1.2); }
-
-        .status-options { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-        .status-btn {
-            flex: 1;
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            background: var(--bg-dark);
-            color: var(--text-muted);
-            border-radius: 6px;
+        
+        .checkbox-custom {
+            width: 20px; height: 20px;
+            accent-color: var(--success);
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s;
         }
-        .status-btn.active[data-status="realizada"] { background: var(--success); color: white; border-color: var(--success); }
-        .status-btn.active[data-status="cancelada"] { background: var(--warning); color: white; border-color: var(--warning); }
-        .status-btn.active[data-status="noshow"] { background: var(--danger); color: white; border-color: var(--danger); }
 
-        /* Class Calculator Tab */
-        .stats-grid {
+        /* --- Class Calculator Stats --- */
+        .calc-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 1.5rem;
             margin-top: 2rem;
         }
-        .stat-card {
+        .calc-card {
             background: var(--bg-card);
             padding: 1.5rem;
             border-radius: var(--radius);
-            border: 1px solid var(--border);
             text-align: center;
+            border: 1px solid var(--border);
         }
-        .stat-value { font-size: 2.5rem; font-weight: 700; color: var(--text-main); margin: 0.5rem 0; }
-        .stat-label { color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
-        .stat-icon { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+        .calc-number { font-size: 2rem; font-weight: 700; margin: 0.5rem 0; }
+        .text-green { color: var(--success); }
+        .text-red { color: var(--danger); }
+        .text-yellow { color: var(--warning); }
+        .text-blue { color: var(--primary); }
 
-        .loading { text-align: center; padding: 3rem; color: var(--text-muted); }
-        .error-msg { background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 1rem; border-radius: var(--radius); text-align: center; margin-top: 1rem; border: 1px solid var(--danger); }
+        /* Lesson Plan Specifics */
+        .plan-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+        .plan-steps textarea { width: 100%; min-height: 100px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: var(--text-main); padding: 0.5rem; border-radius: 8px; resize: vertical; }
 
+        @media (max-width: 768px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            header { flex-direction: column; gap: 1rem; text-align: center; }
+            nav { display: flex; flex-wrap: wrap; justify-content: center; }
+            nav button { margin: 0.25rem; }
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Teacher Portal</h1>
-    <div id="nav-controls" style="display:none;">
-        <button class="nav-btn active" onclick="switchTab('schedule')">Schedule</button>
-        <button class="nav-btn" onclick="switchTab('calculator')">Class Calculator</button>
+    <div class="brand">
+        <h1>TEACHER PORTAL</h1>
+        <p>Gestão de Aulas & Planejamento</p>
     </div>
-    <button id="home-btn" class="nav-btn" onclick="showSelection()" style="display:none;">← Teachers</button>
+    <nav id="main-nav" style="display:none;">
+        <button onclick="switchView('dashboard')" class="active" id="nav-dashboard">Dashboard</button>
+        <button onclick="switchView('schedule')" id="nav-schedule">Cronograma</button>
+        <button onclick="switchView('calculator')" id="nav-calculator">Class Calculator</button>
+        <button onclick="logout()" style="border-color: var(--danger); color: var(--danger);">Sair</button>
+    </nav>
 </header>
 
 <div class="container">
-    <!-- Tela de Seleção -->
-    <div id="selection-screen" class="screen active">
-        <div id="loading" class="loading">Carregando dados da semana...</div>
+    
+    <!-- TELA DE SELEÇÃO DE PROFESSOR -->
+    <div id="selection-screen" class="view-section active">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">Bem-vindo</h2>
+            <p style="color: var(--text-muted);">Selecione seu perfil para acessar o portal</p>
+        </div>
+        <div id="loading" style="text-align: center; color: var(--primary);">Carregando dados...</div>
         <div id="teachers-grid" class="teachers-grid"></div>
-        <div id="error-message" class="error-msg" style="display:none;"></div>
+        <div id="error-msg" style="color: var(--danger); text-align: center; margin-top: 1rem; display: none;"></div>
     </div>
 
-    <!-- Tela Principal (Schedule & Calculator) -->
-    <div id="main-screen" class="screen">
+    <!-- DASHBOARD -->
+    <div id="dashboard-view" class="view-section">
+        <div class="dashboard-grid">
+            <div class="card stat-card">
+                <h3>Aulas Esta Semana</h3>
+                <div class="value" id="dash-total-week">0</div>
+                <div class="trend up">Horas agendadas</div>
+            </div>
+            <div class="card stat-card">
+                <h3>Pendências RAD</h3>
+                <div class="value" id="dash-pending-rad" style="color: var(--warning);">0</div>
+                <div class="trend">Aulas realizadas sem registro</div>
+            </div>
+            <div class="card stat-card">
+                <h3>Próxima Aula</h3>
+                <div class="value" style="font-size: 1.5rem;" id="dash-next-class">--:--</div>
+                <div class="trend" id="dash-next-group">--</div>
+            </div>
+            
+            <div class="card next-class-card" id="next-class-detail-card" style="display:none;">
+                <div class="next-class-header">
+                    <span style="font-size: 1.1rem; font-weight: 600;">PRÓXIMA AULA</span>
+                    <span class="badge badge-room" id="next-class-room">Sala --</span>
+                </div>
+                <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;" id="next-class-time-big">00:00</div>
+                <div class="next-class-details">
+                    <span class="badge badge-group" id="next-class-group">Grupo</span>
+                    <span class="badge" style="background: rgba(255,255,255,0.1);" id="next-class-book">Book</span>
+                    <span class="badge" style="background: rgba(255,255,255,0.1);" id="next-class-modal">Modalidade</span>
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="openRadForNext()">Preencher RAD</button>
+                    <button class="btn btn-outline" onclick="openLessonPlanForNext()">Ver Lesson Plan</button>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 1rem; color: var(--text-muted);">Resumo Rápido da Semana</h3>
+        <div id="dashboard-schedule-preview" class="schedule-list"></div>
+    </div>
+
+    <!-- CRONOGRAMA COMPLETO -->
+    <div id="schedule-view" class="view-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h2 style="font-size: 1.8rem;">Meu Cronograma</h2>
+            <div style="font-size: 0.9rem; color: var(--text-muted);">
+                Legenda: <span style="color: var(--success)">● Realizada</span> <span style="color: var(--warning)">● No Show</span> <span style="color: var(--danger)">● Cancelada</span>
+            </div>
+        </div>
+        <div id="schedule-content" class="schedule-list"></div>
+    </div>
+
+    <!-- CLASS CALCULATOR -->
+    <div id="calculator-view" class="view-section">
+        <h2 style="font-size: 1.8rem; margin-bottom: 1rem;">Class Calculator</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Estatísticas de aulas realizadas e ocorrências no mês atual.</p>
         
-        <!-- Aba Schedule -->
-        <div id="tab-schedule" style="display:block;">
-            <div class="dashboard-header">
-                <h2 id="teacher-display-name" style="color: var(--text-main);">Professor</h2>
-                <button class="back-btn" onclick="showSelection()">Voltar</button>
+        <div class="calc-grid">
+            <div class="calc-card">
+                <div style="color: var(--text-muted); font-size: 0.9rem;">Aulas na Escola (Realizadas)</div>
+                <div class="calc-number text-green" id="calc-school-done">0</div>
             </div>
-            <div id="schedule-content" class="days-container"></div>
-        </div>
-
-        <!-- Aba Calculator -->
-        <div id="tab-calculator" style="display:none;">
-            <div class="dashboard-header">
-                <h2 style="color: var(--text-main);">Class Calculator</h2>
-                <button class="back-btn" onclick="switchTab('schedule')">Voltar ao Cronograma</button>
+            <div class="calc-card">
+                <div style="color: var(--text-muted); font-size: 0.9rem;">Aulas In Company (Realizadas)</div>
+                <div class="calc-number text-blue" id="calc-incompany-done">0</div>
             </div>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-icon">🏫</span>
-                    <div class="stat-value" id="count-school-done">0</div>
-                    <div class="stat-label">Aulas Escola (Realizadas)</div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-icon">🚀</span>
-                    <div class="stat-value" id="count-incompany-done">0</div>
-                    <div class="stat-label">Aulas In Company (Realizadas)</div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-icon">❌</span>
-                    <div class="stat-value" id="count-school-noshow">0</div>
-                    <div class="stat-label">Aulas Escola (No Show)</div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-icon">⚠️</span>
-                    <div class="stat-value" id="count-incompany-noshow">0</div>
-                    <div class="stat-label">Aulas In Company (No Show)</div>
-                </div>
+            <div class="calc-card">
+                <div style="color: var(--text-muted); font-size: 0.9rem;">No Show (Escola)</div>
+                <div class="calc-number text-yellow" id="calc-school-noshow">0</div>
             </div>
-            <div style="margin-top: 2rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
-                <p>* Os dados são atualizados automaticamente ao registrar o status no RAD.</p>
-                <button onclick="clearAllData()" class="nav-btn" style="margin-top:1rem; border-color: var(--danger); color: var(--danger);">Limpar Todos os Dados do Mês</button>
+            <div class="calc-card">
+                <div style="color: var(--text-muted); font-size: 0.9rem;">No Show (In Company)</div>
+                <div class="calc-number text-red" id="calc-incompany-noshow">0</div>
             </div>
         </div>
 
+        <div class="card" style="margin-top: 2rem;">
+            <h3 style="margin-bottom: 1rem;">Detalhamento Recente</h3>
+            <div id="calc-recent-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+        </div>
     </div>
+
 </div>
 
-<!-- Modal RAD -->
+<!-- MODAL RAD -->
 <div id="rad-modal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 class="modal-title">Registro de Aula (RAD)</h3>
-            <button class="close-modal" onclick="closeRadModal()">&times;</button>
+            <div class="modal-title">Registro de Aula (RAD)</div>
+            <button class="close-modal" onclick="closeModal('rad-modal')">&times;</button>
         </div>
-        
-        <input type="hidden" id="rad-class-id">
-        
-        <div class="form-group">
-            <label class="form-label">Status da Aula</label>
-            <div class="status-options">
-                <button type="button" class="status-btn active" data-status="realizada" onclick="setStatus('realizada')">Realizada</button>
-                <button type="button" class="status-btn" data-status="cancelada" onclick="setStatus('cancelada')">Cancelada</button>
-                <button type="button" class="status-btn" data-status="noshow" onclick="setStatus('noshow')">No Show</button>
+        <div id="rad-form">
+            <input type="hidden" id="rad-class-id">
+            
+            <div class="form-group">
+                <label class="form-label">Status da Aula</label>
+                <select id="rad-status" class="form-control" onchange="toggleRadFields()">
+                    <option value="pending">Pendente</option>
+                    <option value="realized">Realizada</option>
+                    <option value="noshow">No Show (Aluno não veio)</option>
+                    <option value="cancelled">Cancelada</option>
+                </select>
+            </div>
+
+            <div id="rad-details-fields">
+                <div class="form-group">
+                    <label class="form-label">Book / Módulo Utilizado</label>
+                    <input type="text" id="rad-book" class="form-control" placeholder="Ex: G1, Starters...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Lição / Página</label>
+                    <input type="text" id="rad-lesson" class="form-control" placeholder="Ex: Unit 3, p. 45">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Lista de Presença</label>
+                    <div id="rad-attendance-list" class="student-list">
+                        <!-- Alunos carregados via JS -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Observações / Comportamento</label>
+                    <textarea id="rad-obs" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn btn-primary" style="flex: 1;" onclick="saveRad()">Salvar Registro</button>
+                <button class="btn btn-outline" style="border-color: var(--danger); color: var(--danger);" onclick="clearRad()">Limpar RAD</button>
             </div>
         </div>
+    </div>
+</div>
 
-        <div id="rad-details-section">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group">
-                    <label class="form-label">Book / Módulo</label>
-                    <input type="text" id="rad-book" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Lesson / Página</label>
-                    <input type="text" id="rad-lesson" class="form-input" placeholder="Ex: Unit 4, p. 22">
-                </div>
+<!-- MODAL LESSON PLAN -->
+<div id="plan-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">Lesson Plan</div>
+            <button class="close-modal" onclick="closeModal('plan-modal')">&times;</button>
+        </div>
+        <div id="plan-form">
+            <input type="hidden" id="plan-class-id">
+            <div style="background: rgba(56, 189, 248, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 3px solid var(--primary);">
+                <strong>Turma:</strong> <span id="plan-group-name"></span> | <strong>Horário:</strong> <span id="plan-time"></span>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Lista de Presença</label>
-                <div id="attendance-container" class="attendance-list">
-                    <!-- Alunos inseridos via JS -->
-                    <div style="padding:1rem; text-align:center; color:var(--text-muted);">Carregando alunos...</div>
+                <label class="form-label">Objetivo da Aula (Objective)</label>
+                <input type="text" id="plan-objective" class="form-control" placeholder="O que os alunos vão aprender hoje?">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Materiais Necessários</label>
+                <input type="text" id="plan-materials" class="form-control" placeholder="Ex: Flashcards, Audio track 4, Whiteboard...">
+            </div>
+
+            <div class="plan-section">
+                <label class="form-label">Procedimento (Steps)</label>
+                <div id="plan-steps-container">
+                    <textarea id="plan-steps" placeholder="1. Warm-up (5 min)&#10;2. Presentation (15 min)&#10;3. Practice (20 min)&#10;4. Wrap-up (5 min)"></textarea>
                 </div>
             </div>
-        </div>
 
-        <div id="rad-noshow-note" style="display:none;" class="form-group">
-            <label class="form-label" style="color: var(--danger);">Motivo do No Show (Opcional)</label>
-            <input type="text" id="rad-reason" class="form-input" placeholder="Ex: Aluno não apareceu, esqueceu material...">
-        </div>
-
-        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-            <button class="btn-rad btn-rad-secondary" onclick="clearRadForm()">Limpar RAD</button>
-            <button class="btn-rad btn-rad-primary" onclick="saveRad()">Salvar Registro</button>
+            <div style="margin-top: 1.5rem;">
+                <button class="btn btn-primary" style="width: 100%;" onclick="saveLessonPlan()">Salvar Planejamento</button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // Configuração
+    // --- CONFIGURAÇÃO ---
     const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
     
-    // Estrutura: A=Idioma, B=Book, C=Group, D=Room, E=Modalidade, F=Horário, G-K=Dias
+    // Estrutura: A=Lang, B=Book, C=Group, D=Room, E=Modal, F=Time, G-K=Days
     const COLS = { LANG: 0, BOOK: 1, GROUP: 2, ROOM: 3, MODAL: 4, TIME: 5 };
-    const DAYS_MAP = { 'Mon': 'Segunda-feira', 'Tue': 'Terça-feira', 'Wed': 'Quarta-feira', 'Thu': 'Quinta-feira', 'Fri': 'Sexta-feira' };
-    const DAYS_KEYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-
+    const DAYS_KEYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']; // G a K
+    
     const VALID_TEACHERS = [
         { name: 'MYCAEL', color: '#FF6B6B' }, { name: 'RAFAEL', color: '#4ECDC4' },
         { name: 'HOPE', color: '#FFE66D' }, { name: 'PEDRO', color: '#F38181' },
@@ -442,115 +522,82 @@
         { name: 'SARA', color: '#54a0ff' }, { name: 'CAROL', color: '#5f27cd' }
     ];
 
-    // Base de Alunos (Mapeamento simplificado para demonstração)
+    // Banco de Alunos (Simplificado para demo, idealmente viria de outra sheet)
     const STUDENTS_DB = {
-        'ADVENTURE TIME': ['Beatriz Melo De Matos', 'Enzo Haas Goetten', 'Isabela Nishimura Pereira', 'Victor Hugo Clasen'],
-        'BITA WORLD': ['Alice Marion', 'Maria Carolina Crespo Candido Alves', 'Valentina De Sousa Vidigal'],
-        'BREAKING BAD': ['Geovanna Boaventura de Oliveira'],
-        'BROOKLYN 99': ['Bruna Araújo Blumer', 'Giuliane Wrzecionel Dal Berto', 'Jessica Aline Bernardi', 'Katherine Koch Carballo', 'Miguel Anastásio Costa Junior'],
-        'COLEGIO CONNECT': ['Gabriel Moreira Todeschini', 'Maria Helena Tuchinski Oliveira', 'Victor Leandro Tumelero Bandiera'],
-        'COLEGIO CONNECT KIDS': ['Adan Afonso Perazzoli', 'Alice Moura Gama Tales', 'Alice Vinotti Meneguzzi', 'Eduarda Tumelero Bandiera', 'Luiza Tuchinski Oliveira'],
-        'DEXTER LAB': ['Alice Ciprini de Quadros', 'Letícia Beninica Adriano'],
         'DUNE': ['Ana Paula Pizzetti Meller Remisio', 'Sofia Sayuri Iyama'],
-        'FROZEN (FRIENDSHIP)': ['Maria Giovanna Cunnha Cardoso Lobato', 'Sofia Rodrigues Fortes Marques'],
-        'GAME OF THRONES': ['Bethina Rocha Semolini', 'Miguel Bilbio de Andrade'],
-        'KILL BILL': ['Thalita Aliny Medeiros', 'Yasmin Deotti'],
-        'MINIONS': ['Betina Guedes Cristovão', 'Pérola Alvarez Garcia', 'Pietra de Oliveira de Lima'],
-        'PHINEAS & FERB': ['Enrico Goldoni Boschini', 'Valentina Goldoni Boschini'],
-        'SCANDAL': ['Fabricio Blesmann Kazapi', 'Marina Barreto dos Santos Vargas', 'Mirelle Barreto dos Santos Kazapi', 'Rogério Vargas'],
-        'SHREK': ['Eduardo Teixeira Dallago'],
-        'STRANGER THINGS': ['Aline Araujo de Melo'],
-        'SUITS': ['Bernardo Correia Pereira', 'Matheus Henrique da Silva Tres', 'Vinicius Estuqui Galandrini'],
         'THE 100': ['Caio Jazar Rodrigues', 'Flavia de Andrade Lima', 'Luiz Carlos Ferreira Hada'],
-        'THE CHOSEN': ['Davi Rosa Larini', 'Enzo Cardoso Pereira', 'Karina Pereira dos Santos', 'Maria Fernanda Crespo Cândido Alves'],
-        'THE CROWN': ['Lara Becker', 'Lorena Becker'],
-        'THE GODFATHER': ['Gustavo Da Costa Schnaider', 'Matheus Guilherme Sartor'],
-        'THE LAST OF US': ['Bernardo Krieger Cordeiro', 'Davi Knapp Dassoler'],
-        'THE OFFICE': ['Ana Julia Cruz Da Silva', 'Bruno Luiz Zeferino', 'Julia de Almeida Antunes', 'Nicole Mattos Paiva', 'Nicoly Cantareli Hamade'],
-        'THIS IS US': ['Andreia Campagnim', 'Sueli Marta do Nascimento de Souza'],
-        'TITANIC': ['Hector Augusto Ferreira Machado'],
-        'VIP / TURMAS INDIVIDUAIS': ['Brenda Camargo Petri de Oliveira', 'Julia Viana Linhares Pereira'],
+        'BRIDGE': ['Aluno 1 Bridge', 'Aluno 2 Bridge'], // Exemplo genérico se não achar
         'DEFAULT': ['Aluno Não Identificado']
     };
 
-    let allClasses = [];
     let currentTeacher = null;
-    let currentStatus = 'realizada';
+    let scheduleData = [];
+    let radData = JSON.parse(localStorage.getItem('teacher_rad_data')) || {};
+    let planData = JSON.parse(localStorage.getItem('teacher_plan_data')) || {};
 
+    // --- INICIALIZAÇÃO ---
     document.addEventListener('DOMContentLoaded', () => {
         fetchSchedule();
     });
 
     async function fetchSchedule() {
         try {
-            const response = await fetch(SHEET_URL);
-            if (!response.ok) throw new Error('Erro na conexão');
-            const csvText = await response.text();
-            parseCSV(csvText);
+            const res = await fetch(SHEET_URL);
+            const text = await res.text();
+            parseCSV(text);
             renderTeacherSelection();
-        } catch (error) {
+        } catch (e) {
             document.getElementById('loading').style.display = 'none';
-            const errDiv = document.getElementById('error-message');
-            errDiv.style.display = 'block';
-            errDiv.textContent = 'Erro ao carregar planilha. Verifique a conexão.';
+            document.getElementById('error-msg').style.display = 'block';
+            document.getElementById('error-msg').innerText = 'Erro ao carregar planilha. Verifique a conexão.';
         }
     }
 
     function parseCSV(text) {
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+        const lines = text.split('\n').filter(l => l.trim());
         if (lines.length < 2) return;
-
+        
         // Ignorar cabeçalho (linha 0)
-        allClasses = [];
+        scheduleData = [];
 
         for (let i = 1; i < lines.length; i++) {
-            // Split simples considerando aspas básicas
-            const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim().replace(/^"|"$/g, '').replace(/<.*?>/g, ''));
-            
-            if (row.length <= COLS.TIME) continue;
+            // Regex robusto para CSV
+            const row = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
+            const cleanRow = row.map(cell => cell ? cell.replace(/^"|"$/g, '').trim() : '');
 
-            const book = row[COLS.BOOK] || '';
-            const groupRaw = row[COLS.GROUP] || '';
-            const room = row[COLS.ROOM] || '';
-            const modal = row[COLS.MODAL] || '';
-            const time = row[COLS.TIME] || '';
-            
-            // Limpeza do nome da turma
-            let groupName = groupRaw.replace(/<.*?>/g, '').trim();
-            if (groupName.toLowerCase().includes('bridge')) groupName = 'TPWER ' + groupName;
-            
-            // Identificar se é In Company
-            const isInCompany = modal.toLowerCase().includes('in company') || 
-                                modal.toLowerCase().includes('in-c') || 
-                                room.toLowerCase().includes('hotel') || 
-                                room.toLowerCase().includes('empresa') ||
-                                groupName.toLowerCase().includes('in company');
+            if (!cleanRow[COLS.TIME]) continue;
+
+            const baseInfo = {
+                lang: cleanRow[COLS.LANG],
+                book: cleanRow[COLS.BOOK],
+                group: cleanRow[COLS.GROUP],
+                room: cleanRow[COLS.ROOM],
+                modal: cleanRow[COLS.MODAL],
+                time: cleanRow[COLS.TIME]
+            };
 
             DAYS_KEYS.forEach((dayKey, index) => {
-                const colIndex = COLS.TIME + 1 + index; // F, G, H...
-                if (colIndex >= row.length) return;
+                const teacherColIndex = COLS.TIME + 1 + index; // F=6 (0-indexed 5), G=6...
+                const teacherRaw = cleanRow[teacherColIndex] || '';
+                
+                // Encontrar professor válido na célula
+                const foundTeacher = VALID_TEACHERS.find(t => teacherRaw.toUpperCase().includes(t.name));
+                
+                if (foundTeacher) {
+                    // Limpeza do nome da turma (ex: "TPWER BRIDGE" -> "BRIDGE" para buscar alunos, mas exibe completo)
+                    let displayGroup = baseInfo.group;
+                    if (displayGroup.includes('BRIDGE') && !displayGroup.includes('TPWER')) {
+                        displayGroup = 'TPWER ' + displayGroup;
+                    }
 
-                const cellData = row[colIndex];
-                if (!cellData) return;
-
-                // Encontrar professor na célula
-                let teacherName = null;
-                VALID_TEACHERS.forEach(t => {
-                    if (cellData.toUpperCase().includes(t.name)) teacherName = t.name;
-                });
-
-                if (teacherName) {
-                    allClasses.push({
-                        id: `${teacherName}-${dayKey}-${time}-${i}`, // ID único
-                        dayKey,
-                        time,
-                        teacher: teacherName,
-                        book,
-                        group: groupName,
-                        room,
-                        modal,
-                        isInCompany,
-                        lang: row[COLS.LANG]
+                    scheduleData.push({
+                        id: `${dayKey}-${baseInfo.time}-${displayGroup}-${foundTeacher.name}`,
+                        dayKey: dayKey,
+                        ...baseInfo,
+                        teacher: foundTeacher.name,
+                        color: foundTeacher.color,
+                        displayGroup: displayGroup,
+                        isInCompany: baseInfo.modal.toLowerCase().includes('in company') || baseInfo.room.toLowerCase().includes('in company') || baseInfo.lang.toLowerCase().includes('espanhol') // Lógica simples para IN-C
                     });
                 }
             });
@@ -558,258 +605,366 @@
     }
 
     function renderTeacherSelection() {
-        const grid = document.getElementById('teachers-grid');
         document.getElementById('loading').style.display = 'none';
+        const grid = document.getElementById('teachers-grid');
         grid.innerHTML = '';
 
-        VALID_TEACHERS.sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
-            const hasClasses = allClasses.some(c => c.teacher === t.name);
+        VALID_TEACHERS.forEach(t => {
+            const hasClasses = scheduleData.some(s => s.teacher === t.name);
             const card = document.createElement('div');
             card.className = 'teacher-card';
             card.style.setProperty('--teacher-color', t.color);
             card.innerHTML = `
-                <div class="teacher-name" style="color:${t.color}">${t.name}</div>
-                <div class="teacher-stat">${hasClasses ? 'Ver Cronograma' : 'Sem aulas'}</div>
+                <div class="teacher-name" style="color: ${t.color}">${t.name}</div>
+                <div class="teacher-status">${hasClasses ? 'Toque para entrar' : 'Sem aulas'}</div>
             `;
-            if(hasClasses) card.onclick = () => selectTeacher(t);
+            if (hasClasses) {
+                card.onclick = () => loginTeacher(t);
+            } else {
+                card.style.opacity = '0.5';
+                card.style.cursor = 'not-allowed';
+            }
             grid.appendChild(card);
         });
     }
 
-    function selectTeacher(teacherObj) {
-        currentTeacher = teacherObj;
+    function loginTeacher(teacher) {
+        currentTeacher = teacher;
         document.getElementById('selection-screen').classList.remove('active');
-        document.getElementById('main-screen').classList.add('active');
-        document.getElementById('nav-controls').style.display = 'block';
-        document.getElementById('home-btn').style.display = 'block';
-        
-        document.getElementById('teacher-display-name').textContent = `Cronograma: ${teacherObj.name}`;
-        document.getElementById('teacher-display-name').style.color = teacherObj.color;
-        
-        switchTab('schedule');
-        renderSchedule();
-        updateCalculator();
+        document.getElementById('main-nav').style.display = 'flex';
+        switchView('dashboard');
+        loadDashboard();
     }
 
-    function showSelection() {
-        document.getElementById('main-screen').classList.remove('active');
-        document.getElementById('selection-screen').classList.add('active');
-        document.getElementById('nav-controls').style.display = 'none';
-        document.getElementById('home-btn').style.display = 'none';
+    function logout() {
         currentTeacher = null;
+        document.getElementById('main-nav').style.display = 'none';
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById('selection-screen').classList.add('active');
     }
 
-    function switchTab(tabName) {
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
+    function switchView(viewName) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
         
-        if (tabName === 'schedule') {
-            document.getElementById('tab-schedule').style.display = 'block';
-            document.getElementById('tab-calculator').style.display = 'none';
+        if (viewName === 'dashboard') {
+            document.getElementById('dashboard-view').classList.add('active');
+            document.getElementById('nav-dashboard').classList.add('active');
+            loadDashboard();
+        } else if (viewName === 'schedule') {
+            document.getElementById('schedule-view').classList.add('active');
+            document.getElementById('nav-schedule').classList.add('active');
             renderSchedule();
-        } else {
-            document.getElementById('tab-schedule').style.display = 'none';
-            document.getElementById('tab-calculator').style.display = 'block';
-            updateCalculator();
+        } else if (viewName === 'calculator') {
+            document.getElementById('calculator-view').classList.add('active');
+            document.getElementById('nav-calculator').classList.add('active');
+            loadCalculator();
         }
     }
 
+    // --- DASHBOARD LOGIC ---
+    function loadDashboard() {
+        const myClasses = scheduleData.filter(s => s.teacher === currentTeacher.name);
+        
+        // 1. Total Aulas Semana
+        document.getElementById('dash-total-week').innerText = myClasses.length;
+
+        // 2. Pendências RAD (Aulas passadas sem status 'realized')
+        const now = new Date();
+        // Simplificação: considera pendente se não tem registro salvo no RAD para aquela ID
+        // Em produção, compararia datas reais
+        const pendingCount = myClasses.filter(c => {
+            const rec = radData[c.id];
+            return !rec || (rec.status !== 'realized' && rec.status !== 'noshow' && rec.status !== 'cancelled');
+        }).length;
+        document.getElementById('dash-pending-rad').innerText = pendingCount;
+
+        // 3. Próxima Aula
+        // Ordenar por dia e hora
+        const dayOrder = { 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5 };
+        const todayIdx = now.getDay(); // 0=Sun, 1=Mon...
+        // Lógica simplificada de "próxima": pega a primeira da lista ordenada que ainda não passou (ou a primeira se não tiver lógica de data real)
+        // Para demo, vamos pegar a primeira da lista ordenada
+        const sortedClasses = [...myClasses].sort((a, b) => {
+            if (dayOrder[a.dayKey] !== dayOrder[b.dayKey]) return dayOrder[a.dayKey] - dayOrder[b.dayKey];
+            return a.time.localeCompare(b.time);
+        });
+
+        if (sortedClasses.length > 0) {
+            const next = sortedClasses[0];
+            document.getElementById('dash-next-class').innerText = next.time;
+            document.getElementById('dash-next-group').innerText = next.displayGroup;
+            
+            document.getElementById('next-class-detail-card').style.display = 'block';
+            document.getElementById('next-class-time-big').innerText = next.time;
+            document.getElementById('next-class-group').innerText = next.displayGroup;
+            document.getElementById('next-class-book').innerText = next.book;
+            document.getElementById('next-class-room').innerText = next.room;
+            document.getElementById('next-class-modal').innerText = next.modal;
+
+            // Guardar referência para botões
+            window.nextClassId = next.id;
+        } else {
+            document.getElementById('next-class-detail-card').style.display = 'none';
+        }
+
+        // Preview da semana
+        const previewContainer = document.getElementById('dashboard-schedule-preview');
+        previewContainer.innerHTML = '';
+        // Mostra apenas os próximos 3 dias com aulas
+        const daysToShow = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+        let count = 0;
+        daysToShow.forEach(day => {
+            const dayClasses = myClasses.filter(c => c.dayKey === day);
+            if (dayClasses.length > 0 && count < 3) {
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.style.padding = '1rem';
+                div.style.marginBottom = '0.5rem';
+                div.innerHTML = `<strong>${getDayName(day)}</strong>: ${dayClasses.length} aulas`;
+                previewContainer.appendChild(div);
+                count++;
+            }
+        });
+    }
+
+    function openRadForNext() {
+        if (window.nextClassId) openRad(window.nextClassId);
+    }
+    function openLessonPlanForNext() {
+        if (window.nextClassId) openLessonPlan(window.nextClassId);
+    }
+
+    // --- SCHEDULE RENDER ---
     function renderSchedule() {
         const container = document.getElementById('schedule-content');
         container.innerHTML = '';
+        const myClasses = scheduleData.filter(s => s.teacher === currentTeacher.name);
         
-        const teacherClasses = allClasses.filter(c => c.teacher === currentTeacher.name);
-        
-        DAYS_KEYS.forEach(dayKey => {
-            const dayClasses = teacherClasses.filter(c => c.dayKey === dayKey).sort((a,b) => a.time.localeCompare(b.time));
+        const daysMap = { 'Mon': 'Segunda', 'Tue': 'Terça', 'Wed': 'Quarta', 'Thu': 'Quinta', 'Fri': 'Sexta' };
+
+        Object.keys(daysMap).forEach(dayKey => {
+            const dayClasses = myClasses.filter(c => c.dayKey === dayKey);
             if (dayClasses.length === 0) return;
 
-            const section = document.createElement('div');
-            section.className = 'day-section';
-            section.innerHTML = `<div class="day-header">${DAYS_MAP[dayKey]}</div>`;
+            const dayBlock = document.createElement('div');
+            dayBlock.className = 'day-block';
             
-            const grid = document.createElement('div');
-            grid.className = 'classes-grid';
-
-            dayClasses.forEach(cls => {
-                const savedData = getRadData(cls.id);
-                const statusClass = savedData ? (savedData.status === 'realizada' ? 'completed' : savedData.status === 'noshow' ? 'noshow' : 'cancelled') : '';
+            let classesHtml = '';
+            dayClasses.sort((a,b) => a.time.localeCompare(b.time)).forEach(cls => {
+                const radRec = radData[cls.id];
+                const statusClass = radRec ? `status-${radRec.status}` : '';
+                const hasRad = radRec ? 'has-rad' : '';
                 
-                let badges = `
-                    <span class="badge badge-group">${cls.group}</span>
-                    <span class="badge badge-book">${cls.book || 'N/A'}</span>
-                    <span class="badge badge-room">📍 ${cls.room || 'N/A'}</span>
-                `;
-                if (cls.isInCompany) badges += `<span class="badge badge-incompany">In Company</span>`;
+                // Ícone de status
+                let statusIcon = '';
+                if(radRec?.status === 'realized') statusIcon = '✅';
+                if(radRec?.status === 'noshow') statusIcon = '⚠️';
+                if(radRec?.status === 'cancelled') statusIcon = '❌';
 
-                const card = document.createElement('div');
-                card.className = `class-card ${statusClass}`;
-                card.innerHTML = `
-                    <span class="class-time">⏰ ${cls.time}</span>
-                    <div class="badges">${badges}</div>
-                    <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem;">
-                        ${savedData ? `Status: <strong style="color:${getStatusColor(savedData.status)}">${formatStatus(savedData.status)}</strong>` : 'Aula não registrada'}
-                    </div>
-                    <div class="rad-actions">
-                        <button class="btn-rad btn-rad-primary" onclick="openRadModal('${cls.id}')">RAD</button>
+                classesHtml += `
+                    <div class="class-item ${statusClass} ${hasRad}">
+                        <div class="class-time">${cls.time} ${statusIcon}</div>
+                        <div class="class-info"><strong>${cls.displayGroup}</strong> (${cls.book})</div>
+                        <div class="class-info" style="font-size:0.8rem">${cls.modal} • Sala ${cls.room}</div>
+                        <div class="class-actions">
+                            <button class="btn btn-sm btn-primary" onclick="openRad('${cls.id}')">RAD</button>
+                            <button class="btn btn-sm btn-outline" onclick="openLessonPlan('${cls.id}')">Plan</button>
+                        </div>
                     </div>
                 `;
-                grid.appendChild(card);
             });
 
-            section.appendChild(grid);
-            container.appendChild(section);
+            dayBlock.innerHTML = `
+                <div class="day-header" style="border-left: 4px solid ${currentTeacher.color}">
+                    ${daysMap[dayKey]}
+                    <span style="font-size:0.8rem; font-weight:400; opacity:0.7">${dayClasses.length} aulas</span>
+                </div>
+                <div class="classes-grid">${classesHtml}</div>
+            `;
+            container.appendChild(dayBlock);
         });
     }
 
-    function getStatusColor(status) {
-        if (status === 'realizada') return 'var(--success)';
-        if (status === 'noshow') return 'var(--danger)';
-        return 'var(--warning)';
-    }
-
-    function formatStatus(s) {
-        if (s === 'realizada') return 'Realizada';
-        if (s === 'noshow') return 'No Show';
-        return 'Cancelada';
-    }
-
-    // --- Lógica do RAD ---
-
-    function openRadModal(classId) {
-        const cls = allClasses.find(c => c.id === classId);
+    // --- RAD SYSTEM ---
+    function openRad(classId) {
+        const cls = scheduleData.find(c => c.id === classId);
         if (!cls) return;
 
         document.getElementById('rad-class-id').value = classId;
-        document.getElementById('rad-book').value = cls.book;
-        document.getElementById('rad-lesson').value = '';
-        document.getElementById('rad-reason').value = '';
         
-        // Carregar alunos
-        const students = STUDENTS_DB[cls.group] || STUDENTS_DB['DEFAULT'];
-        const attContainer = document.getElementById('attendance-container');
-        attContainer.innerHTML = '';
+        // Carregar dados salvos ou padrão
+        const saved = radData[classId] || {};
+        document.getElementById('rad-status').value = saved.status || 'pending';
+        document.getElementById('rad-book').value = saved.book || cls.book;
+        document.getElementById('rad-lesson').value = saved.lesson || '';
+        document.getElementById('rad-obs').value = saved.obs || '';
         
-        students.forEach((name, idx) => {
-            const div = document.createElement('div');
-            div.className = 'student-item';
-            div.innerHTML = `
-                <input type="checkbox" class="student-checkbox" id="stu-${idx}" checked>
-                <label for="stu-${idx}" style="color:var(--text-main)">${name}</label>
-            `;
-            attContainer.appendChild(div);
-        });
-
-        // Restaurar dados salvos se existirem
-        const saved = getRadData(classId);
-        if (saved) {
-            setStatus(saved.status);
-            document.getElementById('rad-lesson').value = saved.lesson || '';
-            // Restaurar checkboxes (simplificado: se status for realizada, todos checkados por padrão, senão reset)
-            if (saved.status === 'realizada' && saved.attendance) {
-                // Lógica complexa de restore omitida para brevidade, assume-se presença total se realizada
-            }
-        } else {
-            setStatus('realizada');
-        }
+        toggleRadFields();
+        renderAttendanceList(cls, saved.attendance || []);
 
         document.getElementById('rad-modal').style.display = 'flex';
     }
 
-    function closeRadModal() {
-        document.getElementById('rad-modal').style.display = 'none';
+    function toggleRadFields() {
+        const status = document.getElementById('rad-status').value;
+        const details = document.getElementById('rad-details-fields');
+        details.style.display = (status === 'realized' || status === 'noshow') ? 'block' : 'none';
     }
 
-    function setStatus(status) {
-        currentStatus = status;
-        document.querySelectorAll('.status-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.status === status);
-        });
+    function renderAttendanceList(cls, attendedList) {
+        const listContainer = document.getElementById('rad-attendance-list');
+        listContainer.innerHTML = '';
         
-        const detailsSec = document.getElementById('rad-details-section');
-        const noshowNote = document.getElementById('rad-noshow-note');
-        
-        if (status === 'cancelada' || status === 'noshow') {
-            detailsSec.style.display = 'none';
-            if (status === 'noshow') noshowNote.style.display = 'block';
-            else noshowNote.style.display = 'none';
-        } else {
-            detailsSec.style.display = 'block';
-            noshowNote.style.display = 'none';
+        // Buscar alunos pelo nome da turma (match parcial)
+        let students = STUDENTS_DB['DEFAULT'];
+        for (const key in STUDENTS_DB) {
+            if (cls.displayGroup.toUpperCase().includes(key)) {
+                students = STUDENTS_DB[key];
+                break;
+            }
         }
-    }
+        // Fallback se não achar nenhum match específico
+        if (students === STUDENTS_DB['DEFAULT'] && cls.displayGroup) {
+             students = [`Aluno de ${cls.displayGroup} 1`, `Aluno de ${cls.displayGroup} 2`];
+        }
 
-    function clearRadForm() {
-        const id = document.getElementById('rad-class-id').value;
-        localStorage.removeItem(`rad_${id}`);
-        closeRadModal();
-        renderSchedule();
-        updateCalculator();
+        students.forEach((name, idx) => {
+            const isPresent = attendedList.includes(name);
+            const item = document.createElement('div');
+            item.className = 'student-item';
+            item.innerHTML = `
+                <span>${name}</span>
+                <input type="checkbox" class="checkbox-custom" ${isPresent ? 'checked' : ''} data-name="${name}">
+            `;
+            listContainer.appendChild(item);
+        });
     }
 
     function saveRad() {
         const id = document.getElementById('rad-class-id').value;
-        const lesson = document.getElementById('rad-lesson').value;
-        const reason = document.getElementById('rad-reason').value;
+        const status = document.getElementById('rad-status').value;
         
-        // Coletar presença
         const attendance = [];
-        document.querySelectorAll('.student-checkbox').forEach((cb, idx) => {
-            if (cb.checked) attendance.push(idx);
+        document.querySelectorAll('#rad-attendance-list input:checked').forEach(chk => {
+            attendance.push(chk.dataset.name);
         });
 
-        const data = {
-            status: currentStatus,
-            lesson,
-            reason,
-            attendance,
+        radData[id] = {
+            status: status,
+            book: document.getElementById('rad-book').value,
+            lesson: document.getElementById('rad-lesson').value,
+            obs: document.getElementById('rad-obs').value,
+            attendance: attendance,
             timestamp: new Date().toISOString()
         };
 
-        localStorage.setItem(`rad_${id}`, JSON.stringify(data));
-        closeRadModal();
-        renderSchedule();
-        updateCalculator();
+        localStorage.setItem('teacher_rad_data', JSON.stringify(radData));
+        closeModal('rad-modal');
+        alert('RAD Salvo com sucesso!');
+        if(document.getElementById('schedule-view').classList.contains('active')) renderSchedule();
+        if(document.getElementById('dashboard-view').classList.contains('active')) loadDashboard();
     }
 
-    function getRadData(id) {
-        const data = localStorage.getItem(`rad_${id}`);
-        return data ? JSON.parse(data) : null;
+    function clearRad() {
+        if(confirm('Tem certeza que deseja limpar este RAD?')) {
+            const id = document.getElementById('rad-class-id').value;
+            delete radData[id];
+            localStorage.setItem('teacher_rad_data', JSON.stringify(radData));
+            closeModal('rad-modal');
+            renderSchedule();
+        }
     }
 
-    // --- Calculadora ---
+    // --- LESSON PLAN SYSTEM ---
+    function openLessonPlan(classId) {
+        const cls = scheduleData.find(c => c.id === classId);
+        if (!cls) return;
 
-    function updateCalculator() {
-        if (!currentTeacher) return;
+        document.getElementById('plan-class-id').value = classId;
+        document.getElementById('plan-group-name').innerText = cls.displayGroup;
+        document.getElementById('plan-time').innerText = `${getDayName(cls.dayKey)} às ${cls.time}`;
 
-        const teacherClasses = allClasses.filter(c => c.teacher === currentTeacher.name);
+        const saved = planData[classId] || {};
+        document.getElementById('plan-objective').value = saved.objective || '';
+        document.getElementById('plan-materials').value = saved.materials || '';
+        document.getElementById('plan-steps').value = saved.steps || '';
+
+        document.getElementById('plan-modal').style.display = 'flex';
+    }
+
+    function saveLessonPlan() {
+        const id = document.getElementById('plan-class-id').value;
+        planData[id] = {
+            objective: document.getElementById('plan-objective').value,
+            materials: document.getElementById('plan-materials').value,
+            steps: document.getElementById('plan-steps').value,
+            updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem('teacher_plan_data', JSON.stringify(planData));
+        closeModal('plan-modal');
+        alert('Lesson Plan Salvo!');
+    }
+
+    // --- CALCULATOR SYSTEM ---
+    function loadCalculator() {
+        const myClasses = scheduleData.filter(s => s.teacher === currentTeacher.name);
         
-        let schoolDone = 0, inCompanyDone = 0;
-        let schoolNoShow = 0, inCompanyNoShow = 0;
+        let schoolDone = 0, inCompDone = 0;
+        let schoolNoShow = 0, inCompNoShow = 0;
+        const recentList = document.getElementById('calc-recent-list');
+        recentList.innerHTML = '';
 
-        teacherClasses.forEach(cls => {
-            const rad = getRadData(cls.id);
-            if (!rad) return;
+        myClasses.forEach(cls => {
+            const rec = radData[cls.id];
+            if (rec && rec.status !== 'pending') {
+                const isIC = cls.isInCompany;
+                
+                if (rec.status === 'realized') {
+                    if (isIC) inCompDone++; else schoolDone++;
+                } else if (rec.status === 'noshow') {
+                    if (isIC) inCompNoShow++; else schoolNoShow++;
+                }
 
-            if (rad.status === 'realizada') {
-                if (cls.isInCompany) inCompanyDone++;
-                else schoolDone++;
-            } else if (rad.status === 'noshow') {
-                if (cls.isInCompany) inCompanyNoShow++;
-                else schoolNoShow++;
+                // Adicionar à lista recente (apenas os últimos 5)
+                if (recentList.children.length < 5) {
+                    const div = document.createElement('div');
+                    div.style.padding = '0.5rem';
+                    div.style.background = 'rgba(255,255,255,0.05)';
+                    div.style.borderRadius = '4px';
+                    div.style.display = 'flex';
+                    div.style.justifyContent = 'space-between';
+                    
+                    let color = rec.status === 'realized' ? 'var(--success)' : 'var(--warning)';
+                    let label = rec.status === 'realized' ? 'Realizada' : 'No Show';
+                    let typeLabel = isIC ? 'IN-C' : 'Escola';
+
+                    div.innerHTML = `
+                        <span>${cls.displayGroup} (${typeLabel})</span>
+                        <span style="color:${color}; font-weight:bold">${label}</span>
+                    `;
+                    recentList.appendChild(div);
+                }
             }
         });
 
-        document.getElementById('count-school-done').textContent = schoolDone;
-        document.getElementById('count-incompany-done').textContent = inCompanyDone;
-        document.getElementById('count-school-noshow').textContent = schoolNoShow;
-        document.getElementById('count-incompany-noshow').textContent = inCompanyNoShow;
+        document.getElementById('calc-school-done').innerText = schoolDone;
+        document.getElementById('calc-incompany-done').innerText = inCompDone;
+        document.getElementById('calc-school-noshow').innerText = schoolNoShow;
+        document.getElementById('calc-incompany-noshow').innerText = inCompNoShow;
     }
 
-    function clearAllData() {
-        if(confirm('Tem certeza? Isso apagará todos os registros RAD deste mês.')) {
-            localStorage.clear();
-            location.reload();
+    // --- UTILS ---
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function getDayName(key) {
+        const map = { 'Mon': 'Seg', 'Tue': 'Ter', 'Wed': 'Qua', 'Thu': 'Qui', 'Fri': 'Sex' };
+        return map[key] || key;
+    }
+
+    // Fechar modal ao clicar fora
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.style.display = 'none';
         }
     }
 </script>
