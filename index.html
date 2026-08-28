@@ -22,7 +22,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Courier New', Courier, monospace; /* Fonte técnica/futurista */
+            font-family: 'Courier New', Courier, monospace;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -33,7 +33,6 @@
             overflow-x: hidden;
         }
 
-        /* Utilitários de Layout */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -46,7 +45,6 @@
         .center { align-items: center; justify-content: center; }
         .between { justify-content: space-between; }
 
-        /* Header */
         header {
             text-align: center;
             padding: 30px 0;
@@ -66,7 +64,6 @@
 
         h2, h3 { text-transform: uppercase; letter-spacing: 2px; }
 
-        /* Botões Gerais */
         button {
             background: transparent;
             border: 1px solid var(--neon-blue);
@@ -77,7 +74,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: bold;
-            border-radius: 0; /* BORDAS RETAS */
+            border-radius: 0;
             margin: 5px;
         }
 
@@ -92,12 +89,16 @@
             color: #000;
         }
 
-        /* Grid de Professores (Centralizado) */
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .teachers-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 20px;
-            justify-items: center; /* Centraliza os cards */
+            justify-items: center;
             margin-top: 20px;
         }
 
@@ -110,7 +111,7 @@
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
-            border-radius: 0; /* BORDAS RETAS */
+            border-radius: 0;
             position: relative;
             overflow: hidden;
         }
@@ -128,7 +129,6 @@
             text-transform: uppercase;
         }
 
-        /* Tela do Professor */
         .schedule-header {
             display: flex;
             flex-direction: column;
@@ -145,7 +145,6 @@
             flex-wrap: wrap;
         }
 
-        /* Cards de Aula */
         .day-section {
             margin-bottom: 40px;
             border: 1px solid var(--border-color);
@@ -242,7 +241,6 @@
         .status-noshow { background: var(--danger); box-shadow: 0 0 5px var(--danger); }
         .status-cancel { background: var(--warning); box-shadow: 0 0 5px var(--warning); }
 
-        /* Modais */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -286,7 +284,6 @@
             box-shadow: none;
         }
 
-        /* Formulários e Inputs */
         input, select, textarea {
             width: 100%;
             background: #111;
@@ -324,7 +321,6 @@
             font-size: 0.9rem;
         }
 
-        /* Lista de Presença */
         .attendance-table {
             width: 100%;
             border-collapse: collapse;
@@ -346,7 +342,6 @@
         .att-present { color: var(--success); font-weight: bold; }
         .att-absent { color: var(--danger); font-weight: bold; }
 
-        /* Loading */
         #loading-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -362,12 +357,22 @@
             height: 50px;
             border: 3px solid #333;
             border-top: 3px solid var(--neon-blue);
-            border-radius: 0; /* Quadrado girando */
+            border-radius: 0;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Responsividade Mobile */
+        .error-message {
+            color: var(--danger);
+            font-size: 0.85rem;
+            padding: 8px;
+            border: 1px solid var(--danger);
+            margin-bottom: 10px;
+            background: rgba(255, 42, 42, 0.1);
+            display: none;
+        }
+        .error-message.show { display: block; }
+
         @media (max-width: 600px) {
             .teachers-grid { grid-template-columns: repeat(2, 1fr); }
             .classes-list { grid-template-columns: 1fr; }
@@ -378,7 +383,6 @@
 </head>
 <body>
 
-    <!-- Loading Screen -->
     <div id="loading-screen">
         <div class="loader"></div>
         <p style="margin-top: 20px; color: var(--neon-blue); text-transform: uppercase;">Carregando Sistema...</p>
@@ -390,36 +394,26 @@
     </header>
 
     <div class="container">
-        <!-- Tela Inicial: Seleção de Teachers -->
         <div id="selection-screen">
-            <div class="teachers-grid" id="teachers-grid">
-                <!-- Cards gerados via JS -->
-            </div>
+            <div class="teachers-grid" id="teachers-grid"></div>
             
             <div style="text-align: center; margin-top: 40px;">
                 <button onclick="openAttendanceList()">📋 Lista de Presença Geral</button>
             </div>
         </div>
 
-        <!-- Tela do Cronograma do Teacher -->
         <div id="schedule-screen" class="hidden">
             <div class="schedule-header">
                 <button onclick="showSelection()" style="align-self: flex-start;">← Voltar</button>
                 <h2 id="current-teacher-name" style="color: var(--neon-blue); text-align: center;"></h2>
                 
-                <!-- Seletor de Semana Simplificado -->
-                <div class="week-selector" id="week-selector">
-                    <!-- Botões de semana gerados via JS -->
-                </div>
+                <div class="week-selector" id="week-selector"></div>
             </div>
 
-            <div id="schedule-content">
-                <!-- Conteúdo da semana -->
-            </div>
+            <div id="schedule-content"></div>
         </div>
     </div>
 
-    <!-- MODAL RAD -->
     <div id="rad-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header">
@@ -428,6 +422,8 @@
             </div>
             
             <div id="rad-class-info" style="margin-bottom: 15px; color: var(--text-sec); font-size: 0.9rem;"></div>
+
+            <div id="rad-error" class="error-message"></div>
 
             <label style="color: var(--neon-blue); text-transform: uppercase; font-size: 0.8rem;">Status da Aula:</label>
             <select id="rad-status" onchange="toggleRadFields()">
@@ -441,14 +437,10 @@
                 <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
                 
                 <label style="color: var(--neon-blue); text-transform: uppercase; font-size: 0.8rem;">Lesson Plan Realizada:</label>
-                <div id="lesson-plan-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #333; padding: 5px;">
-                    <!-- Checkboxes das lessons -->
-                </div>
+                <div id="lesson-plan-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #333; padding: 5px;"></div>
 
                 <label style="color: var(--neon-blue); text-transform: uppercase; font-size: 0.8rem;">Lista de Presença:</label>
-                <div id="attendance-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
-                    <!-- Lista de alunos -->
-                </div>
+                <div id="attendance-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;"></div>
 
                 <button onclick="saveRad()" style="width: 100%; background: var(--neon-blue); color: #000;">SALVAR RAD</button>
                 <button onclick="clearRad()" style="width: 100%; border-color: var(--danger); color: var(--danger); margin-top: 5px;">LIMPAR DADOS</button>
@@ -456,7 +448,6 @@
         </div>
     </div>
 
-    <!-- MODAL LISTA DE PRESENÇA GERAL -->
     <div id="attendance-modal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header">
@@ -471,18 +462,14 @@
                 <input type="month" id="att-month-select" onchange="loadAttendanceTable()" style="width: auto;">
             </div>
 
-            <div id="attendance-table-container" style="overflow-x: auto; margin-top: 20px;">
-                <!-- Tabela gerada via JS -->
-            </div>
+            <div id="attendance-table-container" style="overflow-x: auto; margin-top: 20px;"></div>
         </div>
     </div>
 
 <script>
-    // CONFIGURAÇÕES
     const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
 
-    // PROFESSORES VÁLIDOS (Adicionados Carla e Luisa)
     const VALID_TEACHERS = [
         { name: 'MYCAEL', color: '#FF6B6B' },
         { name: 'HOPE', color: '#FFE66D' },
@@ -493,11 +480,10 @@
         { name: 'IAGO', color: '#FF9F43' },
         { name: 'SARA', color: '#54a0ff' },
         { name: 'CAROL', color: '#5f27cd' },
-        { name: 'CARLA', color: '#00ff9d' }, // Nova
-        { name: 'LUISA', color: '#ff0055' }  // Nova
+        { name: 'CARLA', color: '#00ff9d' },
+        { name: 'LUISA', color: '#ff0055' }
     ];
 
-    // ESTRUTURA DOS LIVROS (LESSON PLAN)
     const BOOKS_STRUCTURE = {
         'G1': generateLessons(1, 42),
         'G2': generateLessons(2, 46),
@@ -506,7 +492,7 @@
         'G5': generateLessons(5, 46),
         'G6': generateLessons(6, 46),
         'G7': generateLessons(7, 46),
-        'G8': generateLessons(8, 46), // The Crown (Book 8 na lógica, mas pode variar)
+        'G8': generateLessons(8, 46),
         'G9': generateLessons(9, 46),
         'AW': generateLessons(10, 46),
         'DEFAULT': generateLessons(0, 46)
@@ -523,21 +509,18 @@
         return lessons;
     }
 
-    // ESTADO GLOBAL
     let scheduleData = [];
-    let studentsData = {}; // Mapa: Turma -> [Alunos]
+    let studentsData = {};
     let currentTeacher = null;
     let currentWeekData = [];
-    let allWeeks = {}; // Mapa: NomeSemana -> Dados
+    let allWeeks = {};
 
-    // INICIALIZAÇÃO
     document.addEventListener('DOMContentLoaded', () => {
         Promise.all([fetchSchedule(), fetchStudents()])
             .then(() => {
                 document.getElementById('loading-screen').classList.add('hidden');
                 renderTeachers();
                 populateGroupSelect();
-                // Set month input to current month
                 const now = new Date();
                 document.getElementById('att-month-select').value = now.toISOString().slice(0, 7);
             })
@@ -567,28 +550,20 @@
         const lines = text.split('\n').map(l => l.trim()).filter(l => l);
         if(lines.length < 2) return;
 
-        // Cabeçalho: A=Idioma, B=Book, C=Group, D=Room, E=Modal, F=Horario, G..K=Dias
-        // Vamos assumir que a primeira linha é cabeçalho e as seguintes são dados.
-        // Precisamos identificar as colunas de dias dinamicamente ou fixar se a estrutura for rígida.
-        // Estrutura dada: A(Idioma), B(Book), C(Group), D(Room), E(Modal), F(Horario), G(Seg), H(Ter), I(Qua), J(Qui), K(Sex)
-        
         const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
         
-        // Mapeamento fixo baseado na descrição do usuário
-        const COL_BOOK = 1; // B
-        const COL_GROUP = 2; // C
-        const COL_ROOM = 3; // D
-        const COL_MODAL = 4; // E
-        const COL_TIME = 5; // F
-        const DAYS_START = 6; // G (Index 6)
+        const COL_BOOK = 1;
+        const COL_GROUP = 2;
+        const COL_ROOM = 3;
+        const COL_MODAL = 4;
+        const COL_TIME = 5;
+        const DAYS_START = 6;
 
-        const daysMap = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta']; // Apenas 5 dias de aula normal? Ou inclui Sábado?
-        // O prompt disse "G H I J K segunda a sexta". Vou usar isso.
+        const daysMap = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
 
         scheduleData = [];
 
         for(let i=1; i<lines.length; i++) {
-            // Split simples, cuidado com vírgulas dentro de aspas (não tratado profundamente aqui, mas o CSV do Google costuma ser limpo)
             const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
             
             const book = row[COL_BOOK] || '';
@@ -599,24 +574,19 @@
 
             if(!time) continue;
 
-            // Iterar dias (G a K -> indices 6 a 10)
             for(let d=0; d<5; d++) {
                 const cellContent = row[DAYS_START + d];
                 if(cellContent && cellContent.trim() !== '') {
-                    // Extrair professor da célula
                     const teacherName = findTeacherInString(cellContent);
                     
                     if(teacherName) {
-                        // Limpar nome do professor da string da célula para sobrar info extra se houver
-                        // Mas geralmente a célula é só o nome ou "Nome - Obs"
-                        
                         scheduleData.push({
                             book: cleanText(book),
                             group: cleanText(groupRaw),
                             room: cleanText(room),
                             modal: cleanText(modal),
                             time: cleanText(time),
-                            dayIndex: d, // 0=Seg, 1=Ter...
+                            dayIndex: d,
                             dayName: daysMap[d],
                             teacher: teacherName,
                             rawCell: cellContent
@@ -626,9 +596,6 @@
             }
         }
 
-        // Agrupar por semana (Como só temos uma aba "This Week" agora, tudo vai pra lá)
-        // Mas para suportar a lógica de "Next Week" se adicionar colunas depois:
-        // Por enquanto, vamos tratar tudo como "This Week" conforme pedido de simplificação.
         allWeeks = {
             'This Week': scheduleData
         };
@@ -638,7 +605,6 @@
         const lines = text.split('\n').map(l => l.trim()).filter(l => l);
         if(lines.length < 2) return;
         
-        // Col A: Turma, Col B: Aluno
         for(let i=1; i<lines.length; i++) {
             const parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
             if(parts.length >= 2) {
@@ -662,7 +628,6 @@
         return null;
     }
 
-    // RENDERIZAÇÃO
     function renderTeachers() {
         const grid = document.getElementById('teachers-grid');
         grid.innerHTML = '';
@@ -689,7 +654,7 @@
         title.style.color = color;
 
         renderWeekSelector();
-        loadWeekData('This Week'); // Carrega a única aba disponível por padrão
+        loadWeekData('This Week');
     }
 
     function showSelection() {
@@ -702,8 +667,6 @@
         const container = document.getElementById('week-selector');
         container.innerHTML = '';
         
-        // Como simplificamos para ler apenas a Página 1, teremos apenas "This Week"
-        // Mas deixamos a estrutura pronta caso queira adicionar "Next Week" manualmente depois
         const weeks = Object.keys(allWeeks);
         
         weeks.forEach((weekName, index) => {
@@ -721,7 +684,6 @@
 
     function loadWeekData(weekName) {
         const data = allWeeks[weekName] || [];
-        // Filtrar pelo teacher atual
         currentWeekData = data.filter(item => item.teacher === currentTeacher.name);
         renderSchedule();
     }
@@ -735,7 +697,6 @@
             return;
         }
 
-        // Agrupar por dia
         const daysOrder = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
         
         daysOrder.forEach(day => {
@@ -756,7 +717,6 @@
                     const card = document.createElement('div');
                     card.className = 'class-card';
                     
-                    // Verificar status salvo
                     const radKey = getRadKey(cls);
                     const savedRad = localStorage.getItem(radKey);
                     const status = savedRad ? JSON.parse(savedRad).status : null;
@@ -766,14 +726,15 @@
                     if(status === 'noshow') statusBadge = '<div class="status-indicator status-noshow" title="No Show"></div>';
                     if(status === 'cancelada') statusBadge = '<div class="status-indicator status-cancel" title="Cancelada"></div>';
 
-                    // Próxima Lesson (Preview)
                     let nextLessonLabel = "Ver Lesson Plan";
                     if(savedRad) {
                         const parsed = JSON.parse(savedRad);
                         if(parsed.lessons && parsed.lessons.length > 0) {
-                            // Pega a última lesson marcada
                             const last = parsed.lessons[parsed.lessons.length-1];
-                            nextLessonLabel = `Próximo: Após ${last}`;
+                            const lastLabel = parsed.lessonLabels && parsed.lessonLabels.length > 0 
+                                ? parsed.lessonLabels[parsed.lessonLabels.length-1] 
+                                : last;
+                            nextLessonLabel = `Próximo: Após ${lastLabel}`;
                         }
                     }
 
@@ -786,7 +747,7 @@
                             <span class="badge badge-room">Sala: ${cls.room || '-'}</span>
                             <span class="badge badge-modal">${cls.modal || 'REGULAR'}</span>
                         </div>
-                        <div style="font-size:0.75rem; color:var(--neon-blue); margin: 5px 0; border-top:1px dashed #333; paddingTop:5px;">
+                        <div style="font-size:0.75rem; color:var(--neon-blue); margin: 5px 0; border-top:1px dashed #333; padding-top:5px;">
                             ${nextLessonLabel}
                         </div>
                         <button class="action-btn" onclick="openRad('${cls.time}', '${cls.group}', '${cls.book}', '${cls.room}', '${cls.dayName}')">ABRIR RAD</button>
@@ -800,7 +761,6 @@
         });
     }
 
-    // FUNÇÕES DO RAD
     let currentRadClass = null;
 
     function getRadKey(cls) {
@@ -817,20 +777,19 @@
             Turma: ${group} | Book: ${book} | Sala: ${room}
         `;
 
-        // Reset form
+        document.getElementById('rad-error').classList.remove('show');
+        document.getElementById('rad-error').textContent = '';
+
         document.getElementById('rad-status').value = '';
-        toggleRadFields();
+        document.getElementById('rad-fields').classList.add('hidden');
         
-        // Carregar dados salvos se existir
         const saved = localStorage.getItem(getRadKey(currentRadClass));
         if(saved) {
             const data = JSON.parse(saved);
             document.getElementById('rad-status').value = data.status;
             toggleRadFields();
             if(data.status && data.status !== '') {
-                // Restaurar checkboxes de lessons
                 renderLessonPlanCheckboxes(book, data.lessons || []);
-                // Restaurar presença
                 renderAttendanceCheckboxes(group, data.attendance || []);
             }
         } else {
@@ -852,7 +811,6 @@
         const container = document.getElementById('lesson-plan-container');
         container.innerHTML = '';
         
-        // Identificar qual estrutura de livro usar
         let structure = BOOKS_STRUCTURE['DEFAULT'];
         const bookClean = (bookRaw || '').toUpperCase();
         
@@ -884,23 +842,19 @@
         const container = document.getElementById('attendance-container');
         container.innerHTML = '';
         
-        // Tentar achar alunos
         let students = [];
-        // Busca exata ou parcial
         const keys = Object.keys(studentsData);
         const match = keys.find(k => k.toUpperCase() === groupRaw.toUpperCase() || groupRaw.toUpperCase().includes(k.toUpperCase()));
         
         if(match && studentsData[match]) {
             students = studentsData[match];
         } else {
-            // Fallback se não achar turma exata
-            students = ["Aluno 1", "Aluno 2", "Aluno 3"]; 
+            students = ["Aluno 1", "Aluno 2", "Aluno 3"];
         }
 
         students.forEach((student, idx) => {
             const div = document.createElement('div');
             div.className = 'checkbox-group';
-            // Marca como presente se estiver na lista de salvos
             const isPresent = presentList.includes(student) ? 'checked' : '';
             
             div.innerHTML = `
@@ -913,7 +867,21 @@
 
     function saveRad() {
         const status = document.getElementById('rad-status').value;
-        if(!status) { alert('Selecione o status da aula!'); return; }
+        const errorDiv = document.getElementById('rad-error');
+        
+        // VALIDAÇÃO OBRIGATÓRIA: Se o status for "Realizada", precisa marcar pelo menos uma lesson
+        if(status === 'realizada') {
+            const lessonsChecked = document.querySelectorAll('#lesson-plan-container input:checked');
+            if(lessonsChecked.length === 0) {
+                errorDiv.textContent = '⚠️ Para marcar a aula como REALIZADA, você deve selecionar pelo menos uma Lesson Plan!';
+                errorDiv.classList.add('show');
+                return;
+            }
+        }
+
+        // Limpa erro se passou na validação
+        errorDiv.classList.remove('show');
+        errorDiv.textContent = '';
 
         // Coletar Lessons
         const lessonsChecked = Array.from(document.querySelectorAll('#lesson-plan-container input:checked')).map(cb => cb.value);
@@ -932,20 +900,30 @@
             dateSaved: new Date().toISOString()
         };
 
-        localStorage.setItem(getRadKey(currentRadClass), JSON.stringify(data));
+        const radKey = getRadKey(currentRadClass);
+        localStorage.setItem(radKey, JSON.stringify(data));
+        
+        // Fechar modal e atualizar
         closeModal('rad-modal');
-        renderSchedule(); // Atualiza UI
-        alert('RAD Salvo com Sucesso!');
+        renderSchedule();
+        
+        alert('✅ RAD Salvo com Sucesso!');
     }
 
     function clearRad() {
         if(confirm('Tem certeza que deseja limpar todos os dados deste RAD?')) {
             localStorage.removeItem(getRadKey(currentRadClass));
-            openRad(currentRadClass.time, currentRadClass.group, currentRadClass.book, currentRadClass.room, currentRadClass.day);
+            // Recarregar o RAD com dados limpos
+            openRad(
+                currentRadClass.time, 
+                currentRadClass.group, 
+                currentRadClass.book, 
+                currentRadClass.room, 
+                currentRadClass.day
+            );
         }
     }
 
-    // LISTA DE PRESENÇA GERAL
     function openAttendanceList() {
         document.getElementById('attendance-modal').classList.remove('hidden');
         loadAttendanceTable();
@@ -964,7 +942,7 @@
 
     function loadAttendanceTable() {
         const group = document.getElementById('att-group-select').value;
-        const monthVal = document.getElementById('att-month-select').value; // YYYY-MM
+        const monthVal = document.getElementById('att-month-select').value;
         const container = document.getElementById('attendance-table-container');
         
         if(!group) {
@@ -978,7 +956,6 @@
             return;
         }
 
-        // Gerar dias do mês
         const [year, month] = monthVal.split('-').map(Number);
         const daysInMonth = new Date(year, month, 0).getDate();
         
@@ -991,19 +968,7 @@
         students.forEach(student => {
             html += `<tr><td style="text-align:left; padding-left:10px;">${student}</td>`;
             for(let d=1; d<=daysInMonth; d++) {
-                // Formatar data para buscar no RAD (YYYY-MM-DD)
-                // Nota: O RAD salva por "DayName_Time_Group". Para cruzar exatamente precisaríamos da data real da aula.
-                // Como simplificação, vamos mostrar visualmente. Para funcionalidade real de "ver se veio no dia X",
-                // precisaríamos mapear os RADs salvos para datas específicas.
-                // Aqui faremos uma simulação visual ou busca complexa se necessário.
-                // Implementação Simples: Mostrar células vazias para preencher manualmente ou indicar que precisa integrar com data real.
-                
-                // Melhoria: Buscar nos RADs salvos se existe algum registro nesse dia para esse grupo/aluno?
-                // Muito complexo para o escopo atual sem banco de dados.
-                // Vamos deixar as células clicáveis para marcar manualmente nesta visão?
-                // Ou apenas mostrar a tabela estrutural.
-                
-                html += `<td>-</td>`; 
+                html += `<td>-</td>`;
             }
             html += '</tr>';
         });
