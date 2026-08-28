@@ -300,6 +300,49 @@
             border-color: var(--neon-blue);
         }
 
+        .radio-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            background: #111;
+            padding: 8px;
+            border: 1px solid #222;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .radio-group:hover {
+            border-color: var(--neon-blue);
+        }
+
+        .radio-group input {
+            width: auto;
+            margin-right: 10px;
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+
+        .radio-group label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .radio-group.done {
+            border-color: var(--success);
+            background: rgba(0, 255, 157, 0.05);
+        }
+
+        .radio-group.done label {
+            color: var(--success);
+        }
+
+        .radio-group.done::after {
+            content: " ✓";
+            color: var(--success);
+            font-weight: bold;
+        }
+
         .checkbox-group {
             display: flex;
             align-items: center;
@@ -373,6 +416,45 @@
         }
         .error-message.show { display: block; }
 
+        .progress-bar {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin: 5px 0;
+            padding-top: 5px;
+            border-top: 1px dashed #333;
+        }
+
+        .progress-dot {
+            width: 16px;
+            height: 16px;
+            border: 1px solid #444;
+            display: inline-block;
+            font-size: 0.6rem;
+            text-align: center;
+            line-height: 16px;
+            color: #666;
+        }
+
+        .progress-dot.done {
+            border-color: var(--success);
+            background: rgba(0, 255, 157, 0.15);
+            color: var(--success);
+        }
+
+        .progress-dot.current {
+            border-color: var(--neon-blue);
+            background: rgba(0, 243, 255, 0.15);
+            color: var(--neon-blue);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+        }
+
+        .progress-label {
+            font-size: 0.7rem;
+            color: var(--text-sec);
+            margin-top: 3px;
+        }
+
         @media (max-width: 600px) {
             .teachers-grid { grid-template-columns: repeat(2, 1fr); }
             .classes-list { grid-template-columns: 1fr; }
@@ -436,8 +518,8 @@
             <div id="rad-fields" class="hidden">
                 <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
                 
-                <label style="color: var(--neon-blue); text-transform: uppercase; font-size: 0.8rem;">Lesson Plan Realizada:</label>
-                <div id="lesson-plan-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #333; padding: 5px;"></div>
+                <label style="color: var(--neon-blue); text-transform: uppercase; font-size: 0.8rem;">Selecione a Lesson realizada:</label>
+                <div id="lesson-plan-container" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #333; padding: 5px;"></div>
 
                 <label style="color: var(--neon-blue); text-transform: uppercase; font-size: 0.8rem;">Lista de Presença:</label>
                 <div id="attendance-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;"></div>
@@ -504,7 +586,7 @@
             let label = `Lesson ${i}`;
             if(i % 5 === 0 && i < total) label = `Revision ${i-4}-${i} / Reading`;
             if(i === total) label = `Test Book ${bookNum || '?'}`;
-            lessons.push({ id: `b${bookNum}_l${i}`, label: label });
+            lessons.push({ id: `b${bookNum}_l${i}`, label: label, number: i });
         }
         return lessons;
     }
@@ -688,6 +770,55 @@
         renderSchedule();
     }
 
+    function getProgressKey(group, book) {
+        return `progress_${group}_${book}`;
+    }
+
+    function getGroupProgress(group, book) {
+        const key = getProgressKey(group, book);
+        const data = localStorage.getItem(key);
+        if(data) {
+            try {
+                return JSON.parse(data);
+            } catch(e) {
+                return { lessons: [] };
+            }
+        }
+        return { lessons: [] };
+    }
+
+    function getNextLesson(group, book) {
+        const progress = getGroupProgress(group, book);
+        const structure = getBookStructure(book);
+        const doneLessons = progress.lessons || [];
+        
+        // Encontra a próxima lesson não feita
+        for(let i = 0; i < structure.length; i++) {
+            if(!doneLessons.includes(structure[i].id)) {
+                return structure[i];
+            }
+        }
+        return null; // Todas as lessons foram feitas
+    }
+
+    function getBookStructure(bookRaw) {
+        let structure = BOOKS_STRUCTURE['DEFAULT'];
+        const bookClean = (bookRaw || '').toUpperCase();
+        
+        if(bookClean.includes('G1')) structure = BOOKS_STRUCTURE['G1'];
+        else if(bookClean.includes('G2')) structure = BOOKS_STRUCTURE['G2'];
+        else if(bookClean.includes('G3')) structure = BOOKS_STRUCTURE['G3'];
+        else if(bookClean.includes('G4')) structure = BOOKS_STRUCTURE['G4'];
+        else if(bookClean.includes('G5')) structure = BOOKS_STRUCTURE['G5'];
+        else if(bookClean.includes('G6')) structure = BOOKS_STRUCTURE['G6'];
+        else if(bookClean.includes('G7')) structure = BOOKS_STRUCTURE['G7'];
+        else if(bookClean.includes('G8') || bookClean.includes('CROWN')) structure = BOOKS_STRUCTURE['G8'];
+        else if(bookClean.includes('G9') || bookClean.includes('SQUID')) structure = BOOKS_STRUCTURE['G9'];
+        else if(bookClean.includes('AW') || bookClean.includes('MIB')) structure = BOOKS_STRUCTURE['AW'];
+        
+        return structure;
+    }
+
     function renderSchedule() {
         const container = document.getElementById('schedule-content');
         container.innerHTML = '';
@@ -726,31 +857,51 @@
                     if(status === 'noshow') statusBadge = '<div class="status-indicator status-noshow" title="No Show"></div>';
                     if(status === 'cancelada') statusBadge = '<div class="status-indicator status-cancel" title="Cancelada"></div>';
 
-                    let nextLessonLabel = "Ver Lesson Plan";
-                    if(savedRad) {
-                        const parsed = JSON.parse(savedRad);
-                        if(parsed.lessons && parsed.lessons.length > 0) {
-                            const last = parsed.lessons[parsed.lessons.length-1];
-                            const lastLabel = parsed.lessonLabels && parsed.lessonLabels.length > 0 
-                                ? parsed.lessonLabels[parsed.lessonLabels.length-1] 
-                                : last;
-                            nextLessonLabel = `Próximo: Após ${lastLabel}`;
-                        }
+                    // Progresso da turma (global)
+                    const progress = getGroupProgress(cls.group, cls.book);
+                    const structure = getBookStructure(cls.book);
+                    const doneLessons = progress.lessons || [];
+                    const nextLesson = getNextLesson(cls.group, cls.book);
+                    
+                    // Renderizar dots de progresso
+                    let progressHtml = '<div class="progress-bar">';
+                    structure.slice(0, 10).forEach((lesson, index) => {
+                        const isDone = doneLessons.includes(lesson.id);
+                        const isCurrent = nextLesson && lesson.id === nextLesson.id && !isDone;
+                        let cls = 'progress-dot';
+                        if(isDone) cls += ' done';
+                        if(isCurrent) cls += ' current';
+                        progressHtml += `<span class="${cls}" title="${lesson.label}">${index + 1}</span>`;
+                    });
+                    if(structure.length > 10) {
+                        progressHtml += `<span class="progress-dot" style="border-color:#666;">+${structure.length - 10}</span>`;
                     }
+                    progressHtml += '</div>';
+                    
+                    let nextLabel = '✅ Curso Concluído!';
+                    if(nextLesson) {
+                        nextLabel = `Próxima: ${nextLesson.label}`;
+                    } else if(doneLessons.length > 0) {
+                        nextLabel = '✅ Todas as lessons concluídas!';
+                    }
+
+                    // Se já foi realizada, mostrar check
+                    const doneCheck = status === 'realizada' ? ' ✅' : '';
 
                     card.innerHTML = `
                         ${statusBadge}
-                        <span class="class-time">${cls.time}</span>
+                        <span class="class-time">${cls.time}${doneCheck}</span>
                         <div class="class-info"><strong>Turma:</strong> ${cls.group}</div>
                         <div class="class-info">
                             <span class="badge badge-book">${cls.book || 'N/A'}</span>
                             <span class="badge badge-room">Sala: ${cls.room || '-'}</span>
                             <span class="badge badge-modal">${cls.modal || 'REGULAR'}</span>
                         </div>
-                        <div style="font-size:0.75rem; color:var(--neon-blue); margin: 5px 0; border-top:1px dashed #333; padding-top:5px;">
-                            ${nextLessonLabel}
-                        </div>
-                        <button class="action-btn" onclick="openRad('${cls.time}', '${cls.group}', '${cls.book}', '${cls.room}', '${cls.dayName}')">ABRIR RAD</button>
+                        ${progressHtml}
+                        <div class="progress-label">${nextLabel}</div>
+                        <button class="action-btn" onclick="openRad('${cls.time}', '${cls.group}', '${cls.book}', '${cls.room}', '${cls.dayName}')">
+                            ${status === 'realizada' ? '📝 EDITAR RAD' : 'ABRIR RAD'}
+                        </button>
                     `;
                     list.appendChild(card);
                 });
@@ -789,11 +940,13 @@
             document.getElementById('rad-status').value = data.status;
             toggleRadFields();
             if(data.status && data.status !== '') {
-                renderLessonPlanCheckboxes(book, data.lessons || []);
+                renderLessonRadioButtons(book, group, data.selectedLesson || null);
                 renderAttendanceCheckboxes(group, data.attendance || []);
             }
         } else {
-            renderLessonPlanCheckboxes(book, []);
+            // Pré-selecionar a próxima lesson baseado no progresso da turma
+            const nextLesson = getNextLesson(group, book);
+            renderLessonRadioButtons(book, group, nextLesson ? nextLesson.id : null);
             renderAttendanceCheckboxes(group, []);
         }
 
@@ -807,35 +960,38 @@
         else fields.classList.add('hidden');
     }
 
-    function renderLessonPlanCheckboxes(bookRaw, checkedIds) {
+    function renderLessonRadioButtons(bookRaw, group, selectedId) {
         const container = document.getElementById('lesson-plan-container');
         container.innerHTML = '';
         
-        let structure = BOOKS_STRUCTURE['DEFAULT'];
-        const bookClean = (bookRaw || '').toUpperCase();
-        
-        if(bookClean.includes('G1')) structure = BOOKS_STRUCTURE['G1'];
-        else if(bookClean.includes('G2')) structure = BOOKS_STRUCTURE['G2'];
-        else if(bookClean.includes('G3')) structure = BOOKS_STRUCTURE['G3'];
-        else if(bookClean.includes('G4')) structure = BOOKS_STRUCTURE['G4'];
-        else if(bookClean.includes('G5')) structure = BOOKS_STRUCTURE['G5'];
-        else if(bookClean.includes('G6')) structure = BOOKS_STRUCTURE['G6'];
-        else if(bookClean.includes('G7')) structure = BOOKS_STRUCTURE['G7'];
-        else if(bookClean.includes('G8') || bookClean.includes('CROWN')) structure = BOOKS_STRUCTURE['G8'];
-        else if(bookClean.includes('G9') || bookClean.includes('SQUID')) structure = BOOKS_STRUCTURE['G9'];
-        else if(bookClean.includes('AW') || bookClean.includes('MIB')) structure = BOOKS_STRUCTURE['AW'];
+        const structure = getBookStructure(bookRaw);
+        const progress = getGroupProgress(group, bookRaw);
+        const doneLessons = progress.lessons || [];
 
         structure.forEach(lesson => {
             const div = document.createElement('div');
-            div.className = 'checkbox-group';
-            const isChecked = checkedIds.includes(lesson.id) ? 'checked' : '';
+            div.className = 'radio-group';
+            const isDone = doneLessons.includes(lesson.id);
+            const isChecked = (selectedId === lesson.id) ? 'checked' : '';
+            
+            if(isDone) {
+                div.classList.add('done');
+            }
             
             div.innerHTML = `
-                <input type="checkbox" id="${lesson.id}" value="${lesson.id}" ${isChecked}>
-                <label for="${lesson.id}">${lesson.label}</label>
+                <input type="radio" name="selected_lesson" value="${lesson.id}" ${isChecked} ${isDone ? 'disabled' : ''}>
+                <label ${isDone ? 'style="color: var(--success);"' : ''}>${lesson.label} ${isDone ? '✓' : ''}</label>
             `;
             container.appendChild(div);
         });
+
+        // Se todas as lessons estão feitas, mostrar mensagem
+        if(doneLessons.length >= structure.length) {
+            const msg = document.createElement('div');
+            msg.style.cssText = 'padding: 10px; color: var(--success); border: 1px solid var(--success); text-align: center;';
+            msg.textContent = '✅ Todas as lessons deste livro foram concluídas!';
+            container.appendChild(msg);
+        }
     }
 
     function renderAttendanceCheckboxes(groupRaw, presentList) {
@@ -852,7 +1008,7 @@
             students = ["Aluno 1", "Aluno 2", "Aluno 3"];
         }
 
-        students.forEach((student, idx) => {
+        students.forEach((student) => {
             const div = document.createElement('div');
             div.className = 'checkbox-group';
             const isPresent = presentList.includes(student) ? 'checked' : '';
@@ -869,41 +1025,67 @@
         const status = document.getElementById('rad-status').value;
         const errorDiv = document.getElementById('rad-error');
         
-        // VALIDAÇÃO OBRIGATÓRIA: Se o status for "Realizada", precisa marcar pelo menos uma lesson
+        // VALIDAÇÃO: Se status for "Realizada", precisa selecionar uma lesson
         if(status === 'realizada') {
-            const lessonsChecked = document.querySelectorAll('#lesson-plan-container input:checked');
-            if(lessonsChecked.length === 0) {
-                errorDiv.textContent = '⚠️ Para marcar a aula como REALIZADA, você deve selecionar pelo menos uma Lesson Plan!';
+            const selectedLesson = document.querySelector('input[name="selected_lesson"]:checked');
+            if(!selectedLesson) {
+                errorDiv.textContent = '⚠️ Para marcar a aula como REALIZADA, você deve selecionar uma Lesson!';
+                errorDiv.classList.add('show');
+                return;
+            }
+            
+            // Verificar se a lesson já foi feita
+            const progress = getGroupProgress(currentRadClass.group, currentRadClass.book);
+            if(progress.lessons && progress.lessons.includes(selectedLesson.value)) {
+                errorDiv.textContent = '⚠️ Esta lesson já foi realizada anteriormente! Selecione a próxima lesson.';
                 errorDiv.classList.add('show');
                 return;
             }
         }
 
-        // Limpa erro se passou na validação
         errorDiv.classList.remove('show');
         errorDiv.textContent = '';
 
-        // Coletar Lessons
-        const lessonsChecked = Array.from(document.querySelectorAll('#lesson-plan-container input:checked')).map(cb => cb.value);
-        const labelsChecked = Array.from(document.querySelectorAll('#lesson-plan-container input:checked')).map(cb => {
-            return cb.nextElementSibling.innerText;
-        });
+        // Coletar dados
+        let selectedLesson = null;
+        let selectedLabel = null;
+        if(status === 'realizada') {
+            const selected = document.querySelector('input[name="selected_lesson"]:checked');
+            if(selected) {
+                selectedLesson = selected.value;
+                const labelEl = selected.closest('.radio-group').querySelector('label');
+                selectedLabel = labelEl ? labelEl.textContent.replace(' ✓', '') : selectedLesson;
+            }
+        }
 
-        // Coletar Presença
         const attendanceChecked = Array.from(document.querySelectorAll('.att-check:checked')).map(cb => cb.value);
 
-        const data = {
-            status,
-            lessons: lessonsChecked,
-            lessonLabels: labelsChecked,
-            attendance: attendanceChecked,
-            dateSaved: new Date().toISOString()
-        };
-
+        // Salvar RAD do professor
         const radKey = getRadKey(currentRadClass);
-        localStorage.setItem(radKey, JSON.stringify(data));
-        
-        // Fechar modal e atualizar
+        const radData = {
+            status,
+            selectedLesson: selectedLesson,
+            selectedLabel: selectedLabel,
+            attendance: attendanceChecked,
+            dateSaved: new Date().toISOString(),
+            teacher: currentTeacher.name
+        };
+        localStorage.setItem(radKey, JSON.stringify(radData));
+
+        // Se foi realizada, atualizar o progresso global da turma
+        if(status === 'realizada' && selectedLesson) {
+            const progressKey = getProgressKey(currentRadClass.group, currentRadClass.book);
+            let progress = getGroupProgress(currentRadClass.group, currentRadClass.book);
+            if(!progress.lessons) progress.lessons = [];
+            
+            if(!progress.lessons.includes(selectedLesson)) {
+                progress.lessons.push(selectedLesson);
+                progress.lastUpdated = new Date().toISOString();
+                progress.lastTeacher = currentTeacher.name;
+                localStorage.setItem(progressKey, JSON.stringify(progress));
+            }
+        }
+
         closeModal('rad-modal');
         renderSchedule();
         
@@ -912,8 +1094,23 @@
 
     function clearRad() {
         if(confirm('Tem certeza que deseja limpar todos os dados deste RAD?')) {
-            localStorage.removeItem(getRadKey(currentRadClass));
-            // Recarregar o RAD com dados limpos
+            // Remover do progresso global também?
+            const radKey = getRadKey(currentRadClass);
+            const saved = localStorage.getItem(radKey);
+            if(saved) {
+                const data = JSON.parse(saved);
+                if(data.status === 'realizada' && data.selectedLesson) {
+                    // Remover do progresso da turma
+                    const progressKey = getProgressKey(currentRadClass.group, currentRadClass.book);
+                    let progress = getGroupProgress(currentRadClass.group, currentRadClass.book);
+                    if(progress.lessons) {
+                        progress.lessons = progress.lessons.filter(l => l !== data.selectedLesson);
+                        localStorage.setItem(progressKey, JSON.stringify(progress));
+                    }
+                }
+            }
+            
+            localStorage.removeItem(radKey);
             openRad(
                 currentRadClass.time, 
                 currentRadClass.group, 
@@ -921,6 +1118,7 @@
                 currentRadClass.room, 
                 currentRadClass.day
             );
+            renderSchedule();
         }
     }
 
