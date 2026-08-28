@@ -105,7 +105,7 @@
         .teacher-card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
-            padding: 20px;
+            padding: 15px;
             width: 100%;
             max-width: 200px;
             text-align: center;
@@ -127,6 +127,19 @@
             font-weight: bold;
             color: #fff;
             text-transform: uppercase;
+        }
+
+        .teacher-class-info {
+            font-size: 0.7rem;
+            color: var(--text-sec);
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px dashed #333;
+            line-height: 1.4;
+        }
+
+        .teacher-class-info .highlight {
+            color: var(--neon-blue);
         }
 
         .schedule-header {
@@ -257,11 +270,15 @@
             border: 2px solid var(--neon-blue);
             padding: 20px;
             width: 90%;
-            max-width: 500px;
+            max-width: 800px;
             max-height: 90vh;
             overflow-y: auto;
             border-radius: 0;
             box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+        }
+
+        .modal-content.small {
+            max-width: 500px;
         }
 
         .modal-header {
@@ -300,7 +317,7 @@
             border-color: var(--neon-blue);
         }
 
-        .radio-group {
+        .checkbox-group {
             display: flex;
             align-items: center;
             margin-bottom: 8px;
@@ -311,57 +328,70 @@
             transition: 0.2s;
         }
 
-        .radio-group:hover {
+        .checkbox-group:hover {
             border-color: var(--neon-blue);
-        }
-
-        .radio-group input {
-            width: auto;
-            margin-right: 10px;
-            margin-bottom: 0;
-            cursor: pointer;
-        }
-
-        .radio-group label {
-            flex: 1;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .radio-group.done {
-            border-color: var(--success);
-            background: rgba(0, 255, 157, 0.05);
-        }
-
-        .radio-group.done label {
-            color: var(--success);
-        }
-
-        .radio-group.done::after {
-            content: " ✓";
-            color: var(--success);
-            font-weight: bold;
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            background: #111;
-            padding: 8px;
-            border: 1px solid #222;
         }
 
         .checkbox-group input {
             width: auto;
             margin-right: 10px;
             margin-bottom: 0;
+            cursor: pointer;
         }
 
         .checkbox-group label {
             flex: 1;
             cursor: pointer;
             font-size: 0.9rem;
+        }
+
+        .checkbox-group.done {
+            border-color: var(--success);
+            background: rgba(0, 255, 157, 0.05);
+        }
+
+        .checkbox-group.done label {
+            color: var(--success);
+        }
+
+        .checkbox-group.done::after {
+            content: " ✓";
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .checkbox-group.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .checkbox-group.disabled input {
+            cursor: not-allowed;
+        }
+
+        .checkbox-group.disabled label {
+            cursor: not-allowed;
+        }
+
+        .attendance-checkbox {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            background: #111;
+            padding: 6px 8px;
+            border: 1px solid #222;
+        }
+
+        .attendance-checkbox input {
+            width: auto;
+            margin-right: 10px;
+            margin-bottom: 0;
+        }
+
+        .attendance-checkbox label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 0.85rem;
         }
 
         .attendance-table {
@@ -426,14 +456,16 @@
         }
 
         .progress-dot {
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             border: 1px solid #444;
-            display: inline-block;
-            font-size: 0.6rem;
-            text-align: center;
-            line-height: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.5rem;
             color: #666;
+            border-radius: 0;
+            transition: 0.2s;
         }
 
         .progress-dot.done {
@@ -455,11 +487,119 @@
             margin-top: 3px;
         }
 
+        .selected-count {
+            font-size: 0.8rem;
+            color: var(--neon-blue);
+            margin-bottom: 10px;
+            padding: 5px;
+            border: 1px dashed var(--neon-blue);
+            text-align: center;
+        }
+
+        .select-all-btn {
+            padding: 5px 10px;
+            font-size: 0.7rem;
+            margin: 5px 0 10px 0;
+            border-color: var(--text-sec);
+            color: var(--text-sec);
+        }
+
+        .select-all-btn:hover {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+        }
+
+        /* Estilos para a lista de turmas (Lesson Plans) */
+        .class-group-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: 0.3s;
+        }
+
+        .class-group-card:hover {
+            border-color: var(--neon-blue);
+        }
+
+        .class-group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .class-group-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--neon-blue);
+            text-transform: uppercase;
+        }
+
+        .class-group-book {
+            font-size: 0.9rem;
+            color: var(--warning);
+            border: 1px solid var(--warning);
+            padding: 2px 10px;
+        }
+
+        .class-group-progress {
+            font-size: 0.8rem;
+            color: var(--text-sec);
+        }
+
+        .class-group-lessons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #333;
+        }
+
+        .lesson-tag {
+            padding: 2px 8px;
+            border: 1px solid #444;
+            font-size: 0.7rem;
+            color: #666;
+            transition: 0.2s;
+        }
+
+        .lesson-tag.done {
+            border-color: var(--success);
+            color: var(--success);
+            background: rgba(0, 255, 157, 0.05);
+        }
+
+        .lesson-tag.current {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+            background: rgba(0, 243, 255, 0.05);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+
+        .lesson-tag.pending {
+            border-color: #333;
+            color: #555;
+        }
+
+        .header-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
         @media (max-width: 600px) {
             .teachers-grid { grid-template-columns: repeat(2, 1fr); }
             .classes-list { grid-template-columns: 1fr; }
             h1 { font-size: 1.5rem; }
             .modal-content { width: 95%; padding: 15px; }
+            .progress-dot { width: 14px; height: 14px; font-size: 0.4rem; }
+            .class-group-header { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
@@ -479,8 +619,9 @@
         <div id="selection-screen">
             <div class="teachers-grid" id="teachers-grid"></div>
             
-            <div style="text-align: center; margin-top: 40px;">
+            <div class="header-buttons">
                 <button onclick="openAttendanceList()">📋 Lista de Presença Geral</button>
+                <button onclick="openLessonPlans()">📚 Lesson Plans</button>
             </div>
         </div>
 
@@ -497,7 +638,7 @@
     </div>
 
     <div id="rad-modal" class="modal-overlay hidden">
-        <div class="modal-content">
+        <div class="modal-content small">
             <div class="modal-header">
                 <h3>RAD - Registro de Aula</h3>
                 <button class="close-modal" onclick="closeModal('rad-modal')">✕</button>
@@ -518,7 +659,13 @@
             <div id="rad-fields" class="hidden">
                 <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
                 
-                <label style="color: var(--neon-blue); text-transform: uppercase; font-size: 0.8rem;">Selecione a Lesson realizada:</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label style="color: var(--neon-blue); text-transform: uppercase; font-size: 0.8rem;">Lessons Realizadas:</label>
+                    <span id="lesson-counter" class="selected-count">0 lessons selecionadas</span>
+                </div>
+                
+                <button class="select-all-btn" onclick="toggleAllLessons()">SELECIONAR TODAS DISPONÍVEIS</button>
+                
                 <div id="lesson-plan-container" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #333; padding: 5px;"></div>
 
                 <label style="color: var(--neon-blue); text-transform: uppercase; font-size: 0.8rem;">Lista de Presença:</label>
@@ -526,6 +673,20 @@
 
                 <button onclick="saveRad()" style="width: 100%; background: var(--neon-blue); color: #000;">SALVAR RAD</button>
                 <button onclick="clearRad()" style="width: 100%; border-color: var(--danger); color: var(--danger); margin-top: 5px;">LIMPAR DADOS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL LESSON PLANS -->
+    <div id="lesson-plans-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📚 Gerenciamento de Lesson Plans por Turma</h3>
+                <button class="close-modal" onclick="closeModal('lesson-plans-modal')">✕</button>
+            </div>
+            
+            <div id="lesson-plans-container">
+                <!-- Gerado via JS -->
             </div>
         </div>
     </div>
@@ -596,6 +757,7 @@
     let currentTeacher = null;
     let currentWeekData = [];
     let allWeeks = {};
+    let allGroups = new Set();
 
     document.addEventListener('DOMContentLoaded', () => {
         Promise.all([fetchSchedule(), fetchStudents()])
@@ -662,9 +824,13 @@
                     const teacherName = findTeacherInString(cellContent);
                     
                     if(teacherName) {
+                        const group = cleanText(groupRaw);
+                        const bookClean = cleanText(book);
+                        allGroups.add(group);
+                        
                         scheduleData.push({
-                            book: cleanText(book),
-                            group: cleanText(groupRaw),
+                            book: bookClean,
+                            group: group,
                             room: cleanText(room),
                             modal: cleanText(modal),
                             time: cleanText(time),
@@ -694,6 +860,7 @@
                 const student = parts[1].replace(/"/g, '').trim();
                 if(!studentsData[group]) studentsData[group] = [];
                 studentsData[group].push(student);
+                allGroups.add(group);
             }
         }
     }
@@ -714,12 +881,50 @@
         const grid = document.getElementById('teachers-grid');
         grid.innerHTML = '';
         
+        // Para cada professor, descobrir quais turmas ele tem e em qual livro
         VALID_TEACHERS.sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
             const card = document.createElement('div');
             card.className = 'teacher-card';
             card.style.borderColor = t.color;
+            
+            // Encontrar aulas deste professor
+            const teacherClasses = scheduleData.filter(s => s.teacher === t.name);
+            
+            // Agrupar por turma para mostrar info
+            const classInfo = {};
+            teacherClasses.forEach(cls => {
+                if(!classInfo[cls.group]) {
+                    classInfo[cls.group] = {
+                        book: cls.book,
+                        days: []
+                    };
+                }
+                if(!classInfo[cls.group].days.includes(cls.dayName)) {
+                    classInfo[cls.group].days.push(cls.dayName);
+                }
+            });
+            
+            let infoHtml = '';
+            const groups = Object.keys(classInfo);
+            if(groups.length > 0) {
+                infoHtml = '<div class="teacher-class-info">';
+                groups.forEach(g => {
+                    const info = classInfo[g];
+                    // Verificar progresso da turma
+                    const progress = getGroupProgress(g, info.book);
+                    const structure = getBookStructure(info.book);
+                    const doneCount = (progress.lessons || []).length;
+                    const totalCount = structure.length;
+                    const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+                    
+                    infoHtml += `<div><span class="highlight">${g}</span> - ${info.book} (${pct}%)</div>`;
+                });
+                infoHtml += '</div>';
+            }
+            
             card.innerHTML = `
                 <div class="teacher-name" style="color: ${t.color}">${t.name}</div>
+                ${infoHtml}
             `;
             card.onclick = () => openTeacherSchedule(t.name, t.color);
             grid.appendChild(card);
@@ -787,18 +992,18 @@
         return { lessons: [] };
     }
 
-    function getNextLesson(group, book) {
+    function getNextLessons(group, book, count = 5) {
         const progress = getGroupProgress(group, book);
         const structure = getBookStructure(book);
         const doneLessons = progress.lessons || [];
         
-        // Encontra a próxima lesson não feita
-        for(let i = 0; i < structure.length; i++) {
+        const nextLessons = [];
+        for(let i = 0; i < structure.length && nextLessons.length < count; i++) {
             if(!doneLessons.includes(structure[i].id)) {
-                return structure[i];
+                nextLessons.push(structure[i]);
             }
         }
-        return null; // Todas as lessons foram feitas
+        return nextLessons;
     }
 
     function getBookStructure(bookRaw) {
@@ -861,29 +1066,44 @@
                     const progress = getGroupProgress(cls.group, cls.book);
                     const structure = getBookStructure(cls.book);
                     const doneLessons = progress.lessons || [];
-                    const nextLesson = getNextLesson(cls.group, cls.book);
+                    const nextLessons = getNextLessons(cls.group, cls.book, 5);
                     
-                    // Renderizar dots de progresso
+                    // Renderizar dots de progresso (mostrar até 15)
                     let progressHtml = '<div class="progress-bar">';
-                    structure.slice(0, 10).forEach((lesson, index) => {
+                    const maxShow = Math.min(structure.length, 15);
+                    for(let i = 0; i < maxShow; i++) {
+                        const lesson = structure[i];
                         const isDone = doneLessons.includes(lesson.id);
-                        const isCurrent = nextLesson && lesson.id === nextLesson.id && !isDone;
-                        let cls = 'progress-dot';
-                        if(isDone) cls += ' done';
-                        if(isCurrent) cls += ' current';
-                        progressHtml += `<span class="${cls}" title="${lesson.label}">${index + 1}</span>`;
-                    });
-                    if(structure.length > 10) {
-                        progressHtml += `<span class="progress-dot" style="border-color:#666;">+${structure.length - 10}</span>`;
+                        const isNext = nextLessons.some(l => l.id === lesson.id);
+                        let clsDot = 'progress-dot';
+                        if(isDone) clsDot += ' done';
+                        else if(isNext) clsDot += ' current';
+                        
+                        const num = i + 1;
+                        progressHtml += `<span class="${clsDot}" title="${lesson.label}">${num}</span>`;
+                    }
+                    if(structure.length > 15) {
+                        progressHtml += `<span class="progress-dot" style="border-color:#666;">+${structure.length - 15}</span>`;
                     }
                     progressHtml += '</div>';
                     
-                    let nextLabel = '✅ Curso Concluído!';
-                    if(nextLesson) {
-                        nextLabel = `Próxima: ${nextLesson.label}`;
-                    } else if(doneLessons.length > 0) {
-                        nextLabel = '✅ Todas as lessons concluídas!';
+                    let nextLabel = '';
+                    if(doneLessons.length >= structure.length) {
+                        nextLabel = '✅ Curso Concluído!';
+                    } else if(nextLessons.length > 0) {
+                        const labels = nextLessons.map(l => l.label).join(', ');
+                        nextLabel = `Próximas: ${labels}`;
+                        if(nextLessons.length > 3) {
+                            nextLabel = `Próximas: ${nextLessons[0].label}... (+${nextLessons.length - 1} mais)`;
+                        }
+                    } else {
+                        nextLabel = '📚 Aguardando início';
                     }
+
+                    // Mostrar quantas lessons já foram feitas
+                    const doneCount = doneLessons.length;
+                    const totalCount = structure.length;
+                    const progressText = `${doneCount}/${totalCount} lessons`;
 
                     // Se já foi realizada, mostrar check
                     const doneCheck = status === 'realizada' ? ' ✅' : '';
@@ -896,6 +1116,7 @@
                             <span class="badge badge-book">${cls.book || 'N/A'}</span>
                             <span class="badge badge-room">Sala: ${cls.room || '-'}</span>
                             <span class="badge badge-modal">${cls.modal || 'REGULAR'}</span>
+                            <span class="badge" style="border-color: var(--neon-blue); color: var(--neon-blue);">${progressText}</span>
                         </div>
                         ${progressHtml}
                         <div class="progress-label">${nextLabel}</div>
@@ -912,6 +1133,103 @@
         });
     }
 
+    // ===================== LESSON PLANS (GERENCIAMENTO DE TURMAS) =====================
+    function openLessonPlans() {
+        document.getElementById('lesson-plans-modal').classList.remove('hidden');
+        renderLessonPlans();
+    }
+
+    function renderLessonPlans() {
+        const container = document.getElementById('lesson-plans-container');
+        container.innerHTML = '';
+        
+        // Pegar todas as turmas únicas do cronograma
+        const groups = Array.from(allGroups).sort();
+        
+        if(groups.length === 0) {
+            container.innerHTML = '<p style="color:#555; text-align:center;">Nenhuma turma encontrada.</p>';
+            return;
+        }
+
+        groups.forEach(group => {
+            // Encontrar o livro desta turma
+            const classData = scheduleData.find(s => s.group === group);
+            if(!classData) return;
+            
+            const book = classData.book || 'DEFAULT';
+            const structure = getBookStructure(book);
+            const progress = getGroupProgress(group, book);
+            const doneLessons = progress.lessons || [];
+            
+            const card = document.createElement('div');
+            card.className = 'class-group-card';
+            
+            // Contar lessons feitas
+            const doneCount = doneLessons.length;
+            const totalCount = structure.length;
+            const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+            
+            // Encontrar próximas lessons (até 5)
+            const nextLessons = [];
+            for(let i = 0; i < structure.length && nextLessons.length < 5; i++) {
+                if(!doneLessons.includes(structure[i].id)) {
+                    nextLessons.push(structure[i]);
+                }
+            }
+            
+            let nextText = '';
+            if(doneCount >= totalCount) {
+                nextText = '✅ Todas concluídas!';
+            } else if(nextLessons.length > 0) {
+                nextText = `Próximas: ${nextLessons.map(l => l.label).join(', ')}`;
+                if(nextLessons.length > 3) {
+                    nextText = `Próximas: ${nextLessons[0].label}... (+${nextLessons.length - 1})`;
+                }
+            } else {
+                nextText = '📚 Aguardando início';
+            }
+            
+            // Montar tags das lessons
+            let lessonsHtml = '';
+            const maxShow = Math.min(structure.length, 20);
+            for(let i = 0; i < maxShow; i++) {
+                const lesson = structure[i];
+                const isDone = doneLessons.includes(lesson.id);
+                const isNext = nextLessons.some(l => l.id === lesson.id);
+                let cls = 'lesson-tag';
+                if(isDone) cls += ' done';
+                else if(isNext) cls += ' current';
+                else cls += ' pending';
+                
+                lessonsHtml += `<span class="${cls}" title="${lesson.label}">${lesson.number}</span>`;
+            }
+            if(structure.length > 20) {
+                lessonsHtml += `<span class="lesson-tag pending">+${structure.length - 20}</span>`;
+            }
+            
+            card.innerHTML = `
+                <div class="class-group-header">
+                    <div>
+                        <span class="class-group-name">${group}</span>
+                        <span class="class-group-book">📖 ${book}</span>
+                    </div>
+                    <div>
+                        <span class="class-group-progress">${doneCount}/${totalCount} (${pct}%)</span>
+                    </div>
+                </div>
+                <div style="font-size:0.8rem; color:var(--neon-blue);">
+                    ${nextText}
+                </div>
+                <div class="class-group-lessons">
+                    ${lessonsHtml}
+                </div>
+            `;
+            
+            container.appendChild(card);
+        });
+    }
+
+    // ===================== FUNÇÕES DO RAD =====================
     let currentRadClass = null;
 
     function getRadKey(cls) {
@@ -940,13 +1258,14 @@
             document.getElementById('rad-status').value = data.status;
             toggleRadFields();
             if(data.status && data.status !== '') {
-                renderLessonRadioButtons(book, group, data.selectedLesson || null);
+                renderLessonCheckboxes(book, group, data.selectedLessons || []);
                 renderAttendanceCheckboxes(group, data.attendance || []);
             }
         } else {
-            // Pré-selecionar a próxima lesson baseado no progresso da turma
-            const nextLesson = getNextLesson(group, book);
-            renderLessonRadioButtons(book, group, nextLesson ? nextLesson.id : null);
+            // Pré-selecionar próximas lessons baseado no progresso da turma
+            const nextLessons = getNextLessons(group, book, 10);
+            const nextIds = nextLessons.map(l => l.id);
+            renderLessonCheckboxes(book, group, nextIds);
             renderAttendanceCheckboxes(group, []);
         }
 
@@ -960,7 +1279,7 @@
         else fields.classList.add('hidden');
     }
 
-    function renderLessonRadioButtons(bookRaw, group, selectedId) {
+    function renderLessonCheckboxes(bookRaw, group, selectedIds) {
         const container = document.getElementById('lesson-plan-container');
         container.innerHTML = '';
         
@@ -970,28 +1289,42 @@
 
         structure.forEach(lesson => {
             const div = document.createElement('div');
-            div.className = 'radio-group';
+            div.className = 'checkbox-group';
             const isDone = doneLessons.includes(lesson.id);
-            const isChecked = (selectedId === lesson.id) ? 'checked' : '';
+            const isChecked = selectedIds.includes(lesson.id) ? 'checked' : '';
             
             if(isDone) {
                 div.classList.add('done');
             }
             
             div.innerHTML = `
-                <input type="radio" name="selected_lesson" value="${lesson.id}" ${isChecked} ${isDone ? 'disabled' : ''}>
+                <input type="checkbox" class="lesson-check" value="${lesson.id}" ${isChecked} ${isDone ? 'disabled' : ''}>
                 <label ${isDone ? 'style="color: var(--success);"' : ''}>${lesson.label} ${isDone ? '✓' : ''}</label>
             `;
             container.appendChild(div);
         });
 
+        updateLessonCounter();
+
         // Se todas as lessons estão feitas, mostrar mensagem
         if(doneLessons.length >= structure.length) {
             const msg = document.createElement('div');
-            msg.style.cssText = 'padding: 10px; color: var(--success); border: 1px solid var(--success); text-align: center;';
+            msg.style.cssText = 'padding: 10px; color: var(--success); border: 1px solid var(--success); text-align: center; margin-top: 10px;';
             msg.textContent = '✅ Todas as lessons deste livro foram concluídas!';
             container.appendChild(msg);
         }
+    }
+
+    function updateLessonCounter() {
+        const checked = document.querySelectorAll('.lesson-check:checked:not(:disabled)').length;
+        document.getElementById('lesson-counter').textContent = `${checked} lessons selecionadas`;
+    }
+
+    function toggleAllLessons() {
+        const checkboxes = document.querySelectorAll('.lesson-check:not(:disabled)');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        checkboxes.forEach(cb => cb.checked = !allChecked);
+        updateLessonCounter();
     }
 
     function renderAttendanceCheckboxes(groupRaw, presentList) {
@@ -1010,7 +1343,7 @@
 
         students.forEach((student) => {
             const div = document.createElement('div');
-            div.className = 'checkbox-group';
+            div.className = 'attendance-checkbox';
             const isPresent = presentList.includes(student) ? 'checked' : '';
             
             div.innerHTML = `
@@ -1025,19 +1358,11 @@
         const status = document.getElementById('rad-status').value;
         const errorDiv = document.getElementById('rad-error');
         
-        // VALIDAÇÃO: Se status for "Realizada", precisa selecionar uma lesson
+        // VALIDAÇÃO: Se status for "Realizada", precisa selecionar pelo menos uma lesson
         if(status === 'realizada') {
-            const selectedLesson = document.querySelector('input[name="selected_lesson"]:checked');
-            if(!selectedLesson) {
-                errorDiv.textContent = '⚠️ Para marcar a aula como REALIZADA, você deve selecionar uma Lesson!';
-                errorDiv.classList.add('show');
-                return;
-            }
-            
-            // Verificar se a lesson já foi feita
-            const progress = getGroupProgress(currentRadClass.group, currentRadClass.book);
-            if(progress.lessons && progress.lessons.includes(selectedLesson.value)) {
-                errorDiv.textContent = '⚠️ Esta lesson já foi realizada anteriormente! Selecione a próxima lesson.';
+            const selectedLessons = document.querySelectorAll('.lesson-check:checked:not(:disabled)');
+            if(selectedLessons.length === 0) {
+                errorDiv.textContent = '⚠️ Para marcar a aula como REALIZADA, você deve selecionar pelo menos uma Lesson!';
                 errorDiv.classList.add('show');
                 return;
             }
@@ -1047,16 +1372,10 @@
         errorDiv.textContent = '';
 
         // Coletar dados
-        let selectedLesson = null;
-        let selectedLabel = null;
-        if(status === 'realizada') {
-            const selected = document.querySelector('input[name="selected_lesson"]:checked');
-            if(selected) {
-                selectedLesson = selected.value;
-                const labelEl = selected.closest('.radio-group').querySelector('label');
-                selectedLabel = labelEl ? labelEl.textContent.replace(' ✓', '') : selectedLesson;
-            }
-        }
+        const selectedLessons = Array.from(document.querySelectorAll('.lesson-check:checked:not(:disabled)')).map(cb => cb.value);
+        const selectedLabels = Array.from(document.querySelectorAll('.lesson-check:checked:not(:disabled)')).map(cb => {
+            return cb.closest('.checkbox-group').querySelector('label').textContent.replace(' ✓', '');
+        });
 
         const attendanceChecked = Array.from(document.querySelectorAll('.att-check:checked')).map(cb => cb.value);
 
@@ -1064,8 +1383,8 @@
         const radKey = getRadKey(currentRadClass);
         const radData = {
             status,
-            selectedLesson: selectedLesson,
-            selectedLabel: selectedLabel,
+            selectedLessons: selectedLessons,
+            selectedLabels: selectedLabels,
             attendance: attendanceChecked,
             dateSaved: new Date().toISOString(),
             teacher: currentTeacher.name
@@ -1073,13 +1392,20 @@
         localStorage.setItem(radKey, JSON.stringify(radData));
 
         // Se foi realizada, atualizar o progresso global da turma
-        if(status === 'realizada' && selectedLesson) {
+        if(status === 'realizada' && selectedLessons.length > 0) {
             const progressKey = getProgressKey(currentRadClass.group, currentRadClass.book);
             let progress = getGroupProgress(currentRadClass.group, currentRadClass.book);
             if(!progress.lessons) progress.lessons = [];
             
-            if(!progress.lessons.includes(selectedLesson)) {
-                progress.lessons.push(selectedLesson);
+            let added = 0;
+            selectedLessons.forEach(lessonId => {
+                if(!progress.lessons.includes(lessonId)) {
+                    progress.lessons.push(lessonId);
+                    added++;
+                }
+            });
+            
+            if(added > 0) {
                 progress.lastUpdated = new Date().toISOString();
                 progress.lastTeacher = currentTeacher.name;
                 localStorage.setItem(progressKey, JSON.stringify(progress));
@@ -1094,17 +1420,16 @@
 
     function clearRad() {
         if(confirm('Tem certeza que deseja limpar todos os dados deste RAD?')) {
-            // Remover do progresso global também?
             const radKey = getRadKey(currentRadClass);
             const saved = localStorage.getItem(radKey);
             if(saved) {
                 const data = JSON.parse(saved);
-                if(data.status === 'realizada' && data.selectedLesson) {
+                if(data.status === 'realizada' && data.selectedLessons && data.selectedLessons.length > 0) {
                     // Remover do progresso da turma
                     const progressKey = getProgressKey(currentRadClass.group, currentRadClass.book);
                     let progress = getGroupProgress(currentRadClass.group, currentRadClass.book);
                     if(progress.lessons) {
-                        progress.lessons = progress.lessons.filter(l => l !== data.selectedLesson);
+                        progress.lessons = progress.lessons.filter(l => !data.selectedLessons.includes(l));
                         localStorage.setItem(progressKey, JSON.stringify(progress));
                     }
                 }
@@ -1122,6 +1447,7 @@
         }
     }
 
+    // ===================== LISTA DE PRESENÇA =====================
     function openAttendanceList() {
         document.getElementById('attendance-modal').classList.remove('hidden');
         loadAttendanceTable();
@@ -1180,6 +1506,13 @@
     function closeModal(id) {
         document.getElementById(id).classList.add('hidden');
     }
+
+    // Adicionar listener para atualizar contador quando checkboxes mudarem
+    document.addEventListener('change', function(e) {
+        if(e.target.classList.contains('lesson-check')) {
+            updateLessonCounter();
+        }
+    });
 
 </script>
 </body>
