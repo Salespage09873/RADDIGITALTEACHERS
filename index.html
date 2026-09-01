@@ -15,6 +15,7 @@
             --border: 1px solid #333;
             --danger: #ff2a2a;
             --success: #00ff9d;
+            --warning: #ffaa00;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Courier New', Courier, monospace; }
@@ -46,12 +47,19 @@
             text-transform: uppercase;
             font-weight: bold;
             transition: all 0.3s;
-            border-radius: 0; /* Sem arredondamento */
+            border-radius: 0;
             margin: 0.5rem;
+            position: relative;
+            overflow: hidden;
         }
-        button:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue); }
+        button:hover:not(:disabled) { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
         button.secondary { border-color: var(--text-sec); color: var(--text-sec); }
-        button.secondary:hover { background: var(--text-sec); color: #000; box-shadow: none; }
+        button.secondary:hover:not(:disabled) { background: var(--text-sec); color: #000; box-shadow: none; }
+        button.danger { border-color: var(--danger); color: var(--danger); }
+        button.danger:hover:not(:disabled) { background: var(--danger); color: #000; box-shadow: 0 0 15px var(--danger); }
+        button.success { border-color: var(--success); color: var(--success); }
+        button.success:hover:not(:disabled) { background: var(--success); color: #000; box-shadow: 0 0 15px var(--success); }
         
         input, select, textarea {
             background: #111;
@@ -63,6 +71,7 @@
             border-radius: 0;
         }
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--neon-blue); }
+        input:disabled, select:disabled, textarea:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* Teacher Grid */
         .teachers-grid {
@@ -100,8 +109,9 @@
 
         /* Schedule View */
         .week-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 0.5rem; }
-        .week-tab { white-space: nowrap; font-size: 0.8rem; padding: 0.5rem 1rem; opacity: 0.6; }
+        .week-tab { white-space: nowrap; font-size: 0.8rem; padding: 0.5rem 1rem; opacity: 0.6; cursor: pointer; }
         .week-tab.active { opacity: 1; border-color: var(--neon-blue); background: var(--neon-dim); }
+        .week-tab:hover:not(.active) { opacity: 0.8; }
 
         .day-section { margin-bottom: 2rem; border: 1px solid #333; background: #080808; }
         .day-header {
@@ -126,11 +136,15 @@
         }
         .class-card.done { border-color: var(--success); }
         .class-card.no-show { border-color: var(--danger); }
+        .class-card.canceled { border-color: var(--warning); }
         
         .class-info { font-size: 0.85rem; color: var(--text-sec); margin-bottom: 0.5rem; line-height: 1.4; }
         .class-info strong { color: #fff; }
         .badge { display: inline-block; padding: 2px 6px; border: 1px solid #444; font-size: 0.7rem; margin-right: 4px; }
         .badge-book { border-color: var(--neon-blue); color: var(--neon-blue); }
+        .badge-success { border-color: var(--success); color: var(--success); }
+        .badge-danger { border-color: var(--danger); color: var(--danger); }
+        .badge-warning { border-color: var(--warning); color: var(--warning); }
         
         .status-indicator {
             position: absolute;
@@ -191,6 +205,49 @@
 
         /* Loading */
         .loading { text-align: center; padding: 2rem; color: var(--neon-blue); }
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0, 243, 255, 0.1);
+            border-top: 3px solid var(--neon-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Toast/Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0a0a0a;
+            border: 1px solid var(--neon-blue);
+            padding: 1rem 2rem;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        .toast.warning { border-color: var(--warning); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .error-boundary {
+            border: 1px solid var(--danger);
+            background: rgba(255, 42, 42, 0.1);
+            padding: 1rem;
+            margin: 1rem 0;
+            color: var(--danger);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .teachers-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+            .classes-grid { grid-template-columns: 1fr; }
+            .modal-content { max-width: 100%; margin: 0 0.5rem; }
+        }
     </style>
 </head>
 <body>
@@ -203,7 +260,10 @@
     
     <!-- TELA INICIAL -->
     <div id="home-screen" class="screen active">
-        <div id="loading" class="loading">Carregando dados...</div>
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Carregando dados...</p>
+        </div>
         
         <div id="teachers-container" style="display:none;">
             <h2 style="text-align:center; margin-bottom:1rem; color:#fff; font-size:1rem;">SELECT TEACHER</h2>
@@ -258,40 +318,46 @@
     </div>
 </div>
 
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
 <script>
+    // ============================================
     // CONFIGURAÇÕES
+    // ============================================
+    
+    // URLs das planilhas
     const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
     
-    // Estrutura simplificada dos Books (1-10)
-    const BOOKS_STRUCTURE = {};
-    for(let i=1; i<=10; i++) {
-        let lessons = [];
-        for(let l=1; l<=35; l++) lessons.push(`Lesson ${l}`);
-        // Adicionando Revisions e Tests conforme padrão
-        lessons.splice(5, 0, `Revision 1-10 / Reading 2`);
-        lessons.splice(11, 0, `Revision 26-35 / Reading 5&6`);
-        lessons.splice(17, 0, `Revision 51-60 / Reading 8`);
-        lessons.splice(23, 0, `Revision 76-85 / Reading 12`);
-        lessons.splice(29, 0, `Revision 101-110 / Reading 17`);
-        lessons.splice(35, 0, `Revision 126-135 / Reading 21`);
-        lessons.push(`Test Book ${i}`, `Test Correction Book ${i}`);
-        BOOKS_STRUCTURE[`BOOK ${i}`] = lessons;
-    }
-    // Mapeamento simples de nomes de livros se vier diferente
-    BOOKS_STRUCTURE['G1'] = BOOKS_STRUCTURE['BOOK 1']; 
-    BOOKS_STRUCTURE['G2'] = BOOKS_STRUCTURE['BOOK 2'];
-    // ... (pode expandir se necessário)
+    // URLs das Lesson Plans por Book
+    const LP_URLS = {
+        'G1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv',
+        'G2': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv',
+        'G3': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv',
+        'G4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv',
+        'G5': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv',
+        'G6': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv',
+        'G7': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv',
+        'G8': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv',
+        'G9': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv',
+        'G10': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv'
+    };
 
+    // ============================================
     // ESTADO GLOBAL
+    // ============================================
+    
     let teachers = ['MYCAEL', 'HOPE', 'PEDRO', 'DIOGO', 'LIVIA', 'TOSCA', 'IAGO', 'SARA', 'CAROL', 'LUISA', 'CARLA'];
     let scheduleData = [];
-    let studentsData = {}; // { "Turma Name": ["Aluno 1", "Aluno 2"] }
+    let studentsData = {};
+    let lpData = {}; // Armazena as Lesson Plans carregadas
     let currentWeekData = [];
     let currentTeacher = '';
-    let currentClassId = ''; // ID único da aula para salvar RAD/LP
+    let currentClassId = '';
+    let isLoading = false;
 
-    // CORES DOS TEACHERS
+    // Mapeamento de cores dos professores
     const TEACHER_COLORS = {
         'MYCAEL': '#FF6B6B', 'HOPE': '#FFE66D', 'PEDRO': '#F38181',
         'DIOGO': '#AA96DA', 'LIVIA': '#FCBAD3', 'TOSCA': '#A8D8EA',
@@ -299,53 +365,182 @@
         'LUISA': '#00d2d3', 'CARLA': '#ff9ff3'
     };
 
-    // INICIALIZAÇÃO
-    document.addEventListener('DOMContentLoaded', async () => {
-        await Promise.all([loadSchedule(), loadStudents()]);
-        renderTeachers();
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('teachers-container').style.display = 'block';
-    });
+    // ============================================
+    // SISTEMA DE TOAST (NOTIFICAÇÕES)
+    // ============================================
+    
+    function showToast(message, type = 'info', duration = 5000) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s';
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    }
+
+    // ============================================
+    // TRATAMENTO DE ERROS
+    // ============================================
+    
+    function handleError(error, context = '') {
+        console.error(`Error ${context}:`, error);
+        showToast(`Erro ${context}: ${error.message || 'Desconhecido'}`, 'error');
+        return null;
+    }
+
+    function safeExecute(fn, fallback = null) {
+        try {
+            return fn();
+        } catch (error) {
+            handleError(error, 'safeExecute');
+            return fallback;
+        }
+    }
+
+    // ============================================
+    // LOADING STATES
+    // ============================================
+    
+    function showLoading(elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Carregando...</p>
+                </div>
+            `;
+        }
+    }
+
+    function hideLoading(elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            // Remove o loading se existir
+            const loading = element.querySelector('.loading');
+            if (loading) loading.remove();
+        }
+    }
+
+    function setLoadingState(button, isLoading) {
+        if (button) {
+            button.disabled = isLoading;
+            button.textContent = isLoading ? '⏳ Carregando...' : button.dataset.originalText || button.textContent;
+        }
+    }
+
+    // ============================================
+    // CARREGAMENTO DE DADOS
+    // ============================================
+    
+    async function loadData() {
+        showLoading('loading');
+        
+        try {
+            const results = await Promise.allSettled([
+                loadSchedule(),
+                loadStudents(),
+                loadAllLessonPlans()
+            ]);
+
+            // Verifica resultados
+            results.forEach((result, index) => {
+                const names = ['Schedule', 'Students', 'Lesson Plans'];
+                if (result.status === 'rejected') {
+                    handleError(result.reason, names[index]);
+                }
+            });
+
+            // Verifica se pelo menos os dados essenciais foram carregados
+            if (scheduleData.length === 0) {
+                showToast('Dados de cronograma não carregados. Verifique a planilha.', 'warning');
+            }
+            
+            if (Object.keys(studentsData).length === 0) {
+                showToast('Dados de alunos não carregados. Verifique a planilha.', 'warning');
+            }
+
+            renderTeachers();
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('teachers-container').style.display = 'block';
+            
+            showToast('Dados carregados com sucesso!', 'success', 3000);
+        } catch (error) {
+            handleError(error, 'loadData');
+            document.getElementById('loading').innerHTML = `
+                <div class="error-boundary">
+                    <strong>❌ Erro ao carregar dados</strong>
+                    <p>${error.message || 'Tente recarregar a página'}</p>
+                    <button onclick="location.reload()">Recarregar</button>
+                </div>
+            `;
+        }
+    }
 
     async function loadSchedule() {
         try {
-            const res = await fetch(SCHEDULE_URL);
-            const csv = await res.text();
+            const response = await fetch(SCHEDULE_URL);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const csv = await response.text();
             parseScheduleCSV(csv);
-        } catch (e) { console.error("Erro Schedule", e); }
+            return true;
+        } catch (error) {
+            throw new Error(`Schedule: ${error.message}`);
+        }
     }
 
     async function loadStudents() {
         try {
-            const res = await fetch(STUDENTS_URL);
-            const csv = await res.text();
-            const lines = csv.split('\n').slice(1);
-            lines.forEach(line => {
-                const [turma, aluno] = line.split(',').map(s => s.trim().replace(/"/g, ''));
-                if(turma && aluno) {
-                    if(!studentsData[turma]) studentsData[turma] = [];
-                    studentsData[turma].push(aluno);
-                }
-            });
-        } catch (e) { console.error("Erro Students", e); }
+            const response = await fetch(STUDENTS_URL);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const csv = await response.text();
+            parseStudentsCSV(csv);
+            return true;
+        } catch (error) {
+            throw new Error(`Students: ${error.message}`);
+        }
     }
 
-    function parseScheduleCSV(csv) {
-        const lines = csv.split('\n').filter(l => l.trim());
-        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-        
-        // Identificar colunas fixas: A(Lang), B(Book), C(Group), D(Room), E(Mod), F(Time)
-        // Dias começam depois. Vamos assumir ordem fixa conforme pedido: A,B,C,D,E,F + Dias
-        
-        const dayIndices = [];
-        headers.forEach((h, idx) => {
-            if(idx >= 6) dayIndices.push(idx); // Colunas G em diante são dias
+    async function loadAllLessonPlans() {
+        const promises = Object.entries(LP_URLS).map(async ([book, url]) => {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status} for ${book}`);
+                const csv = await response.text();
+                lpData[book] = parseLessonPlanCSV(csv);
+                return true;
+            } catch (error) {
+                console.warn(`Failed to load LP for ${book}:`, error);
+                lpData[book] = []; // Fallback para array vazio
+                return false;
+            }
         });
 
+        await Promise.allSettled(promises);
+    }
+
+    // ============================================
+    // PARSERS
+    // ============================================
+    
+    function parseScheduleCSV(csv) {
+        const lines = csv.split('\n').filter(l => l.trim());
+        if (lines.length < 2) throw new Error('CSV vazio ou inválido');
+        
+        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+        const dayIndices = headers.map((h, idx) => idx >= 6 ? idx : null).filter(idx => idx !== null);
+
         scheduleData = [];
-        for(let i=1; i<lines.length; i++) {
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            
             const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim().replace(/^"|"$/g, ''));
-            if(row.length < 7) continue;
+            if (row.length < 7) continue;
 
             const book = row[1] || '';
             const group = row[2] || '';
@@ -355,15 +550,13 @@
 
             dayIndices.forEach(idx => {
                 const cell = row[idx];
-                if(cell && cell.includes('-')) {
-                    // Formato esperado na célula: "Teacher - OtherInfo" ou apenas "Teacher"
-                    // Simplificação: Procurar nome do teacher na string
+                if (cell && cell.includes('-')) {
                     let foundTeacher = null;
                     teachers.forEach(t => {
-                        if(cell.toUpperCase().includes(t)) foundTeacher = t;
+                        if (cell.toUpperCase().includes(t)) foundTeacher = t;
                     });
 
-                    if(foundTeacher) {
+                    if (foundTeacher) {
                         scheduleData.push({
                             dayHeader: headers[idx],
                             teacher: foundTeacher,
@@ -380,63 +573,61 @@
         }
     }
 
+    function parseStudentsCSV(csv) {
+        const lines = csv.split('\n').filter(l => l.trim());
+        if (lines.length < 2) throw new Error('CSV de alunos vazio ou inválido');
+        
+        // Pula cabeçalho
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            const [turma, aluno] = lines[i].split(',').map(s => s.trim().replace(/"/g, ''));
+            if (turma && aluno) {
+                if (!studentsData[turma]) studentsData[turma] = [];
+                studentsData[turma].push(aluno);
+            }
+        }
+    }
+
+    function parseLessonPlanCSV(csv) {
+        const lines = csv.split('\n').filter(l => l.trim());
+        if (lines.length < 2) return [];
+        
+        const lessons = [];
+        // Pula cabeçalho
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            const row = lines[i].split(',').map(s => s.trim().replace(/"/g, ''));
+            if (row[0]) lessons.push(row[0]);
+        }
+        return lessons;
+    }
+
+    // ============================================
+    // UI RENDERIZAÇÃO
+    // ============================================
+    
     function renderTeachers() {
         const grid = document.getElementById('teachers-grid');
         grid.innerHTML = '';
+        
         teachers.forEach(t => {
             const card = document.createElement('div');
             card.className = 'teacher-card';
             card.style.borderColor = TEACHER_COLORS[t] || '#333';
             card.innerHTML = `<div class="teacher-name" style="color:${TEACHER_COLORS[t] || '#fff'}">${t}</div>`;
-            card.onclick = () => openTeacherSchedule(t);
+            card.onclick = () => safeExecute(() => openTeacherSchedule(t));
             grid.appendChild(card);
         });
     }
 
-    // NAVEGAÇÃO
-    function showHome() {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById('home-screen').classList.add('active');
-    }
-
-    function openTeacherSchedule(teacher) {
-        currentTeacher = teacher;
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById('teacher-screen').classList.add('active');
-        
-        const title = document.getElementById('teacher-title');
-        title.innerText = `Schedule: ${teacher}`;
-        title.style.color = TEACHER_COLORS[teacher] || '#fff';
-
-        renderWeekTabs();
-    }
-
     function renderWeekTabs() {
-        // Como simplificamos para ler só a Page 1, vamos agrupar os dados atuais por "Semana" baseada no cabeçalho
-        // Se a planilha tem "This Week" e "Next Week" como abas, mas estamos lendo só CSV da ativa...
-        // O CSV publicado geralmente é de UMA aba específica. 
-        // Para atender o pedido "Botão Próxima Semana", precisamos que o CSV tenha colunas de ambas ou mudemos a URL.
-        // ASSUNÇÃO: O usuário vai trocar a URL ou o CSV já vem com colunas de várias semanas mescladas?
-        // Vamos assumir que o CSV tem colunas de dias sequenciais. Vamos agrupar por dia da semana (Mon, Tue...).
-        
-        const daysMap = {
-            'Monday': 'Segunda', 'Tuesday': 'Terça', 'Wednesday': 'Quarta', 
-            'Thursday': 'Quinta', 'Friday': 'Sexta', 'Saturday': 'Sábado'
-        };
-
-        // Filtrar dados do teacher
         const myClasses = scheduleData.filter(d => d.teacher === currentTeacher);
-        
-        // Agrupar por Dia da Semana (extraindo do header "Monday 25", "Tuesday 26"...)
         const grouped = {};
         const order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         
-        // Detectar semanas únicas baseadas no número do dia no header se houver, senão trata como uma semana única
-        // Simplificação extrema: Mostrar tudo ordenado por dia da semana.
-        
         order.forEach(day => {
             const dayClasses = myClasses.filter(c => c.dayHeader.startsWith(day));
-            if(dayClasses.length > 0) {
+            if (dayClasses.length > 0) {
                 grouped[day] = dayClasses;
             }
         });
@@ -444,7 +635,6 @@
         const tabsContainer = document.getElementById('week-tabs');
         tabsContainer.innerHTML = '';
         
-        // Criar aba única "Current Week" já que lemos só uma página
         const tab = document.createElement('div');
         tab.className = 'week-tab active';
         tab.innerText = 'This Week';
@@ -456,6 +646,11 @@
     function renderScheduleGrid(groupedData) {
         const container = document.getElementById('schedule-content');
         container.innerHTML = '';
+
+        if (Object.keys(groupedData).length === 0) {
+            container.innerHTML = '<p style="text-align:center; padding:2rem; color:#666;">Nenhuma aula encontrada para este professor.</p>';
+            return;
+        }
 
         Object.keys(groupedData).forEach(dayKey => {
             const section = document.createElement('div');
@@ -474,13 +669,18 @@
                 const savedData = getSavedData(id);
                 const isDone = savedData && savedData.status === 'Realizada';
                 const isNoShow = savedData && savedData.status === 'No Show';
+                const isCanceled = savedData && savedData.status === 'Cancelada';
 
                 const card = document.createElement('div');
-                card.className = `class-card ${isDone ? 'done' : ''} ${isNoShow ? 'no-show' : ''}`;
+                card.className = `class-card ${isDone ? 'done' : ''} ${isNoShow ? 'no-show' : ''} ${isCanceled ? 'canceled' : ''}`;
                 
                 let statusIcon = '';
-                if(isDone) statusIcon = '<span class="status-indicator">✅</span>';
-                if(isNoShow) statusIcon = '<span class="status-indicator">❌</span>';
+                if (isDone) statusIcon = '<span class="status-indicator">✅</span>';
+                if (isNoShow) statusIcon = '<span class="status-indicator">❌</span>';
+                if (isCanceled) statusIcon = '<span class="status-indicator">⚠️</span>';
+
+                // Verifica se tem Lesson Plan para este grupo
+                const hasLP = lpData[cls.group] && lpData[cls.group].length > 0;
 
                 card.innerHTML = `
                     ${statusIcon}
@@ -488,6 +688,7 @@
                     <div class="class-info">
                         <span class="badge badge-book">${cls.book}</span>
                         <span class="badge">${cls.group}</span>
+                        ${hasLP ? '<span class="badge badge-success">📚 LP</span>' : '<span class="badge badge-danger">📚 Sem LP</span>'}
                     </div>
                     <div class="class-info">📍 ${cls.room} | 📚 ${cls.mod}</div>
                     <div style="margin-top:10px; display:flex; gap:5px;">
@@ -502,7 +703,10 @@
         });
     }
 
-    // --- LESSON PLAN GLOBAL (NOVA FUNCIONALIDADE) ---
+    // ============================================
+    // LESSON PLAN FUNCTIONS
+    // ============================================
+    
     function showLessonPlanSelector() {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById('selection-screen').classList.add('active');
@@ -510,7 +714,15 @@
         
         const select = document.getElementById('group-select');
         select.innerHTML = '<option value="">Selecione a Turma...</option>';
-        Object.keys(studentsData).sort().forEach(turma => {
+        
+        const turmas = Object.keys(studentsData).sort();
+        if (turmas.length === 0) {
+            select.innerHTML = '<option value="">Nenhuma turma encontrada</option>';
+            document.getElementById('selection-content').innerHTML = '<p style="color:#666;">Não há turmas cadastradas.</p>';
+            return;
+        }
+
+        turmas.forEach(turma => {
             const opt = document.createElement('option');
             opt.value = turma;
             opt.innerText = turma;
@@ -521,71 +733,100 @@
         window.currentSelectionType = 'LESSON_PLAN_GLOBAL';
     }
 
-    function handleGroupSelect() {
-        const group = document.getElementById('group-select').value;
-        const content = document.getElementById('selection-content');
-        content.innerHTML = '';
-
-        if(!group) return;
-
-        if(window.currentSelectionType === 'ATTENDANCE') {
-            renderAttendanceTable(group, content);
-        } else if (window.currentSelectionType === 'LESSON_PLAN_GLOBAL') {
-            renderGlobalLPList(group, content);
-        }
-    }
-
     function renderGlobalLPList(group, container) {
-        // Buscar histórico de aulas dessa turma para saber o que já foi feito
-        // Varre todos os IDs salvos no localStorage que contêm esse grupo
-        const history = [];
-        for(let i=0; i<localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if(key.startsWith('rad_') && key.includes(group)) {
-                const data = JSON.parse(localStorage.getItem(key));
-                if(data.lp && data.lp.lessons && data.lp.lessons.length > 0) {
-                    history.push({
-                        date: key, // Usando key como proxy de data/aula
-                        lessons: data.lp.lessons,
-                        teacher: data.lp.teacherName || 'Unknown'
-                    });
+        try {
+            // Busca as lições da Lesson Plan para este grupo
+            const lessons = lpData[group] || [];
+            
+            if (lessons.length === 0) {
+                container.innerHTML = `
+                    <div class="error-boundary">
+                        <p>⚠️ Nenhuma Lesson Plan encontrada para a turma ${group}.</p>
+                        <p style="font-size:0.8rem; margin-top:0.5rem;">Verifique se a planilha de Lesson Plan está configurada corretamente.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Busca histórico de aulas dessa turma
+            const history = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('rad_') && key.includes(group)) {
+                    try {
+                        const data = JSON.parse(localStorage.getItem(key));
+                        if (data && data.lp && data.lp.lessons && data.lp.lessons.length > 0) {
+                            history.push({
+                                date: key,
+                                lessons: data.lp.lessons,
+                                teacher: data.lp.teacherName || 'Unknown',
+                                status: data.status || 'Registrada'
+                            });
+                        }
+                    } catch (e) {
+                        console.warn('Erro ao ler histórico:', e);
+                    }
                 }
             }
-        }
 
-        if(history.length === 0) {
-            container.innerHTML = '<p style="padding:1rem; color:#666;">Nenhuma lesson plan registrada ainda para esta turma.</p>';
-            return;
-        }
-
-        const list = document.createElement('ul');
-        list.className = 'lp-list';
-        
-        // Ordenar por data (key) decrescente para ver o mais recente primeiro
-        history.sort((a,b) => b.date.localeCompare(a.date));
-
-        history.forEach(h => {
-            const li = document.createElement('li');
-            li.className = 'lp-item completed';
-            li.style.flexDirection = 'column';
-            li.style.alignItems = 'flex-start';
+            const list = document.createElement('ul');
+            list.className = 'lp-list';
             
-            let lessonsHtml = h.lessons.map(l => `<span class="badge badge-book" style="margin:2px;">${l}</span>`).join('');
-            
-            li.innerHTML = `
-                <div style="width:100%; display:flex; justify-content:space-between; margin-bottom:5px;">
-                    <strong style="color:var(--success)">Realizado</strong>
-                    <span style="font-size:0.7rem; color:#666;">Por: ${h.teacher}</span>
+            // Mostra todas as lições disponíveis
+            const allLessonsList = document.createElement('div');
+            allLessonsList.innerHTML = `
+                <h4 style="margin:1rem 0 0.5rem; color:var(--neon-blue);">📚 Todas as Lições Disponíveis (${lessons.length})</h4>
+                <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
+                    ${lessons.map(l => `<span class="badge badge-book">${l}</span>`).join('')}
                 </div>
-                <div>${lessonsHtml}</div>
             `;
-            list.appendChild(li);
-        });
+            list.appendChild(allLessonsList);
 
-        container.appendChild(list);
+            // Mostra histórico se existir
+            if (history.length > 0) {
+                const historyDiv = document.createElement('div');
+                historyDiv.innerHTML = `<h4 style="margin:1rem 0 0.5rem; color:var(--success);">📋 Histórico de Aulas Realizadas (${history.length})</h4>`;
+                
+                history.sort((a, b) => b.date.localeCompare(a.date));
+                history.forEach(h => {
+                    const li = document.createElement('li');
+                    li.className = 'lp-item completed';
+                    li.style.flexDirection = 'column';
+                    li.style.alignItems = 'flex-start';
+                    
+                    const statusBadge = h.status === 'Realizada' ? 'badge-success' : 'badge-warning';
+                    
+                    li.innerHTML = `
+                        <div style="width:100%; display:flex; justify-content:space-between; margin-bottom:5px;">
+                            <strong style="color:var(--success)">${h.status}</strong>
+                            <span style="font-size:0.7rem; color:#666;">Por: ${h.teacher}</span>
+                        </div>
+                        <div style="display:flex; flex-wrap:wrap; gap:0.3rem;">
+                            ${h.lessons.map(l => `<span class="badge badge-book">${l}</span>`).join('')}
+                        </div>
+                    `;
+                    historyDiv.appendChild(li);
+                });
+                list.appendChild(historyDiv);
+            } else {
+                const noHistory = document.createElement('p');
+                noHistory.style.color = '#666';
+                noHistory.style.margin = '1rem 0';
+                noHistory.textContent = 'Nenhuma aula registrada ainda para esta turma.';
+                list.appendChild(noHistory);
+            }
+
+            container.appendChild(list);
+        } catch (error) {
+            handleError(error, 'renderGlobalLPList');
+            container.innerHTML = `<div class="error-boundary">❌ Erro ao carregar Lesson Plan: ${error.message}</div>`;
+        }
     }
 
-    // --- LISTA DE PRESENÇA GLOBAL ---
+    // ============================================
+    // ATTENDANCE FUNCTIONS
+    // ============================================
+    
     function showAttendanceSelector() {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById('selection-screen').classList.add('active');
@@ -593,7 +834,15 @@
         
         const select = document.getElementById('group-select');
         select.innerHTML = '<option value="">Selecione a Turma...</option>';
-        Object.keys(studentsData).sort().forEach(turma => {
+        
+        const turmas = Object.keys(studentsData).sort();
+        if (turmas.length === 0) {
+            select.innerHTML = '<option value="">Nenhuma turma encontrada</option>';
+            document.getElementById('selection-content').innerHTML = '<p style="color:#666;">Não há turmas cadastradas.</p>';
+            return;
+        }
+
+        turmas.forEach(turma => {
             const opt = document.createElement('option');
             opt.value = turma;
             opt.innerText = turma;
@@ -605,253 +854,402 @@
     }
 
     function renderAttendanceTable(group, container) {
-        const students = studentsData[group] || [];
-        if(students.length === 0) {
-            container.innerHTML = '<p>Nenhum aluno encontrado para esta turma.</p>';
-            return;
-        }
-
-        // Gerar dias do mês atual (simplificado: 30 dias)
-        const today = new Date();
-        const daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
-        
-        let html = '<div class="attendance-table-wrapper"><table><thead><tr><th>Aluno</th>';
-        for(let d=1; d<=daysInMonth; d++) {
-            html += `<th>${d}</th>`;
-        }
-        html += '</tr></thead><tbody>';
-
-        students.forEach(student => {
-            html += `<tr><td>${student}</td>`;
-            for(let d=1; d<=daysInMonth; d++) {
-                // Checar se existe registro para este dia (aproximação: chave rad_*group*...)
-                // Isso é complexo sem data exata no ID. Vamos mostrar apenas placeholder visual ou buscar por pattern solto.
-                // Para simplificar: Mostrar tabela vazia pronta para leitura futura ou indicar "Sem dados"
-                html += `<td>-</td>`; 
+        try {
+            const students = studentsData[group] || [];
+            if (students.length === 0) {
+                container.innerHTML = '<p style="color:#666;">Nenhum aluno encontrado para esta turma.</p>';
+                return;
             }
-            html += '</tr>';
-        });
 
-        html += '</tbody></table></div>';
-        html += '<p style="margin-top:1rem; font-size:0.8rem; color:#666;">* Visualização simplificada. Dados detalhados disponíveis no RAD de cada aula.</p>';
-        
-        container.innerHTML = html;
+            // Busca dados de presença do localStorage
+            const attendanceData = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('rad_') && key.includes(group)) {
+                    try {
+                        const data = JSON.parse(localStorage.getItem(key));
+                        if (data && data.attendance) {
+                            Object.entries(data.attendance).forEach(([student, status]) => {
+                                if (!attendanceData[student]) attendanceData[student] = {};
+                                attendanceData[student][key] = status;
+                            });
+                        }
+                    } catch (e) {
+                        console.warn('Erro ao ler presença:', e);
+                    }
+                }
+            }
+
+            const today = new Date();
+            const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+            
+            let html = '<div class="attendance-table-wrapper"><table><thead><tr><th>Aluno</th>';
+            
+            // Cabeçalho dos dias
+            for (let d = 1; d <= daysInMonth; d++) {
+                const date = new Date(today.getFullYear(), today.getMonth(), d);
+                const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                html += `<th style="${isWeekend ? 'color:#666;' : ''}">${d}</th>`;
+            }
+            html += '<th>Faltas</th></tr></thead><tbody>';
+
+            students.forEach(student => {
+                html += `<tr><td>${student}</td>`;
+                let faltas = 0;
+                
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dateKey = `rad_${group}-${today.getFullYear()}-${today.getMonth() + 1}-${d}`;
+                    const status = attendanceData[student] && attendanceData[student][dateKey];
+                    
+                    if (status === 'absent') {
+                        html += `<td class="att-absent">❌</td>`;
+                        faltas++;
+                    } else if (status === 'present') {
+                        html += `<td class="att-present">✅</td>`;
+                    } else {
+                        html += `<td style="color:#333;">-</td>`;
+                    }
+                }
+                html += `<td style="color:var(--danger); font-weight:bold;">${faltas}</td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table></div>';
+            html += '<p style="margin-top:1rem; font-size:0.8rem; color:#666;">✅ Presente | ❌ Ausente | - Sem registro</p>';
+            
+            container.innerHTML = html;
+        } catch (error) {
+            handleError(error, 'renderAttendanceTable');
+            container.innerHTML = `<div class="error-boundary">❌ Erro ao carregar presença: ${error.message}</div>`;
+        }
     }
 
-    // --- RAD & LP LOGIC ---
-
+    // ============================================
+    // RAD FUNCTIONS
+    // ============================================
+    
     function getSavedData(id) {
-        const data = localStorage.getItem('rad_' + id);
-        return data ? JSON.parse(data) : null;
+        try {
+            const data = localStorage.getItem('rad_' + id);
+            return data ? JSON.parse(data) : null;
+        } catch (error) {
+            console.warn('Erro ao ler dados salvos:', error);
+            return null;
+        }
     }
 
     function saveData(id, data) {
-        localStorage.setItem('rad_' + id, JSON.stringify(data));
+        try {
+            localStorage.setItem('rad_' + id, JSON.stringify(data));
+            return true;
+        } catch (error) {
+            handleError(error, 'saveData');
+            return false;
+        }
     }
 
     function openLPView(group, book, classId) {
-        // Abre modal simples apenas para visualizar/marcar lesson plan rápida (Nova Funcionalidade Home)
-        // Ou se chamado do card, abre o fluxo de registro.
-        // Vamos reutilizar a lógica de LP mas focada em registrar rápido.
-        
-        const modal = document.getElementById('rad-modal'); // Reusando modal
-        const body = document.getElementById('rad-body');
-        
-        // Determinar lista de lessons baseada no Book
-        let lessonsList = [];
-        // Tentar match simples
-        for(let key in BOOKS_STRUCTURE) {
-            if(book.toUpperCase().includes(key) || key.includes(book.toUpperCase())) {
-                lessonsList = BOOKS_STRUCTURE[key];
-                break;
+        try {
+            // Busca a Lesson Plan para este grupo
+            const lessons = lpData[group] || [];
+            
+            if (lessons.length === 0) {
+                showToast(`⚠️ Nenhuma Lesson Plan disponível para a turma ${group}`, 'warning');
+                return;
             }
+
+            const modal = document.getElementById('rad-modal');
+            const body = document.getElementById('rad-body');
+            
+            const saved = getSavedData(classId);
+            const savedLessons = saved && saved.lp ? saved.lp.lessons : [];
+            const savedObs = saved && saved.lp ? saved.lp.observation : '';
+            const savedTeacher = saved && saved.lp ? saved.lp.teacherName : '';
+
+            // Limita a exibição para não sobrecarregar
+            const displayLessons = lessons.slice(0, 30); // Mostra no máximo 30
+
+            body.innerHTML = `
+                <h3 style="color:var(--neon-blue); margin-bottom:1rem;">Lesson Plan: ${group}</h3>
+                <p style="margin-bottom:1rem; font-size:0.8rem; color:#aaa;">Total de lições: ${lessons.length} | Exibindo: ${displayLessons.length}</p>
+                <p style="margin-bottom:1rem; font-size:0.7rem; color:#666;">Marque o que foi realizado e assine.</p>
+                
+                <div style="max-height:300px; overflow-y:auto; border:1px solid #333; padding:0.5rem; margin-bottom:1rem;">
+                    ${displayLessons.map((l, idx) => {
+                        const isChecked = savedLessons.includes(l) ? 'checked' : '';
+                        const nameVal = savedLessons.includes(l) ? savedTeacher : '';
+                        return `
+                        <div class="lp-item ${isChecked ? 'completed' : ''}">
+                            <input type="checkbox" class="lp-check" id="lp_cb_${idx}" ${isChecked} onchange="toggleLPItem(this, '${l}')">
+                            <span class="lp-lesson-text">${l}</span>
+                            <input type="text" class="lp-name-input" id="lp_nm_${idx}" placeholder="Seu Nome" value="${nameVal}" ${isChecked ? '' : 'disabled'}>
+                        </div>`;
+                    }).join('')}
+                </div>
+                ${lessons.length > 30 ? '<p style="font-size:0.7rem; color:#666;">... e mais lições disponíveis</p>' : ''}
+
+                <textarea id="lp_obs" rows="3" placeholder="Observações da aula...">${savedObs || ''}</textarea>
+                
+                <button onclick="saveLPOnly('${classId}')" class="success">Salvar Lesson Plan</button>
+            `;
+            
+            modal.style.display = 'flex';
+            window.currentRadId = classId;
+        } catch (error) {
+            handleError(error, 'openLPView');
+            showToast('Erro ao abrir Lesson Plan', 'error');
         }
-        if(lessonsList.length === 0) lessonsList = Array.from({length: 20}, (_, i) => `Lesson ${i+1}`);
-
-        const saved = getSavedData(classId);
-        const savedLessons = saved && saved.lp ? saved.lp.lessons : [];
-        const savedObs = saved && saved.lp ? saved.lp.observation : '';
-        const savedTeacher = saved && saved.lp ? saved.lp.teacherName : '';
-
-        body.innerHTML = `
-            <h3 style="color:var(--neon-blue); margin-bottom:1rem;">Lesson Plan: ${group}</h3>
-            <p style="margin-bottom:1rem; font-size:0.8rem; color:#aaa;">Marque o que foi realizado e assine.</p>
-            
-            <div style="max-height:300px; overflow-y:auto; border:1px solid #333; padding:0.5rem; margin-bottom:1rem;">
-                ${lessonsList.map((l, idx) => {
-                    const isChecked = savedLessons.includes(l) ? 'checked' : '';
-                    const nameVal = savedLessons.includes(l) ? savedTeacher : '';
-                    return `
-                    <div class="lp-item ${isChecked ? 'completed' : ''}">
-                        <input type="checkbox" class="lp-check" id="lp_cb_${idx}" ${isChecked} onchange="toggleLPItem(this, '${l}')">
-                        <span class="lp-lesson-text">${l}</span>
-                        <input type="text" class="lp-name-input" id="lp_nm_${idx}" placeholder="Seu Nome" value="${nameVal}" ${isChecked ? '' : 'disabled'}>
-                    </div>`;
-                }).join('')}
-            </div>
-
-            <textarea id="lp_obs" rows="3" placeholder="Observações da aula..." ${savedObs ? '' : ''}>${savedObs || ''}</textarea>
-            
-            <button onclick="saveLPOnly('${classId}')">Salvar Lesson Plan</button>
-        `;
-        
-        modal.style.display = 'flex';
-        window.currentRadId = classId;
     }
 
     function toggleLPItem(cb, lesson) {
-        const inputName = cb.parentElement.querySelector('.lp-name-input');
-        const parent = cb.parentElement;
-        if(cb.checked) {
-            inputName.disabled = false;
-            inputName.focus();
-            parent.classList.add('completed');
-        } else {
-            inputName.disabled = true;
-            inputName.value = '';
-            parent.classList.remove('completed');
+        try {
+            const inputName = cb.parentElement.querySelector('.lp-name-input');
+            const parent = cb.parentElement;
+            if (cb.checked) {
+                inputName.disabled = false;
+                inputName.focus();
+                parent.classList.add('completed');
+            } else {
+                inputName.disabled = true;
+                inputName.value = '';
+                parent.classList.remove('completed');
+            }
+        } catch (error) {
+            handleError(error, 'toggleLPItem');
         }
     }
 
     function saveLPOnly(id) {
-        const checkedBoxes = document.querySelectorAll('.lp-check:checked');
-        const lessons = [];
-        let teacherName = '';
-        
-        checkedBoxes.forEach(cb => {
-            lessons.push(cb.nextElementSibling.innerText); // Pega texto da lesson
-            const nameInput = cb.parentElement.querySelector('.lp-name-input');
-            if(nameInput.value) teacherName = nameInput.value; // Pega o último nome preenchido
-        });
+        try {
+            const checkedBoxes = document.querySelectorAll('.lp-check:checked');
+            const lessons = [];
+            let teacherName = '';
+            
+            checkedBoxes.forEach(cb => {
+                const lessonText = cb.nextElementSibling.innerText;
+                if (lessonText) lessons.push(lessonText);
+                const nameInput = cb.parentElement.querySelector('.lp-name-input');
+                if (nameInput && nameInput.value) teacherName = nameInput.value;
+            });
 
-        const obs = document.getElementById('lp_obs').value;
+            const obs = document.getElementById('lp_obs')?.value || '';
 
-        if(lessons.length === 0) {
-            alert('Selecione pelo menos uma lesson.');
-            return;
+            if (lessons.length === 0) {
+                showToast('Selecione pelo menos uma lição.', 'warning');
+                return;
+            }
+            if (!teacherName) {
+                showToast('Digite seu nome ao lado da lição marcada.', 'warning');
+                return;
+            }
+
+            let data = getSavedData(id) || {};
+            data.lp = { lessons, observation: obs, teacherName };
+            data.lastUpdated = new Date().toISOString();
+            
+            if (saveData(id, data)) {
+                showToast('✅ Lesson Plan salva com sucesso!', 'success');
+                closeModal('rad-modal');
+                if (currentTeacher) openTeacherSchedule(currentTeacher);
+                else showLessonPlanSelector();
+            }
+        } catch (error) {
+            handleError(error, 'saveLPOnly');
+            showToast('Erro ao salvar Lesson Plan', 'error');
         }
-        if(!teacherName) {
-            alert('Digite seu nome ao lado da lesson marcada.');
-            return;
-        }
-
-        // Salvar estrutura parcial
-        let data = getSavedData(id) || {};
-        data.lp = { lessons, observation: obs, teacherName };
-        // Não muda o status da aula para 'Realizada' aqui, só salva o planning
-        saveData(id, data);
-        
-        alert('Lesson Plan salva com sucesso!');
-        closeModal('rad-modal');
-        if(currentTeacher) openTeacherSchedule(currentTeacher); // Refresh
-        else showLessonPlanSelector(); // Refresh se estiver na view global
     }
 
     function forceOpenLP() {
-        closeModal('lp-lock-modal');
-        // Abre o modal de LP novamente focado
-        // Precisamos recuperar os params do RAD atual. 
-        // Simplificação: O usuário clica no botão Lesson Plan do card.
+        try {
+            closeModal('lp-lock-modal');
+            // Tenta abrir o LP novamente
+            if (window.pendingRadId && window.pendingRadGroup) {
+                openLPView(window.pendingRadGroup, window.pendingRadBook, window.pendingRadId);
+            } else {
+                showToast('Erro: Dados da aula não encontrados', 'error');
+            }
+        } catch (error) {
+            handleError(error, 'forceOpenLP');
+        }
     }
 
     function openRAD(id, group, book) {
-        const saved = getSavedData(id);
-        
-        // TRAVA: Se não tiver LP salva, bloqueia
-        if(!saved || !saved.lp || !saved.lp.lessons || saved.lp.lessons.length === 0) {
-            document.getElementById('lp-lock-modal').style.display = 'flex';
-            // Hack para saber qual ID abrir quando clicar no botão do modal
-            window.pendingRadId = id;
-            window.pendingRadGroup = group;
-            window.pendingRadBook = book;
-            return;
-        }
+        try {
+            const saved = getSavedData(id);
+            
+            // Verifica se tem LP salva
+            if (!saved || !saved.lp || !saved.lp.lessons || saved.lp.lessons.length === 0) {
+                document.getElementById('lp-lock-modal').style.display = 'flex';
+                window.pendingRadId = id;
+                window.pendingRadGroup = group;
+                window.pendingRadBook = book;
+                return;
+            }
 
-        renderRADModal(id, group, book, saved);
+            renderRADModal(id, group, book, saved);
+        } catch (error) {
+            handleError(error, 'openRAD');
+            showToast('Erro ao abrir RAD', 'error');
+        }
     }
 
     function renderRADModal(id, group, book, savedData) {
-        const modal = document.getElementById('rad-modal');
-        const body = document.getElementById('rad-body');
-        
-        const students = studentsData[group] || [];
-        const status = savedData ? savedData.status : '';
-        const attendance = savedData ? savedData.attendance : {};
+        try {
+            const modal = document.getElementById('rad-modal');
+            const body = document.getElementById('rad-body');
+            
+            const students = studentsData[group] || [];
+            const status = savedData ? savedData.status : '';
+            const attendance = savedData ? savedData.attendance : {};
 
-        let studentsHtml = '';
-        if(students.length > 0) {
-            studentsHtml = '<h4 style="margin:1rem 0 0.5rem; color:#fff;">Lista de Presença</h4><div style="max-height:200px; overflow-y:auto;">';
-            students.forEach((stu, idx) => {
-                const attStatus = attendance[stu] || 'present';
-                studentsHtml += `
-                    <div style="display:flex; justify-content:space-between; padding:0.5rem; border-bottom:1px solid #222;">
-                        <span>${stu}</span>
-                        <select style="width:100px; margin:0; padding:0.2rem; font-size:0.7rem;" onchange="updateAtt('${stu}', this.value)">
-                            <option value="present" ${attStatus==='present'?'selected':''}>Presente</option>
-                            <option value="absent" ${attStatus==='absent'?'selected':''}>Ausente</option>
-                        </select>
-                    </div>
-                `;
-            });
-            studentsHtml += '</div>';
-        } else {
-            studentsHtml = '<p style="color:#666; font-size:0.8rem;">Sem alunos cadastrados para esta turma.</p>';
+            let studentsHtml = '';
+            if (students.length > 0) {
+                studentsHtml = '<h4 style="margin:1rem 0 0.5rem; color:#fff;">Lista de Presença</h4><div style="max-height:200px; overflow-y:auto;">';
+                students.forEach((stu, idx) => {
+                    const attStatus = attendance[stu] || 'present';
+                    studentsHtml += `
+                        <div style="display:flex; justify-content:space-between; padding:0.5rem; border-bottom:1px solid #222;">
+                            <span>${stu}</span>
+                            <select style="width:100px; margin:0; padding:0.2rem; font-size:0.7rem;" onchange="updateAtt('${stu}', this.value)">
+                                <option value="present" ${attStatus==='present'?'selected':''}>Presente</option>
+                                <option value="absent" ${attStatus==='absent'?'selected':''}>Ausente</option>
+                            </select>
+                        </div>
+                    `;
+                });
+                studentsHtml += '</div>';
+            } else {
+                studentsHtml = '<p style="color:#666; font-size:0.8rem;">Sem alunos cadastrados para esta turma.</p>';
+            }
+
+            body.innerHTML = `
+                <h3 style="color:var(--neon-blue);">RAD: ${group}</h3>
+                <div style="background:#111; padding:0.5rem; margin:0.5rem 0; border:1px solid #333;">
+                    <strong>Lesson Realizada:</strong> ${savedData.lp.lessons.join(', ')}<br>
+                    <strong>Prof:</strong> ${savedData.lp.teacherName}<br>
+                    <em>Obs: ${savedData.lp.observation || '-'}</em>
+                </div>
+
+                ${studentsHtml}
+
+                <h4 style="margin:1rem 0 0.5rem; color:#fff;">Status da Aula</h4>
+                <select id="rad-status" style="margin-bottom:1rem;">
+                    <option value="Realizada" ${status==='Realizada'?'selected':''}>✅ Realizada</option>
+                    <option value="No Show" ${status==='No Show'?'selected':''}>❌ No Show</option>
+                    <option value="Cancelada" ${status==='Cancelada'?'selected':''}>⚠️ Cancelada</option>
+                </select>
+
+                <button onclick="finalizeRAD('${id}')" class="success">SALVAR RAD</button>
+            `;
+
+            modal.style.display = 'flex';
+            window.currentRadId = id;
+        } catch (error) {
+            handleError(error, 'renderRADModal');
+            showToast('Erro ao renderizar RAD', 'error');
         }
-
-        body.innerHTML = `
-            <h3 style="color:var(--neon-blue);">RAD: ${group}</h3>
-            <div style="background:#111; padding:0.5rem; margin:0.5rem 0; border:1px solid #333;">
-                <strong>Lesson Realizada:</strong> ${savedData.lp.lessons.join(', ')}<br>
-                <strong>Prof:</strong> ${savedData.lp.teacherName}<br>
-                <em>Obs: ${savedData.lp.observation || '-'}</em>
-            </div>
-
-            ${studentsHtml}
-
-            <h4 style="margin:1rem 0 0.5rem; color:#fff;">Status da Aula</h4>
-            <select id="rad-status" style="margin-bottom:1rem;">
-                <option value="Realizada" ${status==='Realizada'?'selected':''}>✅ Realizada</option>
-                <option value="No Show" ${status==='No Show'?'selected':''}>❌ No Show (Aluno não veio)</option>
-                <option value="Cancelada" ${status==='Cancelada'?'selected':''}>⚠️ Cancelada</option>
-            </select>
-
-            <button onclick="finalizeRAD('${id}')">SALVAR RAD</button>
-        `;
-
-        modal.style.display = 'flex';
-        window.currentRadId = id;
     }
 
     function updateAtt(student, val) {
-        // Apenas prepara, salva no final
-        const id = window.currentRadId;
-        let data = getSavedData(id) || {};
-        if(!data.attendance) data.attendance = {};
-        data.attendance[student] = val;
-        saveData(id, data);
+        try {
+            const id = window.currentRadId;
+            let data = getSavedData(id) || {};
+            if (!data.attendance) data.attendance = {};
+            data.attendance[student] = val;
+            saveData(id, data);
+        } catch (error) {
+            handleError(error, 'updateAtt');
+        }
     }
 
     function finalizeRAD(id) {
-        const status = document.getElementById('rad-status').value;
-        let data = getSavedData(id) || {};
-        data.status = status;
-        // Attendance já foi sendo salva no onChange, mas garantimos consistência
-        saveData(id, data);
-        
-        closeModal('rad-modal');
-        if(currentTeacher) openTeacherSchedule(currentTeacher);
+        try {
+            const statusSelect = document.getElementById('rad-status');
+            if (!statusSelect) {
+                showToast('Erro: Status não encontrado', 'error');
+                return;
+            }
+            
+            const status = statusSelect.value;
+            let data = getSavedData(id) || {};
+            data.status = status;
+            data.finalizedAt = new Date().toISOString();
+            
+            if (saveData(id, data)) {
+                showToast('✅ RAD salvo com sucesso!', 'success');
+                closeModal('rad-modal');
+                if (currentTeacher) openTeacherSchedule(currentTeacher);
+            }
+        } catch (error) {
+            handleError(error, 'finalizeRAD');
+            showToast('Erro ao salvar RAD', 'error');
+        }
+    }
+
+    // ============================================
+    // NAVEGAÇÃO E UTILIDADES
+    // ============================================
+    
+    function showHome() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('home-screen').classList.add('active');
+    }
+
+    function openTeacherSchedule(teacher) {
+        try {
+            currentTeacher = teacher;
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('teacher-screen').classList.add('active');
+            
+            const title = document.getElementById('teacher-title');
+            title.innerText = `Schedule: ${teacher}`;
+            title.style.color = TEACHER_COLORS[teacher] || '#fff';
+
+            renderWeekTabs();
+        } catch (error) {
+            handleError(error, 'openTeacherSchedule');
+        }
+    }
+
+    function handleGroupSelect() {
+        try {
+            const group = document.getElementById('group-select').value;
+            const content = document.getElementById('selection-content');
+            content.innerHTML = '';
+
+            if (!group) return;
+
+            if (window.currentSelectionType === 'ATTENDANCE') {
+                renderAttendanceTable(group, content);
+            } else if (window.currentSelectionType === 'LESSON_PLAN_GLOBAL') {
+                renderGlobalLPList(group, content);
+            }
+        } catch (error) {
+            handleError(error, 'handleGroupSelect');
+        }
     }
 
     function closeModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
+        const modal = document.getElementById(modalId);
+        if (modal) modal.style.display = 'none';
     }
 
     // Fechar modal ao clicar fora
     window.onclick = function(event) {
         if (event.target.classList.contains('modal')) {
-            event.target.style.display = "none";
+            event.target.style.display = 'none';
         }
     }
+
+    // ============================================
+    // INICIALIZAÇÃO
+    // ============================================
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadData().catch(error => {
+            handleError(error, 'inicialização');
+        });
+    });
 </script>
 
 </body>
