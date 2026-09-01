@@ -36,7 +36,6 @@
             overflow-x: hidden;
         }
 
-        /* Utilitários de Layout */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -49,7 +48,6 @@
         .center { align-items: center; justify-content: center; }
         .between { justify-content: space-between; }
 
-        /* Header */
         header {
             text-align: center;
             padding: 30px 0;
@@ -71,7 +69,6 @@
             letter-spacing: 0.5px; 
         }
 
-        /* Botões Gerais */
         button {
             background: var(--bg-color);
             border: 2px solid var(--primary);
@@ -119,7 +116,6 @@
             color: #fff;
         }
 
-        /* Grid de Professores (Centralizado) */
         .teachers-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -158,7 +154,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* Tela do Professor */
         .schedule-header {
             display: flex;
             flex-direction: column;
@@ -175,7 +170,6 @@
             flex-wrap: wrap;
         }
 
-        /* Cards de Aula */
         .day-section {
             margin-bottom: 40px;
             border: 1px solid var(--border-color);
@@ -281,7 +275,6 @@
         .status-noshow { background: var(--danger); }
         .status-cancel { background: var(--warning); }
 
-        /* Modais */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -337,7 +330,6 @@
             transform: none;
         }
 
-        /* Formulários e Inputs */
         input, select, textarea {
             width: 100%;
             background: var(--bg-color);
@@ -401,7 +393,6 @@
             margin-bottom: 0;
         }
 
-        /* Lista de Presença */
         .attendance-table {
             width: 100%;
             border-collapse: collapse;
@@ -431,7 +422,6 @@
         .att-present { color: var(--success); font-weight: 700; }
         .att-absent { color: var(--danger); font-weight: 700; }
 
-        /* Loading */
         #loading-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -460,7 +450,6 @@
             letter-spacing: 1px;
         }
 
-        /* Responsividade Mobile */
         @media (max-width: 600px) {
             .teachers-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
             .classes-list { grid-template-columns: 1fr; padding: 15px; }
@@ -478,7 +467,6 @@
             button { padding: 10px 16px; font-size: 0.85rem; }
         }
 
-        /* Scrollbar Customizada */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -497,7 +485,6 @@
 </head>
 <body>
 
-    <!-- Loading Screen -->
     <div id="loading-screen">
         <div class="loader"></div>
         <p>Carregando Sistema...</p>
@@ -509,10 +496,8 @@
     </header>
 
     <div class="container">
-        <!-- Tela Inicial: Seleção de Teachers -->
         <div id="selection-screen">
             <div class="teachers-grid" id="teachers-grid">
-                <!-- Cards gerados via JS -->
             </div>
             
             <div style="text-align: center; margin-top: 40px;">
@@ -522,7 +507,6 @@
             </div>
         </div>
 
-        <!-- Tela do Cronograma do Teacher -->
         <div id="schedule-screen" class="hidden">
             <div class="schedule-header">
                 <button onclick="showSelection()" style="align-self: flex-start; border-color: var(--text-sec); color: var(--text-sec);">
@@ -530,19 +514,15 @@
                 </button>
                 <h2 id="current-teacher-name" style="color: var(--primary); text-align: center;"></h2>
                 
-                <!-- Seletor de Semana Simplificado -->
                 <div class="week-selector" id="week-selector">
-                    <!-- Botões de semana gerados via JS -->
                 </div>
             </div>
 
             <div id="schedule-content">
-                <!-- Conteúdo da semana -->
             </div>
         </div>
     </div>
 
-    <!-- MODAL RAD -->
     <div id="rad-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header">
@@ -565,12 +545,10 @@
                 
                 <label>Lesson Plan Realizada:</label>
                 <div id="lesson-plan-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px;">
-                    <!-- Checkboxes das lessons -->
                 </div>
 
                 <label>Lista de Presença:</label>
                 <div id="attendance-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px;">
-                    <!-- Lista de alunos -->
                 </div>
 
                 <button onclick="saveRad()" class="btn-success" style="width: 100%; background: var(--success); color: #fff; border-color: var(--success);">
@@ -583,7 +561,6 @@
         </div>
     </div>
 
-    <!-- MODAL LISTA DE PRESENÇA GERAL -->
     <div id="attendance-modal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header">
@@ -599,7 +576,6 @@
             </div>
 
             <div id="attendance-table-container" style="overflow-x: auto; margin-top: 20px;">
-                <!-- Tabela gerada via JS -->
             </div>
         </div>
     </div>
@@ -607,9 +583,10 @@
 <script>
     // CONFIGURAÇÕES
     const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
+    
+    // LINK ATUALIZADO PARA A PLANILHA DE ALUNOS - FORMATO CSV
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
 
-    // PROFESSORES VÁLIDOS
     const VALID_TEACHERS = [
         { name: 'MYCAEL', color: '#0d6efd' },
         { name: 'HOPE', color: '#0d6efd' },
@@ -624,7 +601,6 @@
         { name: 'LUISA', color: '#0d6efd' }
     ];
 
-    // ESTRUTURA DOS LIVROS (LESSON PLAN)
     const BOOKS_STRUCTURE = {
         'G1': generateLessons(1, 42),
         'G2': generateLessons(2, 46),
@@ -650,14 +626,12 @@
         return lessons;
     }
 
-    // ESTADO GLOBAL
     let scheduleData = [];
     let studentsData = {};
     let currentTeacher = null;
     let currentWeekData = [];
     let allWeeks = {};
 
-    // INICIALIZAÇÃO
     document.addEventListener('DOMContentLoaded', () => {
         Promise.all([fetchSchedule(), fetchStudents()])
             .then(() => {
@@ -771,7 +745,6 @@
         return null;
     }
 
-    // RENDERIZAÇÃO
     function renderTeachers() {
         const grid = document.getElementById('teachers-grid');
         grid.innerHTML = '';
@@ -902,7 +875,6 @@
         });
     }
 
-    // FUNÇÕES DO RAD
     let currentRadClass = null;
 
     function getRadKey(cls) {
@@ -1031,7 +1003,6 @@
         }
     }
 
-    // LISTA DE PRESENÇA GERAL
     function openAttendanceList() {
         document.getElementById('attendance-modal').classList.remove('hidden');
         loadAttendanceTable();
