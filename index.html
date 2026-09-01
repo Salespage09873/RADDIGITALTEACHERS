@@ -6,23 +6,26 @@
     <title>Cronograma Semanal</title>
     <style>
         :root {
-            --bg-color: #050505;
-            --card-bg: #0a0a0a;
-            --text-main: #ffffff;
-            --text-sec: #a0a0a0;
-            --neon-blue: #00f3ff;
-            --neon-dim: rgba(0, 243, 255, 0.1);
-            --border-color: #333;
-            --danger: #ff2a2a;
-            --success: #00ff9d;
-            --warning: #ffcc00;
+            --bg-color: #ffffff;
+            --card-bg: #f8f9fa;
+            --text-main: #212529;
+            --text-sec: #6c757d;
+            --primary: #0d6efd;
+            --primary-light: #e7f1ff;
+            --primary-dim: rgba(13, 110, 253, 0.1);
+            --border-color: #dee2e6;
+            --danger: #dc3545;
+            --success: #198754;
+            --warning: #ffc107;
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-hover: 0 4px 16px rgba(0,0,0,0.12);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Courier New', Courier, monospace; /* Fonte técnica/futurista */
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -50,46 +53,70 @@
         header {
             text-align: center;
             padding: 30px 0;
-            border-bottom: 2px solid var(--neon-blue);
+            border-bottom: 3px solid var(--primary);
             margin-bottom: 30px;
-            background: linear-gradient(180deg, rgba(0,243,255,0.05) 0%, transparent 100%);
+            background: linear-gradient(180deg, var(--primary-light) 0%, transparent 100%);
         }
 
         h1 {
             font-size: 2rem;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            color: var(--neon-blue);
-            text-shadow: 0 0 10px var(--neon-blue);
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--primary);
             margin-bottom: 10px;
         }
 
-        h2, h3 { text-transform: uppercase; letter-spacing: 2px; }
+        h2, h3 { 
+            font-weight: 600; 
+            letter-spacing: 0.5px; 
+        }
 
         /* Botões Gerais */
         button {
-            background: transparent;
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
+            background: var(--bg-color);
+            border: 2px solid var(--primary);
+            color: var(--primary);
             padding: 12px 24px;
             font-size: 1rem;
-            text-transform: uppercase;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-weight: bold;
-            border-radius: 0; /* BORDAS RETAS */
+            border-radius: 6px;
             margin: 5px;
+            box-shadow: var(--shadow);
         }
 
         button:hover {
-            background: var(--neon-blue);
-            color: #000;
-            box-shadow: 0 0 15px var(--neon-blue);
+            background: var(--primary);
+            color: #fff;
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-1px);
         }
 
         button.active {
-            background: var(--neon-blue);
-            color: #000;
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        button.btn-danger {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        button.btn-danger:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        button.btn-success {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        button.btn-success:hover {
+            background: var(--success);
+            color: #fff;
         }
 
         /* Grid de Professores (Centralizado) */
@@ -97,35 +124,38 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 20px;
-            justify-items: center; /* Centraliza os cards */
+            justify-items: center;
             margin-top: 20px;
         }
 
         .teacher-card {
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
+            border: 2px solid var(--border-color);
             padding: 20px;
             width: 100%;
             max-width: 200px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s;
-            border-radius: 0; /* BORDAS RETAS */
+            transition: all 0.3s ease;
+            border-radius: 8px;
             position: relative;
             overflow: hidden;
+            box-shadow: var(--shadow);
         }
 
         .teacher-card:hover {
-            border-color: var(--neon-blue);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 243, 255, 0.2);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+            background: var(--primary-light);
         }
 
         .teacher-name {
             font-size: 1.1rem;
-            font-weight: bold;
-            color: #fff;
+            font-weight: 700;
+            color: var(--text-main);
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         /* Tela do Professor */
@@ -134,7 +164,7 @@
             flex-direction: column;
             gap: 15px;
             margin-bottom: 30px;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 2px solid var(--border-color);
             padding-bottom: 20px;
         }
 
@@ -149,121 +179,130 @@
         .day-section {
             margin-bottom: 40px;
             border: 1px solid var(--border-color);
-            border-radius: 0;
+            border-radius: 8px;
             overflow: hidden;
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
         }
 
         .day-header {
-            background: rgba(0, 243, 255, 0.1);
-            color: var(--neon-blue);
-            padding: 15px;
-            font-weight: bold;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 15px 20px;
+            font-weight: 700;
             text-transform: uppercase;
-            border-bottom: 1px solid var(--neon-blue);
+            border-bottom: 2px solid var(--primary);
             font-size: 1.2rem;
+            letter-spacing: 0.5px;
         }
 
         .classes-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 15px;
-            padding: 15px;
+            padding: 20px;
         }
 
         .class-card {
-            background: var(--card-bg);
+            background: var(--bg-color);
             border: 1px solid var(--border-color);
-            padding: 15px;
-            border-radius: 0;
+            padding: 18px;
+            border-radius: 6px;
             position: relative;
-            transition: 0.3s;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
         }
 
         .class-card:hover {
-            border-color: var(--neon-blue);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-hover);
         }
 
         .class-time {
-            font-size: 1.2rem;
-            color: var(--neon-blue);
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 1.3rem;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 8px;
             display: block;
-            border-bottom: 1px dashed #333;
-            padding-bottom: 5px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
         }
 
         .class-info {
-            font-size: 0.9rem;
-            color: #ccc;
+            font-size: 0.95rem;
+            color: var(--text-sec);
             margin-bottom: 5px;
         }
 
         .badge {
             display: inline-block;
-            padding: 2px 6px;
-            border: 1px solid #555;
+            padding: 3px 10px;
+            border-radius: 4px;
             font-size: 0.75rem;
+            font-weight: 600;
             margin-right: 5px;
             margin-bottom: 5px;
             color: #fff;
-            border-radius: 0;
         }
 
-        .badge-book { border-color: var(--warning); color: var(--warning); }
-        .badge-room { border-color: var(--success); color: var(--success); }
-        .badge-modal { border-color: var(--neon-blue); color: var(--neon-blue); }
+        .badge-book { background: var(--warning); color: #000; }
+        .badge-room { background: var(--success); }
+        .badge-modal { background: var(--primary); }
 
         .action-btn {
             width: 100%;
-            margin-top: 10px;
-            padding: 8px;
-            font-size: 0.8rem;
-            border: 1px solid #444;
-            color: #aaa;
+            margin-top: 12px;
+            padding: 10px;
+            font-size: 0.85rem;
+            border: 2px solid var(--border-color);
+            color: var(--text-sec);
+            background: var(--bg-color);
+            border-radius: 6px;
+            font-weight: 600;
         }
         
         .action-btn:hover {
-            border-color: var(--neon-blue);
-            color: var(--neon-blue);
-            background: transparent;
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+            transform: none;
             box-shadow: none;
         }
 
         .status-indicator {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 10px;
-            height: 10px;
-            border-radius: 0;
+            top: 12px;
+            right: 12px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
         }
-        .status-done { background: var(--success); box-shadow: 0 0 5px var(--success); }
-        .status-noshow { background: var(--danger); box-shadow: 0 0 5px var(--danger); }
-        .status-cancel { background: var(--warning); box-shadow: 0 0 5px var(--warning); }
+        .status-done { background: var(--success); }
+        .status-noshow { background: var(--danger); }
+        .status-cancel { background: var(--warning); }
 
         /* Modais */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.5);
             z-index: 1000;
             display: flex;
             justify-content: center;
             align-items: center;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(4px);
         }
 
         .modal-content {
-            background: #000;
-            border: 2px solid var(--neon-blue);
-            padding: 20px;
+            background: var(--bg-color);
+            border: none;
+            border-radius: 12px;
+            padding: 30px;
             width: 90%;
             max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
-            border-radius: 0;
-            box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
 
         .modal-header {
@@ -271,57 +310,95 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .modal-header h3 {
+            color: var(--primary);
+            font-size: 1.2rem;
         }
 
         .close-modal {
             background: none;
             border: none;
-            color: #fff;
-            font-size: 1.5rem;
+            color: var(--text-sec);
+            font-size: 1.8rem;
             cursor: pointer;
-            padding: 0;
+            padding: 0 8px;
             margin: 0;
             box-shadow: none;
+            font-weight: 300;
+        }
+
+        .close-modal:hover {
+            color: var(--text-main);
+            background: none;
+            transform: none;
         }
 
         /* Formulários e Inputs */
         input, select, textarea {
             width: 100%;
-            background: #111;
-            border: 1px solid #333;
-            color: #fff;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 0;
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            border-radius: 6px;
             font-family: inherit;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
         }
 
         input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: var(--neon-blue);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-dim);
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-sec);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 6px;
         }
 
         .checkbox-group {
             display: flex;
             align-items: center;
             margin-bottom: 8px;
-            background: #111;
-            padding: 8px;
-            border: 1px solid #222;
+            background: var(--card-bg);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-group:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
         }
 
         .checkbox-group input {
             width: auto;
-            margin-right: 10px;
+            margin-right: 12px;
             margin-bottom: 0;
+            accent-color: var(--primary);
+            transform: scale(1.1);
         }
 
         .checkbox-group label {
             flex: 1;
             cursor: pointer;
             font-size: 0.9rem;
+            color: var(--text-main);
+            text-transform: none;
+            font-weight: 400;
+            margin-bottom: 0;
         }
 
         /* Lista de Presença */
@@ -329,28 +406,36 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
+            background: var(--bg-color);
+            border-radius: 6px;
+            overflow: hidden;
         }
 
         .attendance-table th, .attendance-table td {
-            border: 1px solid #333;
-            padding: 8px;
+            border: 1px solid var(--border-color);
+            padding: 10px 12px;
             text-align: center;
         }
 
         .attendance-table th {
-            background: #111;
-            color: var(--neon-blue);
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
         }
 
-        .att-present { color: var(--success); font-weight: bold; }
-        .att-absent { color: var(--danger); font-weight: bold; }
+        .attendance-table tr:hover {
+            background: var(--card-bg);
+        }
+
+        .att-present { color: var(--success); font-weight: 700; }
+        .att-absent { color: var(--danger); font-weight: 700; }
 
         /* Loading */
         #loading-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
+            background: var(--bg-color);
             z-index: 2000;
             display: flex;
             flex-direction: column;
@@ -360,19 +445,53 @@
         .loader {
             width: 50px;
             height: 50px;
-            border: 3px solid #333;
-            border-top: 3px solid var(--neon-blue);
-            border-radius: 0; /* Quadrado girando */
-            animation: spin 1s linear infinite;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        #loading-screen p {
+            margin-top: 20px;
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
         /* Responsividade Mobile */
         @media (max-width: 600px) {
-            .teachers-grid { grid-template-columns: repeat(2, 1fr); }
-            .classes-list { grid-template-columns: 1fr; }
+            .teachers-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+            .classes-list { grid-template-columns: 1fr; padding: 15px; }
             h1 { font-size: 1.5rem; }
-            .modal-content { width: 95%; padding: 15px; }
+            .modal-content { width: 95%; padding: 20px; }
+            .class-card { padding: 15px; }
+            .day-header { padding: 12px 15px; font-size: 1rem; }
+            .teacher-card { max-width: 100%; padding: 15px; }
+            .week-selector button { padding: 8px 16px; font-size: 0.85rem; }
+        }
+
+        @media (max-width: 400px) {
+            .teachers-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .container { padding: 10px; }
+            button { padding: 10px 16px; font-size: 0.85rem; }
+        }
+
+        /* Scrollbar Customizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--card-bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0b5ed7;
         }
     </style>
 </head>
@@ -381,12 +500,12 @@
     <!-- Loading Screen -->
     <div id="loading-screen">
         <div class="loader"></div>
-        <p style="margin-top: 20px; color: var(--neon-blue); text-transform: uppercase;">Carregando Sistema...</p>
+        <p>Carregando Sistema...</p>
     </div>
 
     <header>
         <h1>Sistema de Gestão</h1>
-        <p style="color: var(--text-sec); font-size: 0.9rem;">SELECIONE O PROFESSOR</p>
+        <p style="color: var(--text-sec); font-size: 0.95rem; font-weight: 500;">SELECIONE O PROFESSOR</p>
     </header>
 
     <div class="container">
@@ -397,15 +516,19 @@
             </div>
             
             <div style="text-align: center; margin-top: 40px;">
-                <button onclick="openAttendanceList()">📋 Lista de Presença Geral</button>
+                <button onclick="openAttendanceList()" style="border-color: var(--success); color: var(--success);">
+                    📋 Lista de Presença Geral
+                </button>
             </div>
         </div>
 
         <!-- Tela do Cronograma do Teacher -->
         <div id="schedule-screen" class="hidden">
             <div class="schedule-header">
-                <button onclick="showSelection()" style="align-self: flex-start;">← Voltar</button>
-                <h2 id="current-teacher-name" style="color: var(--neon-blue); text-align: center;"></h2>
+                <button onclick="showSelection()" style="align-self: flex-start; border-color: var(--text-sec); color: var(--text-sec);">
+                    ← Voltar
+                </button>
+                <h2 id="current-teacher-name" style="color: var(--primary); text-align: center;"></h2>
                 
                 <!-- Seletor de Semana Simplificado -->
                 <div class="week-selector" id="week-selector">
@@ -427,9 +550,9 @@
                 <button class="close-modal" onclick="closeModal('rad-modal')">✕</button>
             </div>
             
-            <div id="rad-class-info" style="margin-bottom: 15px; color: var(--text-sec); font-size: 0.9rem;"></div>
+            <div id="rad-class-info" style="margin-bottom: 15px; padding: 12px; background: var(--card-bg); border-radius: 6px; border-left: 4px solid var(--primary);"></div>
 
-            <label style="color: var(--neon-blue); text-transform: uppercase; font-size: 0.8rem;">Status da Aula:</label>
+            <label>Status da Aula:</label>
             <select id="rad-status" onchange="toggleRadFields()">
                 <option value="">Selecione...</option>
                 <option value="realizada">Realizada</option>
@@ -438,20 +561,24 @@
             </select>
 
             <div id="rad-fields" class="hidden">
-                <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
+                <hr style="border: 0; border-top: 2px solid var(--border-color); margin: 20px 0;">
                 
-                <label style="color: var(--neon-blue); text-transform: uppercase; font-size: 0.8rem;">Lesson Plan Realizada:</label>
-                <div id="lesson-plan-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #333; padding: 5px;">
+                <label>Lesson Plan Realizada:</label>
+                <div id="lesson-plan-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px;">
                     <!-- Checkboxes das lessons -->
                 </div>
 
-                <label style="color: var(--neon-blue); text-transform: uppercase; font-size: 0.8rem;">Lista de Presença:</label>
-                <div id="attendance-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+                <label>Lista de Presença:</label>
+                <div id="attendance-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px;">
                     <!-- Lista de alunos -->
                 </div>
 
-                <button onclick="saveRad()" style="width: 100%; background: var(--neon-blue); color: #000;">SALVAR RAD</button>
-                <button onclick="clearRad()" style="width: 100%; border-color: var(--danger); color: var(--danger); margin-top: 5px;">LIMPAR DADOS</button>
+                <button onclick="saveRad()" class="btn-success" style="width: 100%; background: var(--success); color: #fff; border-color: var(--success);">
+                    💾 SALVAR RAD
+                </button>
+                <button onclick="clearRad()" class="btn-danger" style="width: 100%; margin-top: 8px; border-color: var(--danger); color: var(--danger);">
+                    🗑️ LIMPAR DADOS
+                </button>
             </div>
         </div>
     </div>
@@ -464,11 +591,11 @@
                 <button class="close-modal" onclick="closeModal('attendance-modal')">✕</button>
             </div>
             
-            <div class="flex between" style="gap: 10px; flex-wrap: wrap;">
-                <select id="att-group-select" onchange="loadAttendanceTable()">
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 15px;">
+                <select id="att-group-select" onchange="loadAttendanceTable()" style="flex: 1; min-width: 150px;">
                     <option value="">Selecione a Turma...</option>
                 </select>
-                <input type="month" id="att-month-select" onchange="loadAttendanceTable()" style="width: auto;">
+                <input type="month" id="att-month-select" onchange="loadAttendanceTable()" style="flex: 0 1 auto; width: auto;">
             </div>
 
             <div id="attendance-table-container" style="overflow-x: auto; margin-top: 20px;">
@@ -482,19 +609,19 @@
     const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
 
-    // PROFESSORES VÁLIDOS (Adicionados Carla e Luisa)
+    // PROFESSORES VÁLIDOS
     const VALID_TEACHERS = [
-        { name: 'MYCAEL', color: '#FF6B6B' },
-        { name: 'HOPE', color: '#FFE66D' },
-        { name: 'PEDRO', color: '#F38181' },
-        { name: 'DIOGO', color: '#AA96DA' },
-        { name: 'LIVIA', color: '#FCBAD3' },
-        { name: 'TOSCA', color: '#A8D8EA' },
-        { name: 'IAGO', color: '#FF9F43' },
-        { name: 'SARA', color: '#54a0ff' },
-        { name: 'CAROL', color: '#5f27cd' },
-        { name: 'CARLA', color: '#00ff9d' }, // Nova
-        { name: 'LUISA', color: '#ff0055' }  // Nova
+        { name: 'MYCAEL', color: '#0d6efd' },
+        { name: 'HOPE', color: '#0d6efd' },
+        { name: 'PEDRO', color: '#0d6efd' },
+        { name: 'DIOGO', color: '#0d6efd' },
+        { name: 'LIVIA', color: '#0d6efd' },
+        { name: 'TOSCA', color: '#0d6efd' },
+        { name: 'IAGO', color: '#0d6efd' },
+        { name: 'SARA', color: '#0d6efd' },
+        { name: 'CAROL', color: '#0d6efd' },
+        { name: 'CARLA', color: '#0d6efd' },
+        { name: 'LUISA', color: '#0d6efd' }
     ];
 
     // ESTRUTURA DOS LIVROS (LESSON PLAN)
@@ -506,7 +633,7 @@
         'G5': generateLessons(5, 46),
         'G6': generateLessons(6, 46),
         'G7': generateLessons(7, 46),
-        'G8': generateLessons(8, 46), // The Crown (Book 8 na lógica, mas pode variar)
+        'G8': generateLessons(8, 46),
         'G9': generateLessons(9, 46),
         'AW': generateLessons(10, 46),
         'DEFAULT': generateLessons(0, 46)
@@ -525,10 +652,10 @@
 
     // ESTADO GLOBAL
     let scheduleData = [];
-    let studentsData = {}; // Mapa: Turma -> [Alunos]
+    let studentsData = {};
     let currentTeacher = null;
     let currentWeekData = [];
-    let allWeeks = {}; // Mapa: NomeSemana -> Dados
+    let allWeeks = {};
 
     // INICIALIZAÇÃO
     document.addEventListener('DOMContentLoaded', () => {
@@ -537,13 +664,12 @@
                 document.getElementById('loading-screen').classList.add('hidden');
                 renderTeachers();
                 populateGroupSelect();
-                // Set month input to current month
                 const now = new Date();
                 document.getElementById('att-month-select').value = now.toISOString().slice(0, 7);
             })
             .catch(err => {
                 console.error(err);
-                document.getElementById('loading-screen').innerHTML = '<p style="color:red">Erro ao carregar dados. Recarregue a página.</p>';
+                document.getElementById('loading-screen').innerHTML = '<p style="color: var(--danger);">Erro ao carregar dados. Recarregue a página.</p>';
             });
     });
 
@@ -567,28 +693,20 @@
         const lines = text.split('\n').map(l => l.trim()).filter(l => l);
         if(lines.length < 2) return;
 
-        // Cabeçalho: A=Idioma, B=Book, C=Group, D=Room, E=Modal, F=Horario, G..K=Dias
-        // Vamos assumir que a primeira linha é cabeçalho e as seguintes são dados.
-        // Precisamos identificar as colunas de dias dinamicamente ou fixar se a estrutura for rígida.
-        // Estrutura dada: A(Idioma), B(Book), C(Group), D(Room), E(Modal), F(Horario), G(Seg), H(Ter), I(Qua), J(Qui), K(Sex)
-        
         const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
         
-        // Mapeamento fixo baseado na descrição do usuário
-        const COL_BOOK = 1; // B
-        const COL_GROUP = 2; // C
-        const COL_ROOM = 3; // D
-        const COL_MODAL = 4; // E
-        const COL_TIME = 5; // F
-        const DAYS_START = 6; // G (Index 6)
+        const COL_BOOK = 1;
+        const COL_GROUP = 2;
+        const COL_ROOM = 3;
+        const COL_MODAL = 4;
+        const COL_TIME = 5;
+        const DAYS_START = 6;
 
-        const daysMap = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta']; // Apenas 5 dias de aula normal? Ou inclui Sábado?
-        // O prompt disse "G H I J K segunda a sexta". Vou usar isso.
+        const daysMap = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
 
         scheduleData = [];
 
         for(let i=1; i<lines.length; i++) {
-            // Split simples, cuidado com vírgulas dentro de aspas (não tratado profundamente aqui, mas o CSV do Google costuma ser limpo)
             const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
             
             const book = row[COL_BOOK] || '';
@@ -599,24 +717,19 @@
 
             if(!time) continue;
 
-            // Iterar dias (G a K -> indices 6 a 10)
             for(let d=0; d<5; d++) {
                 const cellContent = row[DAYS_START + d];
                 if(cellContent && cellContent.trim() !== '') {
-                    // Extrair professor da célula
                     const teacherName = findTeacherInString(cellContent);
                     
                     if(teacherName) {
-                        // Limpar nome do professor da string da célula para sobrar info extra se houver
-                        // Mas geralmente a célula é só o nome ou "Nome - Obs"
-                        
                         scheduleData.push({
                             book: cleanText(book),
                             group: cleanText(groupRaw),
                             room: cleanText(room),
                             modal: cleanText(modal),
                             time: cleanText(time),
-                            dayIndex: d, // 0=Seg, 1=Ter...
+                            dayIndex: d,
                             dayName: daysMap[d],
                             teacher: teacherName,
                             rawCell: cellContent
@@ -626,9 +739,6 @@
             }
         }
 
-        // Agrupar por semana (Como só temos uma aba "This Week" agora, tudo vai pra lá)
-        // Mas para suportar a lógica de "Next Week" se adicionar colunas depois:
-        // Por enquanto, vamos tratar tudo como "This Week" conforme pedido de simplificação.
         allWeeks = {
             'This Week': scheduleData
         };
@@ -638,7 +748,6 @@
         const lines = text.split('\n').map(l => l.trim()).filter(l => l);
         if(lines.length < 2) return;
         
-        // Col A: Turma, Col B: Aluno
         for(let i=1; i<lines.length; i++) {
             const parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
             if(parts.length >= 2) {
@@ -689,7 +798,7 @@
         title.style.color = color;
 
         renderWeekSelector();
-        loadWeekData('This Week'); // Carrega a única aba disponível por padrão
+        loadWeekData('This Week');
     }
 
     function showSelection() {
@@ -702,8 +811,6 @@
         const container = document.getElementById('week-selector');
         container.innerHTML = '';
         
-        // Como simplificamos para ler apenas a Página 1, teremos apenas "This Week"
-        // Mas deixamos a estrutura pronta caso queira adicionar "Next Week" manualmente depois
         const weeks = Object.keys(allWeeks);
         
         weeks.forEach((weekName, index) => {
@@ -721,7 +828,6 @@
 
     function loadWeekData(weekName) {
         const data = allWeeks[weekName] || [];
-        // Filtrar pelo teacher atual
         currentWeekData = data.filter(item => item.teacher === currentTeacher.name);
         renderSchedule();
     }
@@ -731,11 +837,10 @@
         container.innerHTML = '';
 
         if(currentWeekData.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color:#555; margin-top:50px;">Nenhuma aula encontrada para esta semana.</p>';
+            container.innerHTML = '<p style="text-align:center; color: var(--text-sec); margin-top:50px; font-size:1.1rem;">Nenhuma aula encontrada para esta semana.</p>';
             return;
         }
 
-        // Agrupar por dia
         const daysOrder = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
         
         daysOrder.forEach(day => {
@@ -756,7 +861,6 @@
                     const card = document.createElement('div');
                     card.className = 'class-card';
                     
-                    // Verificar status salvo
                     const radKey = getRadKey(cls);
                     const savedRad = localStorage.getItem(radKey);
                     const status = savedRad ? JSON.parse(savedRad).status : null;
@@ -766,12 +870,10 @@
                     if(status === 'noshow') statusBadge = '<div class="status-indicator status-noshow" title="No Show"></div>';
                     if(status === 'cancelada') statusBadge = '<div class="status-indicator status-cancel" title="Cancelada"></div>';
 
-                    // Próxima Lesson (Preview)
                     let nextLessonLabel = "Ver Lesson Plan";
                     if(savedRad) {
                         const parsed = JSON.parse(savedRad);
                         if(parsed.lessons && parsed.lessons.length > 0) {
-                            // Pega a última lesson marcada
                             const last = parsed.lessons[parsed.lessons.length-1];
                             nextLessonLabel = `Próximo: Após ${last}`;
                         }
@@ -786,7 +888,7 @@
                             <span class="badge badge-room">Sala: ${cls.room || '-'}</span>
                             <span class="badge badge-modal">${cls.modal || 'REGULAR'}</span>
                         </div>
-                        <div style="font-size:0.75rem; color:var(--neon-blue); margin: 5px 0; border-top:1px dashed #333; paddingTop:5px;">
+                        <div style="font-size:0.8rem; color: var(--primary); margin: 8px 0; border-top: 1px solid var(--border-color); padding-top: 8px;">
                             ${nextLessonLabel}
                         </div>
                         <button class="action-btn" onclick="openRad('${cls.time}', '${cls.group}', '${cls.book}', '${cls.room}', '${cls.dayName}')">ABRIR RAD</button>
@@ -813,24 +915,20 @@
         const infoDiv = document.getElementById('rad-class-info');
         
         infoDiv.innerHTML = `
-            <strong>${day} - ${time}</strong><br>
-            Turma: ${group} | Book: ${book} | Sala: ${room}
+            <strong style="color: var(--primary);">${day} - ${time}</strong><br>
+            <span style="color: var(--text-sec);">Turma: ${group} | Book: ${book} | Sala: ${room}</span>
         `;
 
-        // Reset form
         document.getElementById('rad-status').value = '';
         toggleRadFields();
         
-        // Carregar dados salvos se existir
         const saved = localStorage.getItem(getRadKey(currentRadClass));
         if(saved) {
             const data = JSON.parse(saved);
             document.getElementById('rad-status').value = data.status;
             toggleRadFields();
             if(data.status && data.status !== '') {
-                // Restaurar checkboxes de lessons
                 renderLessonPlanCheckboxes(book, data.lessons || []);
-                // Restaurar presença
                 renderAttendanceCheckboxes(group, data.attendance || []);
             }
         } else {
@@ -852,7 +950,6 @@
         const container = document.getElementById('lesson-plan-container');
         container.innerHTML = '';
         
-        // Identificar qual estrutura de livro usar
         let structure = BOOKS_STRUCTURE['DEFAULT'];
         const bookClean = (bookRaw || '').toUpperCase();
         
@@ -884,23 +981,19 @@
         const container = document.getElementById('attendance-container');
         container.innerHTML = '';
         
-        // Tentar achar alunos
         let students = [];
-        // Busca exata ou parcial
         const keys = Object.keys(studentsData);
         const match = keys.find(k => k.toUpperCase() === groupRaw.toUpperCase() || groupRaw.toUpperCase().includes(k.toUpperCase()));
         
         if(match && studentsData[match]) {
             students = studentsData[match];
         } else {
-            // Fallback se não achar turma exata
-            students = ["Aluno 1", "Aluno 2", "Aluno 3"]; 
+            students = ["Aluno 1", "Aluno 2", "Aluno 3"];
         }
 
-        students.forEach((student, idx) => {
+        students.forEach((student) => {
             const div = document.createElement('div');
             div.className = 'checkbox-group';
-            // Marca como presente se estiver na lista de salvos
             const isPresent = presentList.includes(student) ? 'checked' : '';
             
             div.innerHTML = `
@@ -915,27 +1008,20 @@
         const status = document.getElementById('rad-status').value;
         if(!status) { alert('Selecione o status da aula!'); return; }
 
-        // Coletar Lessons
         const lessonsChecked = Array.from(document.querySelectorAll('#lesson-plan-container input:checked')).map(cb => cb.value);
-        const labelsChecked = Array.from(document.querySelectorAll('#lesson-plan-container input:checked')).map(cb => {
-            return cb.nextElementSibling.innerText;
-        });
-
-        // Coletar Presença
         const attendanceChecked = Array.from(document.querySelectorAll('.att-check:checked')).map(cb => cb.value);
 
         const data = {
             status,
             lessons: lessonsChecked,
-            lessonLabels: labelsChecked,
             attendance: attendanceChecked,
             dateSaved: new Date().toISOString()
         };
 
         localStorage.setItem(getRadKey(currentRadClass), JSON.stringify(data));
         closeModal('rad-modal');
-        renderSchedule(); // Atualiza UI
-        alert('RAD Salvo com Sucesso!');
+        renderSchedule();
+        alert('✅ RAD Salvo com Sucesso!');
     }
 
     function clearRad() {
@@ -964,21 +1050,20 @@
 
     function loadAttendanceTable() {
         const group = document.getElementById('att-group-select').value;
-        const monthVal = document.getElementById('att-month-select').value; // YYYY-MM
+        const monthVal = document.getElementById('att-month-select').value;
         const container = document.getElementById('attendance-table-container');
         
         if(!group) {
-            container.innerHTML = '<p>Selecione uma turma.</p>';
+            container.innerHTML = '<p style="color: var(--text-sec);">Selecione uma turma.</p>';
             return;
         }
 
         const students = studentsData[group] || [];
         if(students.length === 0) {
-            container.innerHTML = '<p>Nenhum aluno encontrado para esta turma.</p>';
+            container.innerHTML = '<p style="color: var(--text-sec);">Nenhum aluno encontrado para esta turma.</p>';
             return;
         }
 
-        // Gerar dias do mês
         const [year, month] = monthVal.split('-').map(Number);
         const daysInMonth = new Date(year, month, 0).getDate();
         
@@ -989,27 +1074,15 @@
         html += '</tr></thead><tbody>';
 
         students.forEach(student => {
-            html += `<tr><td style="text-align:left; padding-left:10px;">${student}</td>`;
+            html += `<tr><td style="text-align:left; padding-left:10px; font-weight:500;">${student}</td>`;
             for(let d=1; d<=daysInMonth; d++) {
-                // Formatar data para buscar no RAD (YYYY-MM-DD)
-                // Nota: O RAD salva por "DayName_Time_Group". Para cruzar exatamente precisaríamos da data real da aula.
-                // Como simplificação, vamos mostrar visualmente. Para funcionalidade real de "ver se veio no dia X",
-                // precisaríamos mapear os RADs salvos para datas específicas.
-                // Aqui faremos uma simulação visual ou busca complexa se necessário.
-                // Implementação Simples: Mostrar células vazias para preencher manualmente ou indicar que precisa integrar com data real.
-                
-                // Melhoria: Buscar nos RADs salvos se existe algum registro nesse dia para esse grupo/aluno?
-                // Muito complexo para o escopo atual sem banco de dados.
-                // Vamos deixar as células clicáveis para marcar manualmente nesta visão?
-                // Ou apenas mostrar a tabela estrutural.
-                
-                html += `<td>-</td>`; 
+                html += `<td>•</td>`;
             }
             html += '</tr>';
         });
 
         html += '</tbody></table>';
-        html += '<p style="font-size:0.8rem; color:#666; margin-top:10px;">* Visualização estrutural. O controle detalhado por dia é feito no RAD de cada aula.</p>';
+        html += '<p style="font-size:0.8rem; color: var(--text-sec); margin-top:12px; font-style:italic;">* Visualização estrutural. O controle detalhado por dia é feito no RAD de cada aula.</p>';
         
         container.innerHTML = html;
     }
