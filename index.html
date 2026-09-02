@@ -574,7 +574,6 @@
                 <div id="attendance-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px;">
                 </div>
 
-                <!-- NOVO CAMPO DE OBSERVAÇÕES -->
                 <div class="observations-box">
                     <label style="color: var(--primary);">📝 Observações:</label>
                     <textarea id="rad-observations" placeholder="Digite aqui suas observações sobre a aula..." rows="3"></textarea>
@@ -749,15 +748,25 @@
         const lines = text.split('\n').map(l => l.trim()).filter(l => l);
         if(lines.length < 2) return;
         
+        console.log('📊 Total de linhas na planilha de alunos:', lines.length);
+        
         for(let i=1; i<lines.length; i++) {
             const parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
             if(parts.length >= 2) {
                 const group = parts[0].replace(/"/g, '').trim();
                 const student = parts[1].replace(/"/g, '').trim();
-                if(!studentsData[group]) studentsData[group] = [];
-                studentsData[group].push(student);
+                
+                if(group && student) {
+                    if(!studentsData[group]) studentsData[group] = [];
+                    studentsData[group].push(student);
+                }
             }
         }
+        
+        console.log('📚 Turmas carregadas:', Object.keys(studentsData));
+        Object.keys(studentsData).forEach(group => {
+            console.log(`   ${group}: ${studentsData[group].length} alunos`);
+        });
     }
 
     function cleanText(str) {
@@ -982,14 +991,38 @@
         const container = document.getElementById('attendance-container');
         container.innerHTML = '';
         
+        console.log('🔍 Buscando alunos para turma:', groupRaw);
+        console.log('📚 Turmas disponíveis:', Object.keys(studentsData));
+        
         let students = [];
         const keys = Object.keys(studentsData);
-        const match = keys.find(k => k.toUpperCase() === groupRaw.toUpperCase() || groupRaw.toUpperCase().includes(k.toUpperCase()));
+        
+        // Tenta encontrar a turma com correspondência exata primeiro
+        let match = keys.find(k => k === groupRaw);
+        
+        // Se não encontrar exata, tenta correspondência case-insensitive
+        if(!match) {
+            match = keys.find(k => k.toUpperCase() === groupRaw.toUpperCase());
+        }
+        
+        // Se ainda não encontrar, tenta correspondência parcial
+        if(!match) {
+            match = keys.find(k => groupRaw.toUpperCase().includes(k.toUpperCase()) || k.toUpperCase().includes(groupRaw.toUpperCase()));
+        }
         
         if(match && studentsData[match]) {
             students = studentsData[match];
+            console.log(`✅ Encontrados ${students.length} alunos para "${match}"`);
         } else {
-            students = ["Aluno 1", "Aluno 2", "Aluno 3"];
+            console.warn(`⚠️ Nenhuma turma encontrada para "${groupRaw}"`);
+            // Fallback para turmas VIP
+            if(groupRaw.toUpperCase() === 'VIP') {
+                students = ['Aluno VIP 1', 'Aluno VIP 2', 'Aluno VIP 3'];
+                console.log('👑 Usando fallback para VIP');
+            } else {
+                students = ["Aluno 1", "Aluno 2", "Aluno 3"];
+                console.log('📝 Usando fallback genérico');
+            }
         }
 
         students.forEach((student) => {
