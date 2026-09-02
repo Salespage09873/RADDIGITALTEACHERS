@@ -349,6 +349,12 @@
             box-shadow: 0 0 0 3px var(--primary-dim);
         }
 
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
         label {
             font-weight: 600;
             font-size: 0.85rem;
@@ -448,6 +454,23 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        .observations-box {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .observations-box textarea {
+            margin-bottom: 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .observations-box textarea:focus {
+            border-color: var(--primary);
         }
 
         @media (max-width: 600px) {
@@ -551,6 +574,12 @@
                 <div id="attendance-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px;">
                 </div>
 
+                <!-- NOVO CAMPO DE OBSERVAÇÕES -->
+                <div class="observations-box">
+                    <label style="color: var(--primary);">📝 Observações:</label>
+                    <textarea id="rad-observations" placeholder="Digite aqui suas observações sobre a aula..." rows="3"></textarea>
+                </div>
+
                 <button onclick="saveRad()" class="btn-success" style="width: 100%; background: var(--success); color: #fff; border-color: var(--success);">
                     💾 SALVAR RAD
                 </button>
@@ -583,8 +612,6 @@
 <script>
     // CONFIGURAÇÕES
     const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
-    
-    // LINK ATUALIZADO PARA A PLANILHA DE ALUNOS - FORMATO CSV
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
 
     const VALID_TEACHERS = [
@@ -892,12 +919,14 @@
         `;
 
         document.getElementById('rad-status').value = '';
+        document.getElementById('rad-observations').value = '';
         toggleRadFields();
         
         const saved = localStorage.getItem(getRadKey(currentRadClass));
         if(saved) {
             const data = JSON.parse(saved);
             document.getElementById('rad-status').value = data.status;
+            document.getElementById('rad-observations').value = data.observations || '';
             toggleRadFields();
             if(data.status && data.status !== '') {
                 renderLessonPlanCheckboxes(book, data.lessons || []);
@@ -982,11 +1011,13 @@
 
         const lessonsChecked = Array.from(document.querySelectorAll('#lesson-plan-container input:checked')).map(cb => cb.value);
         const attendanceChecked = Array.from(document.querySelectorAll('.att-check:checked')).map(cb => cb.value);
+        const observations = document.getElementById('rad-observations').value.trim();
 
         const data = {
             status,
             lessons: lessonsChecked,
             attendance: attendanceChecked,
+            observations: observations,
             dateSaved: new Date().toISOString()
         };
 
