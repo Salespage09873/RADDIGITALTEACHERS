@@ -270,6 +270,7 @@
             border-radius: 6px;
             font-weight: 600;
             transition: all 0.3s ease;
+            cursor: pointer;
         }
         
         .action-btn:hover {
@@ -1595,64 +1596,6 @@
         renderSchedule();
     }
 
-    // ============================================
-    // FUNÇÃO PARA ATUALIZAR BOTÃO RAD
-    // ============================================
-    function updateRadButton(cls) {
-        const isSaved = isRadSaved(cls);
-        const savedData = getRadSavedData(cls);
-        
-        // Encontra o botão no card correspondente
-        const cards = document.querySelectorAll('.class-card');
-        for (const card of cards) {
-            const timeElement = card.querySelector('.class-time');
-            if (timeElement && timeElement.textContent === cls.time) {
-                const groupElement = card.querySelector('.class-info strong');
-                if (groupElement && groupElement.textContent === 'Turma:' && 
-                    card.querySelector('.class-info strong').nextSibling.textContent.trim() === cls.group) {
-                    
-                    const btn = card.querySelector('.action-btn');
-                    if (btn) {
-                        if (isSaved) {
-                            btn.textContent = '✅ RAD PREENCHIDO';
-                            btn.classList.add('saved');
-                            card.classList.add('rad-saved');
-                            
-                            // Adiciona o checkmark se não existir
-                            if (!card.querySelector('.rad-saved-check')) {
-                                const check = document.createElement('div');
-                                check.className = 'rad-saved-check';
-                                check.title = `RAD salvo em ${savedData ? new Date(savedData.dateSaved).toLocaleString('pt-BR') : ''}`;
-                                check.textContent = '✅';
-                                card.appendChild(check);
-                            }
-                            
-                            // Adiciona badge SALVO
-                            const badgeContainer = card.querySelector('.class-info');
-                            if (badgeContainer && !badgeContainer.querySelector('.badge-saved')) {
-                                const badge = document.createElement('span');
-                                badge.className = 'badge badge-saved';
-                                badge.textContent = '✅ SALVO';
-                                badgeContainer.appendChild(badge);
-                            }
-                        } else {
-                            btn.textContent = 'ABRIR RAD';
-                            btn.classList.remove('saved');
-                            card.classList.remove('rad-saved');
-                            
-                            const check = card.querySelector('.rad-saved-check');
-                            if (check) check.remove();
-                            
-                            const badgeSaved = card.querySelector('.badge-saved');
-                            if (badgeSaved) badgeSaved.remove();
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
     function renderSchedule() {
         const container = document.getElementById('schedule-content');
         container.innerHTML = '';
@@ -1906,12 +1849,8 @@
         localStorage.setItem(getRadKey(currentRadClass), JSON.stringify(data));
         closeModal('rad-modal');
         
-        // Atualiza o botão no card
-        const cls = currentRadClass;
-        setTimeout(() => {
-            // Recarrega o schedule para atualizar todos os cards
-            renderSchedule();
-        }, 100);
+        // Recarrega o schedule para atualizar todos os cards
+        renderSchedule();
         
         alert('✅ RAD Salvo com Sucesso!');
     }
@@ -2041,12 +1980,9 @@
                     ${revisions.length > 0 ? `<span style="color: var(--warning);">🔄 ${revisions.length} revisions</span>` : ''}
                     ${tests.length > 0 ? `<span style="color: var(--danger);">📝 ${tests.length} tests</span>` : ''}
                 </div>
-                <div style="margin-top: 10px; width: 100%; display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button onclick="markAllGroupLessons('${group}', true)" style="font-size: 0.8rem; padding: 6px 12px; flex: 1;">
+                <div style="margin-top: 10px; width: 100%;">
+                    <button onclick="markAllGroupLessons('${group}', true)" style="font-size: 0.8rem; padding: 6px 12px; width: 100%;">
                         Marcar Todas
-                    </button>
-                    <button onclick="markAllGroupLessons('${group}', false)" style="font-size: 0.8rem; padding: 6px 12px; flex: 1; border-color: var(--danger); color: var(--danger);">
-                        Desmarcar Todas
                     </button>
                 </div>
             </div>
