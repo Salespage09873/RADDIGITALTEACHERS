@@ -474,7 +474,6 @@
             border-color: var(--primary);
         }
 
-        /* Estilos para Lesson Plan por Turma */
         .group-lesson-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -691,7 +690,6 @@
     </header>
 
     <div class="container">
-        <!-- Tela Inicial: Seleção de Teachers -->
         <div id="selection-screen">
             <div class="teachers-grid" id="teachers-grid">
             </div>
@@ -703,7 +701,6 @@
             </div>
         </div>
 
-        <!-- Tela do Cronograma do Teacher -->
         <div id="schedule-screen" class="hidden">
             <div class="schedule-header">
                 <button onclick="showSelection()" style="align-self: flex-start; border-color: var(--text-sec); color: var(--text-sec);">
@@ -719,7 +716,6 @@
             </div>
         </div>
 
-        <!-- Tela de Lesson Plans por Turma -->
         <div id="lesson-plan-screen" class="hidden">
             <div style="margin-bottom: 20px;">
                 <button onclick="showSelection()" style="border-color: var(--text-sec); color: var(--text-sec);">
@@ -728,12 +724,10 @@
             </div>
             
             <div id="lesson-plan-content">
-                <!-- Lista de turmas será renderizada aqui -->
             </div>
         </div>
     </div>
 
-    <!-- MODAL RAD -->
     <div id="rad-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header">
@@ -777,7 +771,6 @@
         </div>
     </div>
 
-    <!-- MODAL LESSON PLAN DETALHADO POR TURMA -->
     <div id="lesson-detail-modal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
@@ -786,7 +779,6 @@
             </div>
             
             <div id="lesson-detail-content">
-                <!-- Conteúdo da turma será renderizado aqui -->
             </div>
             
             <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
@@ -800,7 +792,6 @@
         </div>
     </div>
 
-    <!-- MODAL LISTA DE PRESENÇA GERAL -->
     <div id="attendance-modal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header">
@@ -824,7 +815,6 @@
     // CONFIGURAÇÕES
     const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
-    const LESSONS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR8P-aCBn4HeNpri88Hd-VWSfD8pXaNZ5Y0vYCJ_FSCmDGpEJDHwnRU_72NS7rhpLEQAa_CzGklUu2p/pub?output=csv';
 
     const VALID_TEACHERS = [
         { name: 'MYCAEL', color: '#0d6efd' },
@@ -840,32 +830,253 @@
         { name: 'LUISA', color: '#0d6efd' }
     ];
 
-    // Mapeamento de livros para turmas (fallback)
-    const BOOK_MAPPING = {
-        'G1': { bookNum: 1, totalLessons: 42 },
-        'G2': { bookNum: 2, totalLessons: 46 },
-        'G3': { bookNum: 3, totalLessons: 46 },
-        'G4': { bookNum: 4, totalLessons: 46 },
-        'G5': { bookNum: 5, totalLessons: 46 },
-        'G6': { bookNum: 6, totalLessons: 46 },
-        'G7': { bookNum: 7, totalLessons: 46 },
-        'G8': { bookNum: 8, totalLessons: 46 },
-        'G9': { bookNum: 9, totalLessons: 46 },
-        'AW': { bookNum: 10, totalLessons: 46 }
+    // ========== ESTRUTURA COMPLETA DOS BOOKS (1 a 10) ==========
+    const BOOK_STRUCTURE = {
+        'Book 1': {
+            lessons: [
+                'LESSON 1', 'LESSON 2', 'LESSON 3', 'LESSON 4', 'LESSON 5',
+                'REVISION 1 - 10 / READING 2 / REVISION 11 - 25',
+                'LESSON 6', 'LESSON 7', 'LESSON 8', 'LESSON 9', 'LESSON 10',
+                'REVISION 26 - 35 / READING 5 & 6 / REVISION 36 - 50',
+                'LESSON 11', 'LESSON 12', 'LESSON 13', 'LESSON 14', 'LESSON 15',
+                'REVISION 51 - 60 / READING 8 / REVISION 61 - 75',
+                'LESSON 16', 'LESSON 17', 'LESSON 18', 'LESSON 19', 'LESSON 20',
+                'REVISION 76 - 85 / READING 12 / REVISION 86 - 100',
+                'LESSON 21', 'LESSON 22', 'LESSON 23', 'LESSON 24', 'LESSON 25',
+                'REVISION 101 - 110 / READING 17 / REVISION 111 - 125',
+                'LESSON 26', 'LESSON 27', 'LESSON 28', 'LESSON 29', 'LESSON 30',
+                'REVISION 126 - 135 / READING 21 / REVISION 136 - 150',
+                'LESSON 31', 'LESSON 32',
+                'REVISION 86 - 100 / READING 18 / REVISION 101 - 110',
+                'REVISION 111 - 120 / READING 14 / REVISION 121 - 135',
+                'REVISION 136 - 145 / READING 9 / REVISION 146 - 160',
+                'TEST BOOK 1'
+            ]
+        },
+        'Book 2': {
+            lessons: [
+                'LESSON 1', 'LESSON 2', 'LESSON 3', 'LESSON 4', 'LESSON 5',
+                'REVISION 1 - 10 / READING 2 / REVISION 11 - 25',
+                'LESSON 6', 'LESSON 7', 'LESSON 8', 'LESSON 9', 'LESSON 10',
+                'REVISION 26 - 35 / READING 5 & 6 / REVISION 36 - 50',
+                'LESSON 11', 'LESSON 12', 'LESSON 13', 'LESSON 14', 'LESSON 15',
+                'REVISION 51 - 60 / READING 8 / REVISION 61 - 75',
+                'LESSON 16', 'LESSON 17', 'LESSON 18', 'LESSON 19', 'LESSON 20',
+                'REVISION 76 - 85 / READING 12 / REVISION 86 - 100',
+                'LESSON 21', 'LESSON 22', 'LESSON 23', 'LESSON 24', 'LESSON 25',
+                'REVISION 101 - 110 / READING 17 / REVISION 111 - 125',
+                'LESSON 26', 'LESSON 27', 'LESSON 28', 'LESSON 29', 'LESSON 30',
+                'REVISION 126 - 135 / READING 21 / REVISION 136 - 150',
+                'LESSON 31', 'LESSON 32', 'LESSON 33', 'LESSON 34', 'LESSON 35',
+                'REVISION 86 - 100 / READING 18 / REVISION 101 - 110',
+                'REVISION 111 - 120 / READING 14 / REVISION 121 - 135',
+                'REVISION 136 - 145 / READING 9 / REVISION 146 - 160',
+                'TEST BOOK 2',
+                'TEST CORRECTION BOOK 2'
+            ]
+        },
+        'Book 3': {
+            lessons: [
+                'LESSON 1', 'LESSON 2', 'LESSON 3', 'LESSON 4', 'LESSON 5',
+                'REVISION 1 - 10 / READING 2 / REVISION 11 - 25',
+                'LESSON 6', 'LESSON 7', 'LESSON 8', 'LESSON 9', 'LESSON 10',
+                'REVISION 26 - 35 / READING 5 & 6 / REVISION 36 - 50',
+                'LESSON 11', 'LESSON 12', 'LESSON 13', 'LESSON 14', 'LESSON 15',
+                'REVISION 51 - 60 / READING 8 / REVISION 61 - 75',
+                'LESSON 16', 'LESSON 17', 'LESSON 18', 'LESSON 19', 'LESSON 20',
+                'REVISION 76 - 85 / READING 12 / REVISION 86 - 100',
+                'LESSON 21', 'LESSON 22', 'LESSON 23', 'LESSON 24', 'LESSON 25',
+                'REVISION 101 - 110 / READING 17 / REVISION 111 - 125',
+                'LESSON 26', 'LESSON 27', 'LESSON 28', 'LESSON 29', 'LESSON 30',
+                'REVISION 126 - 135 / READING 21 / REVISION 136 - 150',
+                'LESSON 31', 'LESSON 32', 'LESSON 33', 'LESSON 34', 'LESSON 35',
+                'REVISION 86 - 100 / READING 18 / REVISION 101 - 110',
+                'REVISION 111 - 120 / READING 14 / REVISION 121 - 135',
+                'REVISION 136 - 145 / READING 9 / REVISION 146 - 160',
+                'TEST BOOK 3',
+                'TEST CORRECTION BOOK 3'
+            ]
+        },
+        'Book 4': {
+            lessons: [
+                'LESSON 1', 'LESSON 2', 'LESSON 3', 'LESSON 4', 'LESSON 5',
+                'REVISION 1 - 10 / READING 2 / REVISION 11 - 25',
+                'LESSON 6', 'LESSON 7', 'LESSON 8', 'LESSON 9', 'LESSON 10',
+                'REVISION 26 - 35 / READING 5 & 6 / REVISION 36 - 50',
+                'LESSON 11', 'LESSON 12', 'LESSON 13', 'LESSON 14', 'LESSON 15',
+                'REVISION 51 - 60 / READING 8 / REVISION 61 - 75',
+                'LESSON 16', 'LESSON 17', 'LESSON 18', 'LESSON 19', 'LESSON 20',
+                'REVISION 76 - 85 / READING 12 / REVISION 86 - 100',
+                'LESSON 21', 'LESSON 22', 'LESSON 23', 'LESSON 24', 'LESSON 25',
+                'REVISION 101 - 110 / READING 17 / REVISION 111 - 125',
+                'LESSON 26', 'LESSON 27', 'LESSON 28', 'LESSON 29', 'LESSON 30',
+                'REVISION 126 - 135 / READING 21 / REVISION 136 - 150',
+                'LESSON 31', 'LESSON 32', 'LESSON 33', 'LESSON 34', 'LESSON 35',
+                'REVISION 86 - 100 / READING 18 / REVISION 101 - 110',
+                'REVISION 111 - 120 / READING 14 / REVISION 121 - 135',
+                'REVISION 136 - 145 / READING 9 / REVISION 146 - 160',
+                'TEST BOOK 4',
+                'TEST CORRECTION BOOK 4'
+            ]
+        },
+        'Book 5': {
+            lessons: [
+                'LESSON 1', 'LESSON 2', 'LESSON 3', 'LESSON 4', 'LESSON 5',
+                'REVISION 1 - 10 / READING 2 / REVISION 11 - 25',
+                'LESSON 6', 'LESSON 7', 'LESSON 8', 'LESSON 9', 'LESSON 10',
+                'REVISION 26 - 35 / READING 5 & 6 / REVISION 36 - 50',
+                'LESSON 11', 'LESSON 12', 'LESSON 13', 'LESSON 14', 'LESSON 15',
+                'REVISION 51 - 60 / READING 8 / REVISION 61 - 75',
+                'LESSON 16', 'LESSON 17', 'LESSON 18', 'LESSON 19', 'LESSON 20',
+                'REVISION 76 - 85 / READING 12 / REVISION 86 - 100',
+                'LESSON 21', 'LESSON 22', 'LESSON 23', 'LESSON 24', 'LESSON 25',
+                'REVISION 101 - 110 / READING 17 / REVISION 111 - 125',
+                'LESSON 26', 'LESSON 27', 'LESSON 28', 'LESSON 29', 'LESSON 30',
+                'REVISION 126 - 135 / READING 21 / REVISION 136 - 150',
+                'LESSON 31', 'LESSON 32', 'LESSON 33', 'LESSON 34', 'LESSON 35',
+                'REVISION 86 - 100 / READING 18 / REVISION 101 - 110',
+                'REVISION 111 - 120 / READING 14 / REVISION 121 - 135',
+                'REVISION 136 - 145 / READING 9 / REVISION 146 - 160',
+                'TEST BOOK 5',
+                'TEST CORRECTION BOOK 5'
+            ]
+        },
+        'Book 6': {
+            lessons: [
+                'LESSON 1', 'LESSON 2', 'LESSON 3', 'LESSON 4', 'LESSON 5',
+                'REVISION 1 - 10 / READING 2 / REVISION 11 - 25',
+                'LESSON 6', 'LESSON 7', 'LESSON 8', 'LESSON 9', 'LESSON 10',
+                'REVISION 26 - 35 / READING 5 & 6 / REVISION 36 - 50',
+                'LESSON 11', 'LESSON 12', 'LESSON 13', 'LESSON 14', 'LESSON 15',
+                'REVISION 51 - 60 / READING 8 / REVISION 61 - 75',
+                'LESSON 16', 'LESSON 17', 'LESSON 18', 'LESSON 19', 'LESSON 20',
+                'REVISION 76 - 85 / READING 12 / REVISION 86 - 100',
+                'LESSON 21', 'LESSON 22', 'LESSON 23', 'LESSON 24', 'LESSON 25',
+                'REVISION 101 - 110 / READING 17 / REVISION 111 - 125',
+                'LESSON 26', 'LESSON 27', 'LESSON 28', 'LESSON 29', 'LESSON 30',
+                'REVISION 126 - 135 / READING 21 / REVISION 136 - 150',
+                'LESSON 31', 'LESSON 32', 'LESSON 33', 'LESSON 34', 'LESSON 35',
+                'REVISION 86 - 100 / READING 18 / REVISION 101 - 110',
+                'REVISION 111 - 120 / READING 14 / REVISION 121 - 135',
+                'REVISION 136 - 145 / READING 9 / REVISION 146 - 160',
+                'TEST BOOK 6',
+                'TEST CORRECTION BOOK 6'
+            ]
+        },
+        'Book 7': {
+            lessons: [
+                'LESSON 1', 'LESSON 2', 'LESSON 3', 'LESSON 4', 'LESSON 5',
+                'REVISION 1 - 10 / READING 2 / REVISION 11 - 25',
+                'LESSON 6', 'LESSON 7', 'LESSON 8', 'LESSON 9', 'LESSON 10',
+                'REVISION 26 - 35 / READING 5 & 6 / REVISION 36 - 50',
+                'LESSON 11', 'LESSON 12', 'LESSON 13', 'LESSON 14', 'LESSON 15',
+                'REVISION 51 - 60 / READING 8 / REVISION 61 - 75',
+                'LESSON 16', 'LESSON 17', 'LESSON 18', 'LESSON 19', 'LESSON 20',
+                'REVISION 76 - 85 / READING 12 / REVISION 86 - 100',
+                'LESSON 21', 'LESSON 22', 'LESSON 23', 'LESSON 24', 'LESSON 25',
+                'REVISION 101 - 110 / READING 17 / REVISION 111 - 125',
+                'LESSON 26', 'LESSON 27', 'LESSON 28', 'LESSON 29', 'LESSON 30',
+                'REVISION 126 - 135 / READING 21 / REVISION 136 - 150',
+                'LESSON 31', 'LESSON 32', 'LESSON 33', 'LESSON 34', 'LESSON 35',
+                'REVISION 86 - 100 / READING 18 / REVISION 101 - 110',
+                'REVISION 111 - 120 / READING 14 / REVISION 121 - 135',
+                'REVISION 136 - 145 / READING 9 / REVISION 146 - 160',
+                'TEST BOOK 7',
+                'TEST CORRECTION BOOK 7'
+            ]
+        },
+        'Book 8': {
+            lessons: [
+                'LESSON 1', 'LESSON 2', 'LESSON 3', 'LESSON 4', 'LESSON 5',
+                'REVISION 1 - 10 / READING 2 / REVISION 11 - 25',
+                'LESSON 6', 'LESSON 7', 'LESSON 8', 'LESSON 9', 'LESSON 10',
+                'REVISION 26 - 35 / READING 5 & 6 / REVISION 36 - 50',
+                'LESSON 11', 'LESSON 12', 'LESSON 13', 'LESSON 14', 'LESSON 15',
+                'REVISION 51 - 60 / READING 8 / REVISION 61 - 75',
+                'LESSON 16', 'LESSON 17', 'LESSON 18', 'LESSON 19', 'LESSON 20',
+                'REVISION 76 - 85 / READING 12 / REVISION 86 - 100',
+                'LESSON 21', 'LESSON 22', 'LESSON 23', 'LESSON 24', 'LESSON 25',
+                'REVISION 101 - 110 / READING 17 / REVISION 111 - 125',
+                'LESSON 26', 'LESSON 27', 'LESSON 28', 'LESSON 29', 'LESSON 30',
+                'REVISION 126 - 135 / READING 21 / REVISION 136 - 150',
+                'LESSON 31', 'LESSON 32', 'LESSON 33', 'LESSON 34', 'LESSON 35',
+                'REVISION 86 - 100 / READING 18 / REVISION 101 - 110',
+                'REVISION 111 - 120 / READING 14 / REVISION 121 - 135',
+                'REVISION 136 - 145 / READING 9 / REVISION 146 - 160',
+                'TEST BOOK 8',
+                'TEST CORRECTION BOOK 8'
+            ]
+        },
+        'Book 9': {
+            lessons: [
+                'LESSON 1', 'LESSON 2', 'LESSON 3', 'LESSON 4', 'LESSON 5',
+                'REVISION 1 - 10 / READING 2 / REVISION 11 - 25',
+                'LESSON 6', 'LESSON 7', 'LESSON 8', 'LESSON 9', 'LESSON 10',
+                'REVISION 26 - 35 / READING 5 & 6 / REVISION 36 - 50',
+                'LESSON 11', 'LESSON 12', 'LESSON 13', 'LESSON 14', 'LESSON 15',
+                'REVISION 51 - 60 / READING 8 / REVISION 61 - 75',
+                'LESSON 16', 'LESSON 17', 'LESSON 18', 'LESSON 19', 'LESSON 20',
+                'REVISION 76 - 85 / READING 12 / REVISION 86 - 100',
+                'LESSON 21', 'LESSON 22', 'LESSON 23', 'LESSON 24', 'LESSON 25',
+                'REVISION 101 - 110 / READING 17 / REVISION 111 - 125',
+                'LESSON 26', 'LESSON 27', 'LESSON 28', 'LESSON 29', 'LESSON 30',
+                'REVISION 126 - 135 / READING 21 / REVISION 136 - 150',
+                'LESSON 31', 'LESSON 32', 'LESSON 33', 'LESSON 34', 'LESSON 35',
+                'REVISION 86 - 100 / READING 18 / REVISION 101 - 110',
+                'REVISION 111 - 120 / READING 14 / REVISION 121 - 135',
+                'REVISION 136 - 145 / READING 9 / REVISION 146 - 160',
+                'TEST BOOK 9',
+                'TEST CORRECTION BOOK 9'
+            ]
+        },
+        'Book 10': {
+            lessons: [
+                'LESSON 1', 'LESSON 2', 'LESSON 3', 'LESSON 4', 'LESSON 5',
+                'REVISION 1 - 10 / READING 2 / REVISION 11 - 25',
+                'LESSON 6', 'LESSON 7', 'LESSON 8', 'LESSON 9', 'LESSON 10',
+                'REVISION 26 - 35 / READING 5 & 6 / REVISION 36 - 50',
+                'LESSON 11', 'LESSON 12', 'LESSON 13', 'LESSON 14', 'LESSON 15',
+                'REVISION 51 - 60 / READING 8 / REVISION 61 - 75',
+                'LESSON 16', 'LESSON 17', 'LESSON 18', 'LESSON 19', 'LESSON 20',
+                'REVISION 76 - 85 / READING 12 / REVISION 86 - 100',
+                'LESSON 21', 'LESSON 22', 'LESSON 23', 'LESSON 24', 'LESSON 25',
+                'REVISION 101 - 110 / READING 17 / REVISION 111 - 125',
+                'LESSON 26', 'LESSON 27', 'LESSON 28', 'LESSON 29', 'LESSON 30',
+                'REVISION 126 - 135 / READING 21 / REVISION 136 - 150',
+                'LESSON 31', 'LESSON 32', 'LESSON 33', 'LESSON 34', 'LESSON 35',
+                'REVISION 86 - 100 / READING 18 / REVISION 101 - 110',
+                'REVISION 111 - 120 / READING 14 / REVISION 121 - 135',
+                'REVISION 136 - 145 / READING 9 / REVISION 146 - 160',
+                'TEST BOOK 10',
+                'TEST CORRECTION BOOK 10'
+            ]
+        }
+    };
+
+    // Mapeamento de turmas para livros
+    const GROUP_BOOK_MAP = {
+        'ODINEIA FERREIRA SOARES': 'Book 1',
+        'ENZO NOVELLATTO': 'Book 2',
+        'KILL BILL': 'Book 3',
+        'THE FLINSTONES': 'Book 4',
+        'THE LAST OF US': 'Book 5',
+        'JULIA VIANNA LINHARES': 'Book 6',
+        'ADVENTURE TIME': 'Book 7',
+        'THE CROWN': 'Book 8',
+        'SQUID GAME': 'Book 9',
+        'MIB': 'Book 10'
     };
 
     let scheduleData = [];
     let studentsData = {};
-    let lessonsData = {};
     let currentTeacher = null;
     let currentWeekData = [];
     let allWeeks = {};
     let currentGroup = null;
     let currentLessonProgress = {};
-    let groupBookMap = {};
 
     document.addEventListener('DOMContentLoaded', () => {
-        Promise.all([fetchSchedule(), fetchStudents(), fetchLessons()])
+        Promise.all([fetchSchedule(), fetchStudents()])
             .then(() => {
                 document.getElementById('loading-screen').classList.add('hidden');
                 renderTeachers();
@@ -873,7 +1084,6 @@
                 const now = new Date();
                 document.getElementById('att-month-select').value = now.toISOString().slice(0, 7);
                 loadLessonProgress();
-                buildGroupBookMap();
             })
             .catch(err => {
                 console.error(err);
@@ -882,9 +1092,27 @@
     });
 
     async function fetchSchedule() {
-        const res = await fetch(SCHEDULE_URL);
-        const text = await res.text();
-        parseScheduleCSV(text);
+        try {
+            const res = await fetch(SCHEDULE_URL);
+            const text = await res.text();
+            parseScheduleCSV(text);
+        } catch (e) {
+            console.warn("Falha ao carregar cronograma, usando dados de exemplo.", e);
+            // Dados de exemplo para teste
+            scheduleData = [
+                { book: 'Book 1', group: 'ODINEIA FERREIRA SOARES', room: 'Sala 1', modal: 'REGULAR', time: '14:10', dayName: 'Terça', teacher: 'MYCAEL' },
+                { book: 'Book 2', group: 'ENZO NOVELLATTO', room: 'Sala 2', modal: 'REGULAR', time: '15:10', dayName: 'Segunda', teacher: 'HOPE' },
+                { book: 'Book 3', group: 'KILL BILL', room: 'Sala 3', modal: 'REGULAR', time: '08:10', dayName: 'Segunda', teacher: 'PEDRO' },
+                { book: 'Book 4', group: 'THE FLINSTONES', room: 'Sala 4', modal: 'REGULAR', time: '08:00', dayName: 'Terça', teacher: 'DIOGO' },
+                { book: 'Book 5', group: 'THE LAST OF US', room: 'Sala 5', modal: 'REGULAR', time: '14:10', dayName: 'Terça', teacher: 'LIVIA' },
+                { book: 'Book 6', group: 'JULIA VIANNA LINHARES', room: 'VIP', modal: 'VIP', time: 'VIP', dayName: 'VIP', teacher: 'TOSCA' },
+                { book: 'Book 7', group: 'ADVENTURE TIME', room: 'Sala 7', modal: 'REGULAR', time: '15:10', dayName: 'Terça', teacher: 'IAGO' },
+                { book: 'Book 8', group: 'THE CROWN', room: 'Sala 8', modal: 'REGULAR', time: '11:10', dayName: 'Segunda', teacher: 'SARA' },
+                { book: 'Book 9', group: 'SQUID GAME', room: 'Sala 9', modal: 'REGULAR', time: '15:10', dayName: 'Segunda', teacher: 'CAROL' },
+                { book: 'Book 10', group: 'MIB', room: 'Sala 10', modal: 'INTENSIVE', time: '11:10', dayName: 'Intensive', teacher: 'CARLA' }
+            ];
+            allWeeks = { 'This Week': scheduleData };
+        }
     }
 
     async function fetchStudents() {
@@ -893,79 +1121,21 @@
             const text = await res.text();
             parseStudentsCSV(text);
         } catch (e) {
-            console.warn("Falha ao carregar lista de alunos, operando sem ela.", e);
+            console.warn("Falha ao carregar lista de alunos, usando dados de exemplo.", e);
+            // Dados de exemplo
+            studentsData = {
+                'ODINEIA FERREIRA SOARES': ['Aluno 1', 'Aluno 2', 'Aluno 3'],
+                'ENZO NOVELLATTO': ['Aluno 4', 'Aluno 5', 'Aluno 6'],
+                'KILL BILL': ['Aluno 7', 'Aluno 8', 'Aluno 9'],
+                'THE FLINSTONES': ['Aluno 10', 'Aluno 11', 'Aluno 12'],
+                'THE LAST OF US': ['Aluno 13', 'Aluno 14', 'Aluno 15'],
+                'JULIA VIANNA LINHARES': ['Aluno VIP 1', 'Aluno VIP 2'],
+                'ADVENTURE TIME': ['Aluno 16', 'Aluno 17', 'Aluno 18'],
+                'THE CROWN': ['Aluno 19', 'Aluno 20', 'Aluno 21'],
+                'SQUID GAME': ['Aluno 22', 'Aluno 23', 'Aluno 24'],
+                'MIB': ['Aluno 25', 'Aluno 26', 'Aluno 27']
+            };
         }
-    }
-
-    async function fetchLessons() {
-        try {
-            const res = await fetch(LESSONS_URL);
-            const text = await res.text();
-            parseLessonsCSV(text);
-        } catch (e) {
-            console.warn("Falha ao carregar lesson plans, usando estrutura padrão.", e);
-            generateDefaultLessons();
-        }
-    }
-
-    // ========== GERAR LESSON PLANS PADRÃO (FALLBACK) ==========
-    function generateDefaultLessons() {
-        lessonsData = {};
-        Object.keys(BOOK_MAPPING).forEach(bookKey => {
-            const { bookNum, totalLessons } = BOOK_MAPPING[bookKey];
-            lessonsData[bookKey] = generateLessonPlan(bookNum, totalLessons);
-        });
-    }
-
-    function generateLessonPlan(bookNum, totalLessons) {
-        const lessons = [];
-        let lessonCounter = 1;
-        let revisionCounter = 1;
-        let i = 1;
-        
-        while (i <= totalLessons) {
-            // 5 Lessons
-            for (let j = 0; j < 5 && i <= totalLessons; j++) {
-                lessons.push({
-                    id: `b${bookNum}_l${i}`,
-                    label: `Lesson ${i}`,
-                    isRevision: false,
-                    isTest: false,
-                    book: bookNum,
-                    order: i
-                });
-                i++;
-                lessonCounter++;
-            }
-            
-            // 1 Revision (se ainda não chegou ao final)
-            if (i <= totalLessons) {
-                const start = i - 5;
-                const end = i - 1;
-                lessons.push({
-                    id: `b${bookNum}_rev${revisionCounter}`,
-                    label: `Revision ${start}-${end}`,
-                    isRevision: true,
-                    isTest: false,
-                    book: bookNum,
-                    order: i
-                });
-                revisionCounter++;
-                i++;
-            }
-        }
-        
-        // Adiciona o Test no final
-        lessons.push({
-            id: `b${bookNum}_test`,
-            label: `Test Book ${bookNum}`,
-            isRevision: false,
-            isTest: true,
-            book: bookNum,
-            order: totalLessons + 1
-        });
-        
-        return lessons;
     }
 
     function parseScheduleCSV(text) {
@@ -1050,91 +1220,6 @@
             if(upperKey !== groupName) {
                 studentsData[upperKey] = students;
             }
-            
-            if(groupName.includes('Hannah') || groupName.includes('Montanah') || 
-               groupName.toUpperCase().includes('HANNAH') || groupName.toUpperCase().includes('MONTANAH')) {
-                const hannahKey = 'Hannah Montanah';
-                if(!studentsData[hannahKey]) {
-                    studentsData[hannahKey] = [];
-                }
-                students.forEach(s => {
-                    if(!studentsData[hannahKey].includes(s)) {
-                        studentsData[hannahKey].push(s);
-                    }
-                });
-            }
-        });
-    }
-
-    // ========== PARSE LESSON PLANS DA PLANILHA ==========
-    function parseLessonsCSV(text) {
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-        if(lines.length < 2) {
-            generateDefaultLessons();
-            return;
-        }
-        
-        // Estrutura esperada: Coluna A = Book, Coluna B = Lesson Name
-        const bookLessons = {};
-        
-        console.log('📖 Processando lesson plans da planilha...');
-        
-        for(let i=1; i<lines.length; i++) {
-            const parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
-            if(parts.length >= 2) {
-                let book = parts[0] || 'G1';
-                const lessonLabel = parts[1] || `Lesson ${i}`;
-                
-                // Limpa o nome do livro
-                book = book.replace(/['"]/g, '').trim();
-                
-                if(!bookLessons[book]) bookLessons[book] = [];
-                
-                // Detecta se é uma revision baseado no nome
-                const isRevision = lessonLabel.toLowerCase().includes('revision') || 
-                                   lessonLabel.toLowerCase().includes('review') ||
-                                   lessonLabel.toLowerCase().includes('rev') ||
-                                   /^\d+-\d+/.test(lessonLabel) || // Padrão "1-5", "6-10"
-                                   lessonLabel.includes('–') || // En dash
-                                   lessonLabel.includes('-'); // Hífen
-                
-                // Detecta se é o test final
-                const isTest = lessonLabel.toLowerCase().includes('test') || 
-                               lessonLabel.toLowerCase().includes('final') ||
-                               lessonLabel.toLowerCase().includes('exam');
-                
-                // Tenta extrair o número da lesson
-                let order = i;
-                const numMatch = lessonLabel.match(/\d+/);
-                if (numMatch) {
-                    order = parseInt(numMatch[0]);
-                }
-                
-                bookLessons[book].push({
-                    id: `b_${book}_l${i}`,
-                    label: lessonLabel,
-                    isRevision: isRevision,
-                    isTest: isTest,
-                    book: book,
-                    order: order,
-                    rawLabel: lessonLabel
-                });
-            }
-        }
-        
-        // Se não carregou nada, usa o padrão gerado
-        if(Object.keys(bookLessons).length === 0) {
-            console.warn('⚠️ Nenhuma lesson plan encontrada na planilha, usando padrão.');
-            generateDefaultLessons();
-        } else {
-            lessonsData = bookLessons;
-        }
-        
-        console.log('📚 Lesson Plans carregados do Sheets:', Object.keys(lessonsData));
-        Object.keys(lessonsData).forEach(book => {
-            const revisions = lessonsData[book].filter(l => l.isRevision);
-            const tests = lessonsData[book].filter(l => l.isTest);
-            console.log(`   ${book}: ${lessonsData[book].length} aulas (${revisions.length} revisions, ${tests.length} tests)`);
         });
     }
 
@@ -1150,60 +1235,54 @@
         return null;
     }
 
-    // ========== CONSTRUIR MAPA TURMA -> LIVRO ==========
-    function buildGroupBookMap() {
-        groupBookMap = {};
+    // ========== FUNÇÕES PARA LESSON PLANS ==========
+    function getBookForGroup(group) {
+        // Primeiro tenta o mapeamento direto
+        if (GROUP_BOOK_MAP[group]) {
+            return GROUP_BOOK_MAP[group];
+        }
         
-        // Usa os dados do cronograma para mapear
-        scheduleData.forEach(item => {
-            if (item.group && item.book) {
+        // Tenta encontrar por correspondência parcial
+        const upperGroup = group.toUpperCase();
+        for (const [key, book] of Object.entries(GROUP_BOOK_MAP)) {
+            if (upperGroup.includes(key.toUpperCase()) || key.toUpperCase().includes(upperGroup)) {
+                return book;
+            }
+        }
+        
+        // Fallback: tenta encontrar pelo nome do livro no cronograma
+        for (const item of scheduleData) {
+            if (item.group === group && item.book) {
                 const bookKey = item.book.toUpperCase().trim();
-                // Tenta encontrar o livro correspondente
-                let foundBook = null;
-                
-                // Primeiro tenta correspondência exata com as chaves do lessonsData
-                const bookKeys = Object.keys(lessonsData);
-                foundBook = bookKeys.find(b => b.toUpperCase() === bookKey);
-                
-                // Se não encontrou, tenta correspondência parcial
-                if (!foundBook) {
-                    foundBook = bookKeys.find(b => 
-                        b.toUpperCase().includes(bookKey) || 
-                        bookKey.includes(b.toUpperCase())
-                    );
-                }
-                
-                // Se ainda não encontrou, usa o BOOK_MAPPING
-                if (!foundBook) {
-                    Object.keys(BOOK_MAPPING).forEach(book => {
-                        if (bookKey.includes(book) || book.includes(bookKey)) {
-                            foundBook = book;
-                        }
-                    });
-                }
-                
-                if (foundBook) {
-                    groupBookMap[item.group] = foundBook;
+                for (const [bookName] of Object.entries(BOOK_STRUCTURE)) {
+                    if (bookKey.includes(bookName.replace('Book ', '')) || 
+                        bookName.toUpperCase().includes(bookKey)) {
+                        return bookName;
+                    }
                 }
             }
-        });
+        }
         
-        // Se ainda não mapeou todas as turmas, tenta inferir pelo nome
-        Object.keys(studentsData).forEach(group => {
-            if (!groupBookMap[group]) {
-                const upperGroup = group.toUpperCase();
-                // Tenta encontrar um livro que combine
-                const bookKeys = Object.keys(lessonsData);
-                const match = bookKeys.find(book => 
-                    upperGroup.includes(book) || book.includes(upperGroup)
-                );
-                if (match) {
-                    groupBookMap[group] = match;
-                }
-            }
-        });
-        
-        console.log('📚 Mapa Turma -> Livro:', groupBookMap);
+        return 'Book 1'; // Fallback padrão
+    }
+
+    function getGroupLessons(group) {
+        const bookName = getBookForGroup(group);
+        const bookData = BOOK_STRUCTURE[bookName];
+        if (bookData && bookData.lessons) {
+            return bookData.lessons.map((label, index) => ({
+                id: `lesson_${index}`,
+                label: label,
+                isRevision: label.toUpperCase().includes('REVISION'),
+                isTest: label.toUpperCase().includes('TEST')
+            }));
+        }
+        return [];
+    }
+
+    function getGroupTotalLessons(group) {
+        const lessons = getGroupLessons(group);
+        return lessons.length;
     }
 
     // ========== NAVEGAÇÃO ==========
@@ -1328,7 +1407,6 @@
                     if(status === 'noshow') statusBadge = '<div class="status-indicator status-noshow" title="No Show"></div>';
                     if(status === 'cancelada') statusBadge = '<div class="status-indicator status-cancel" title="Cancelada"></div>';
 
-                    // Verifica progresso da turma
                     const groupProgress = currentLessonProgress[cls.group] || [];
                     const completed = groupProgress.filter(p => p.completed).length;
                     const total = getGroupTotalLessons(cls.group);
@@ -1353,21 +1431,6 @@
                 container.appendChild(section);
             }
         });
-    }
-
-    function getGroupTotalLessons(group) {
-        const book = groupBookMap[group];
-        if (book && lessonsData[book]) {
-            return lessonsData[book].length;
-        }
-        // Fallback: tenta encontrar o livro pelo nome da turma
-        const upperGroup = group.toUpperCase();
-        for (const [bookKey, lessons] of Object.entries(lessonsData)) {
-            if (upperGroup.includes(bookKey) || bookKey.includes(upperGroup)) {
-                return lessons.length;
-            }
-        }
-        return 46;
     }
 
     // ========== RAD ==========
@@ -1456,32 +1519,6 @@
             `;
             container.appendChild(div);
         });
-    }
-
-    function getGroupLessons(group) {
-        const book = groupBookMap[group];
-        if (book && lessonsData[book]) {
-            return lessonsData[book];
-        }
-        
-        // Tenta encontrar pelo nome da turma
-        const upperGroup = group.toUpperCase();
-        for (const [bookKey, lessons] of Object.entries(lessonsData)) {
-            if (upperGroup.includes(bookKey) || bookKey.includes(upperGroup)) {
-                return lessons;
-            }
-        }
-        
-        // Fallback: gera lessons baseado no livro da turma
-        const bookMatch = Object.keys(BOOK_MAPPING).find(b => 
-            upperGroup.includes(b) || b.includes(upperGroup)
-        );
-        if (bookMatch) {
-            const { bookNum, totalLessons } = BOOK_MAPPING[bookMatch];
-            return generateLessonPlan(bookNum, totalLessons);
-        }
-        
-        return [];
     }
 
     function renderAttendanceCheckboxes(groupRaw, presentList) {
@@ -1588,12 +1625,17 @@
     function renderGroupLessonPlans() {
         const container = document.getElementById('lesson-plan-content');
         
-        const groups = [...new Set(scheduleData.map(item => item.group).filter(g => g))];
+        // Pega todas as turmas do cronograma ou do mapeamento
+        let groups = Object.keys(GROUP_BOOK_MAP);
+        
+        if (groups.length === 0 && scheduleData.length > 0) {
+            groups = [...new Set(scheduleData.map(item => item.group).filter(g => g))];
+        }
         
         if (groups.length === 0) {
             container.innerHTML = `
                 <h2 style="color: var(--primary); text-align: center; margin-bottom: 30px;">📚 Lesson Plans por Turma</h2>
-                <p style="text-align:center; color: var(--text-sec);">Nenhuma turma encontrada no cronograma.</p>
+                <p style="text-align:center; color: var(--text-sec);">Nenhuma turma encontrada.</p>
             `;
             return;
         }
@@ -1607,7 +1649,7 @@
         const grid = document.getElementById('group-lesson-grid');
         
         groups.sort().forEach(group => {
-            const book = groupBookMap[group] || 'Livro não definido';
+            const bookName = getBookForGroup(group);
             const lessons = getGroupLessons(group);
             const progress = currentLessonProgress[group] || [];
             const completed = progress.filter(p => p.completed).length;
@@ -1625,7 +1667,7 @@
             card.className = 'group-card';
             card.innerHTML = `
                 <h3>${group}</h3>
-                <div class="book-info">📖 ${book}</div>
+                <div class="book-info">📖 ${bookName}</div>
                 <div class="progress">${completed} de ${total} aulas concluídas</div>
                 ${totalRevisions > 0 ? `<div class="progress" style="font-size:0.8rem; color: var(--warning);">🔄 ${revisionsCompleted}/${totalRevisions} revisions</div>` : ''}
                 <div class="progress-bar">
@@ -1645,7 +1687,7 @@
         const title = document.getElementById('lesson-detail-title');
         const content = document.getElementById('lesson-detail-content');
         
-        const book = groupBookMap[group] || 'Livro não definido';
+        const bookName = getBookForGroup(group);
         title.textContent = `📖 Lesson Plan - ${group}`;
         
         const lessons = getGroupLessons(group);
@@ -1655,7 +1697,7 @@
             content.innerHTML = `
                 <div class="group-header">
                     <h2>${group}</h2>
-                    <span class="book-badge">${book}</span>
+                    <span class="book-badge">${bookName}</span>
                 </div>
                 <p style="color: var(--text-sec);">Nenhuma lesson plan disponível para esta turma.</p>
             `;
@@ -1665,13 +1707,12 @@
         
         const revisions = lessons.filter(l => l.isRevision);
         const tests = lessons.filter(l => l.isTest);
-        const regularLessons = lessons.filter(l => !l.isRevision && !l.isTest);
         
         let html = `
             <div class="group-header">
                 <div>
                     <h2>${group}</h2>
-                    <span class="book-badge">📖 ${book}</span>
+                    <span class="book-badge">📖 ${bookName}</span>
                 </div>
                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                     <span style="color: var(--text-sec);">Total: ${lessons.length} aulas</span>
