@@ -282,8 +282,14 @@
 
         .action-btn.saved {
             border-color: var(--success);
-            color: var(--success);
-            background: var(--success-light);
+            color: #fff;
+            background: var(--success);
+        }
+
+        .action-btn.saved:hover {
+            background: #157347;
+            border-color: #157347;
+            color: #fff;
         }
 
         .status-indicator {
@@ -313,12 +319,6 @@
             justify-content: center;
             border: 2px solid var(--success);
             box-shadow: 0 0 10px rgba(25, 135, 84, 0.3);
-        }
-
-        .rad-saved-check svg {
-            width: 16px;
-            height: 16px;
-            fill: var(--success);
         }
 
         .modal-overlay {
@@ -433,6 +433,7 @@
             border-radius: 6px;
             border: 1px solid var(--border-color);
             transition: all 0.2s ease;
+            cursor: pointer;
         }
 
         .checkbox-group:hover {
@@ -446,6 +447,7 @@
             margin-bottom: 0;
             accent-color: var(--primary);
             transform: scale(1.1);
+            cursor: pointer;
         }
 
         .checkbox-group label {
@@ -456,6 +458,16 @@
             text-transform: none;
             font-weight: 400;
             margin-bottom: 0;
+        }
+
+        .checkbox-group.checked {
+            background: var(--success-light);
+            border-color: var(--success);
+        }
+
+        .checkbox-group.checked label {
+            color: var(--success);
+            font-weight: 600;
         }
 
         .attendance-table {
@@ -596,6 +608,7 @@
             border-radius: 6px;
             margin-bottom: 8px;
             transition: all 0.2s ease;
+            cursor: pointer;
         }
 
         .lesson-item:hover {
@@ -609,11 +622,13 @@
             margin-bottom: 0;
             accent-color: var(--primary);
             transform: scale(1.2);
+            cursor: pointer;
         }
 
         .lesson-item .lesson-label {
             flex: 1;
             font-size: 0.95rem;
+            cursor: pointer;
         }
 
         .lesson-item .lesson-date {
@@ -667,6 +682,16 @@
             margin-left: 10px;
         }
 
+        .lesson-item.checked {
+            background: var(--success-light);
+            border-color: var(--success);
+        }
+
+        .lesson-item.checked .lesson-label {
+            color: var(--success);
+            font-weight: 600;
+        }
+
         .group-lessons-container {
             max-height: 500px;
             overflow-y: auto;
@@ -705,6 +730,14 @@
         .refresh-btn:hover {
             background: var(--success) !important;
             color: #fff !important;
+        }
+
+        .chain-info {
+            font-size: 0.8rem;
+            color: var(--text-sec);
+            font-style: italic;
+            margin-top: 5px;
+            text-align: center;
         }
 
         @media (max-width: 600px) {
@@ -859,6 +892,7 @@
                     🔄 RESETAR PROGRESSO
                 </button>
             </div>
+            <div class="chain-info">💡 Dica: Marque a última aula concluída e todas as anteriores serão marcadas automaticamente!</div>
         </div>
     </div>
 
@@ -1433,7 +1467,8 @@
                 id: `lesson_${index}`,
                 label: label,
                 isRevision: label.toUpperCase().includes('REVISION'),
-                isTest: label.toUpperCase().includes('TEST') || label.toUpperCase().includes('TEST CORRECTION')
+                isTest: label.toUpperCase().includes('TEST') || label.toUpperCase().includes('TEST CORRECTION'),
+                order: index
             }));
         }
         return [];
@@ -1560,6 +1595,64 @@
         renderSchedule();
     }
 
+    // ============================================
+    // FUNÇÃO PARA ATUALIZAR BOTÃO RAD
+    // ============================================
+    function updateRadButton(cls) {
+        const isSaved = isRadSaved(cls);
+        const savedData = getRadSavedData(cls);
+        
+        // Encontra o botão no card correspondente
+        const cards = document.querySelectorAll('.class-card');
+        for (const card of cards) {
+            const timeElement = card.querySelector('.class-time');
+            if (timeElement && timeElement.textContent === cls.time) {
+                const groupElement = card.querySelector('.class-info strong');
+                if (groupElement && groupElement.textContent === 'Turma:' && 
+                    card.querySelector('.class-info strong').nextSibling.textContent.trim() === cls.group) {
+                    
+                    const btn = card.querySelector('.action-btn');
+                    if (btn) {
+                        if (isSaved) {
+                            btn.textContent = '✅ RAD PREENCHIDO';
+                            btn.classList.add('saved');
+                            card.classList.add('rad-saved');
+                            
+                            // Adiciona o checkmark se não existir
+                            if (!card.querySelector('.rad-saved-check')) {
+                                const check = document.createElement('div');
+                                check.className = 'rad-saved-check';
+                                check.title = `RAD salvo em ${savedData ? new Date(savedData.dateSaved).toLocaleString('pt-BR') : ''}`;
+                                check.textContent = '✅';
+                                card.appendChild(check);
+                            }
+                            
+                            // Adiciona badge SALVO
+                            const badgeContainer = card.querySelector('.class-info');
+                            if (badgeContainer && !badgeContainer.querySelector('.badge-saved')) {
+                                const badge = document.createElement('span');
+                                badge.className = 'badge badge-saved';
+                                badge.textContent = '✅ SALVO';
+                                badgeContainer.appendChild(badge);
+                            }
+                        } else {
+                            btn.textContent = 'ABRIR RAD';
+                            btn.classList.remove('saved');
+                            card.classList.remove('rad-saved');
+                            
+                            const check = card.querySelector('.rad-saved-check');
+                            if (check) check.remove();
+                            
+                            const badgeSaved = card.querySelector('.badge-saved');
+                            if (badgeSaved) badgeSaved.remove();
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
     function renderSchedule() {
         const container = document.getElementById('schedule-content');
         container.innerHTML = '';
@@ -1589,13 +1682,10 @@
                     const card = document.createElement('div');
                     card.className = 'class-card';
                     
-                    const radKey = getRadKey(cls);
-                    const savedRad = localStorage.getItem(radKey);
                     const isSaved = isRadSaved(cls);
                     const savedData = getRadSavedData(cls);
                     const status = savedData ? savedData.status : null;
 
-                    // Aplica classe de RAD salvo
                     if (isSaved) {
                         card.classList.add('rad-saved');
                     }
@@ -1605,11 +1695,10 @@
                     if(status === 'noshow') statusBadge = '<div class="status-indicator status-noshow" title="No Show"></div>';
                     if(status === 'cancelada') statusBadge = '<div class="status-indicator status-cancel" title="Cancelada"></div>';
 
-                    // Badge de RAD salvo
                     let savedBadge = '';
                     if (isSaved) {
                         savedBadge = `
-                            <div class="rad-saved-check" title="RAD salvo em ${savedData.dateSaved ? new Date(savedData.dateSaved).toLocaleString('pt-BR') : ''}">
+                            <div class="rad-saved-check" title="RAD salvo em ${savedData ? new Date(savedData.dateSaved).toLocaleString('pt-BR') : ''}">
                                 ✅
                             </div>
                         `;
@@ -1620,9 +1709,8 @@
                     const total = getGroupTotalLessons(cls.group);
                     const progressText = total > 0 ? `${completed}/${total}` : '';
 
-                    // Status do RAD para exibir no botão
                     const btnClass = isSaved ? 'saved' : '';
-                    const btnText = isSaved ? '✅ RAD SALVO' : 'ABRIR RAD';
+                    const btnText = isSaved ? '✅ RAD PREENCHIDO' : 'ABRIR RAD';
 
                     card.innerHTML = `
                         ${statusBadge}
@@ -1714,6 +1802,8 @@
         lessons.forEach((lesson, index) => {
             const div = document.createElement('div');
             div.className = 'checkbox-group';
+            const isChecked = checkedIds.includes(lesson.id) ? 'checked' : '';
+            
             if (lesson.isRevision) {
                 div.style.borderLeft = '4px solid var(--warning)';
                 div.style.background = '#fff3cd';
@@ -1722,9 +1812,11 @@
                 div.style.borderLeft = '4px solid var(--danger)';
                 div.style.background = '#f8d7da';
             }
+            if (isChecked) {
+                div.classList.add('checked');
+            }
             
             const lessonId = `lp_${index}`;
-            const isChecked = checkedIds.includes(lesson.id) ? 'checked' : '';
             
             let labelStyle = '';
             if (lesson.isRevision) labelStyle = 'color: #856404; font-weight: 600;';
@@ -1813,14 +1905,13 @@
 
         localStorage.setItem(getRadKey(currentRadClass), JSON.stringify(data));
         closeModal('rad-modal');
-        renderSchedule();
         
-        // Mostra feedback visual
-        const btn = document.querySelector(`.action-btn[onclick*="openRad('${currentRadClass.time}']")`);
-        if (btn) {
-            btn.textContent = '✅ RAD SALVO';
-            btn.classList.add('saved');
-        }
+        // Atualiza o botão no card
+        const cls = currentRadClass;
+        setTimeout(() => {
+            // Recarrega o schedule para atualizar todos os cards
+            renderSchedule();
+        }, 100);
         
         alert('✅ RAD Salvo com Sucesso!');
     }
@@ -1834,7 +1925,7 @@
     }
 
     // ============================================
-    // LESSON PLANS POR TURMA
+    // LESSON PLANS POR TURMA - COM MARCAÇÃO EM CADEIA
     // ============================================
     function loadLessonProgress() {
         const saved = localStorage.getItem('lessonProgress');
@@ -1977,11 +2068,14 @@
                 extraClass = ' test';
                 extraBadge = ' <span class="test-badge">TEST</span>';
             }
+            if (isChecked) {
+                extraClass += ' checked';
+            }
             
             html += `
                 <div class="lesson-item${extraClass}">
                     <input type="checkbox" id="lg_${index}" ${isChecked ? 'checked' : ''} 
-                           onchange="toggleGroupLesson('${group}', '${lesson.id}', this.checked)">
+                           onchange="toggleGroupLesson('${group}', '${lesson.id}', this.checked, ${index})">
                     <label for="lg_${index}" class="lesson-label">
                         ${lesson.label}
                         ${extraBadge}
@@ -1997,23 +2091,48 @@
         modal.classList.remove('hidden');
     }
 
-    function toggleGroupLesson(group, lessonId, completed) {
+    // ============================================
+    // FUNÇÃO DE MARCAÇÃO EM CADEIA
+    // ============================================
+    function toggleGroupLesson(group, lessonId, completed, clickedIndex) {
         if(!currentLessonProgress[group]) currentLessonProgress[group] = [];
         
-        const existing = currentLessonProgress[group].find(p => p.lesson === lessonId);
-        if(existing) {
-            existing.completed = completed;
-            if(completed) {
-                existing.date = new Date().toLocaleDateString('pt-BR');
-            } else {
-                existing.date = '';
+        const lessons = getGroupLessons(group);
+        const clickedLesson = lessons.find(l => l.id === lessonId);
+        
+        if (!clickedLesson) return;
+        
+        // Se está marcando (completed = true), marca todas as anteriores
+        if (completed) {
+            // Marca todas as lessons do índice 0 até o clickedIndex
+            for (let i = 0; i <= clickedIndex; i++) {
+                const lesson = lessons[i];
+                if (!lesson) continue;
+                
+                const existing = currentLessonProgress[group].find(p => p.lesson === lesson.id);
+                if (existing) {
+                    existing.completed = true;
+                    existing.date = new Date().toLocaleDateString('pt-BR');
+                } else {
+                    currentLessonProgress[group].push({
+                        lesson: lesson.id,
+                        completed: true,
+                        date: new Date().toLocaleDateString('pt-BR')
+                    });
+                }
             }
         } else {
-            currentLessonProgress[group].push({
-                lesson: lessonId,
-                completed: completed,
-                date: completed ? new Date().toLocaleDateString('pt-BR') : ''
-            });
+            // Se está desmarcando, desmarca apenas esta e todas as seguintes
+            for (let i = clickedIndex; i < lessons.length; i++) {
+                const lesson = lessons[i];
+                if (!lesson) continue;
+                
+                const existing = currentLessonProgress[group].find(p => p.lesson === lesson.id);
+                if (existing) {
+                    existing.completed = false;
+                    existing.date = '';
+                }
+            }
         }
         
         saveLessonProgress();
