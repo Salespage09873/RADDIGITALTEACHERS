@@ -812,7 +812,9 @@
     </div>
 
 <script>
+    // ============================================
     // CONFIGURAÇÕES
+    // ============================================
     const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
 
@@ -830,7 +832,9 @@
         { name: 'LUISA', color: '#0d6efd' }
     ];
 
-    // ========== ESTRUTURA COMPLETA DOS BOOKS (1 a 10) ==========
+    // ============================================
+    // ESTRUTURA COMPLETA DOS BOOKS (1 a 10)
+    // ============================================
     const BOOK_STRUCTURE = {
         'Book 1': {
             lessons: [
@@ -1053,20 +1057,9 @@
         }
     };
 
-    // Mapeamento de turmas para livros
-    const GROUP_BOOK_MAP = {
-        'ODINEIA FERREIRA SOARES': 'Book 1',
-        'ENZO NOVELLATTO': 'Book 2',
-        'KILL BILL': 'Book 3',
-        'THE FLINSTONES': 'Book 4',
-        'THE LAST OF US': 'Book 5',
-        'JULIA VIANNA LINHARES': 'Book 6',
-        'ADVENTURE TIME': 'Book 7',
-        'THE CROWN': 'Book 8',
-        'SQUID GAME': 'Book 9',
-        'MIB': 'Book 10'
-    };
-
+    // ============================================
+    // ESTADO GLOBAL
+    // ============================================
     let scheduleData = [];
     let studentsData = {};
     let currentTeacher = null;
@@ -1074,11 +1067,16 @@
     let allWeeks = {};
     let currentGroup = null;
     let currentLessonProgress = {};
+    let groupBookMap = {};
 
+    // ============================================
+    // INICIALIZAÇÃO
+    // ============================================
     document.addEventListener('DOMContentLoaded', () => {
         Promise.all([fetchSchedule(), fetchStudents()])
             .then(() => {
                 document.getElementById('loading-screen').classList.add('hidden');
+                buildGroupBookMap();
                 renderTeachers();
                 populateGroupSelect();
                 const now = new Date();
@@ -1091,13 +1089,16 @@
             });
     });
 
+    // ============================================
+    // FUNÇÕES DE CARREGAMENTO
+    // ============================================
     async function fetchSchedule() {
         try {
             const res = await fetch(SCHEDULE_URL);
             const text = await res.text();
             parseScheduleCSV(text);
         } catch (e) {
-            console.warn("Falha ao carregar cronograma, usando dados de exemplo.", e);
+            console.warn("Falha ao carregar cronograma.", e);
             // Dados de exemplo para teste
             scheduleData = [
                 { book: 'Book 1', group: 'ODINEIA FERREIRA SOARES', room: 'Sala 1', modal: 'REGULAR', time: '14:10', dayName: 'Terça', teacher: 'MYCAEL' },
@@ -1121,8 +1122,7 @@
             const text = await res.text();
             parseStudentsCSV(text);
         } catch (e) {
-            console.warn("Falha ao carregar lista de alunos, usando dados de exemplo.", e);
-            // Dados de exemplo
+            console.warn("Falha ao carregar lista de alunos.", e);
             studentsData = {
                 'ODINEIA FERREIRA SOARES': ['Aluno 1', 'Aluno 2', 'Aluno 3'],
                 'ENZO NOVELLATTO': ['Aluno 4', 'Aluno 5', 'Aluno 6'],
@@ -1235,57 +1235,125 @@
         return null;
     }
 
-    // ========== FUNÇÕES PARA LESSON PLANS ==========
+    // ============================================
+    // MAPEAMENTO DINÂMICO TURMA → BOOK
+    // ============================================
+    function buildGroupBookMap() {
+        groupBookMap = {};
+        
+        // Para cada turma no cronograma, identifica o Book correspondente
+        scheduleData.forEach(item => {
+            if (item.group && item.book) {
+                const bookKey = item.book.toUpperCase().trim();
+                
+                // Tenta encontrar o Book na estrutura
+                let foundBook = null;
+                const bookNames = Object.keys(BOOK_STRUCTURE);
+                
+                // 1. Correspondência exata
+                foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
+                
+                // 2. Correspondência contendo o número do Book
+                if (!foundBook) {
+                    const bookNumber = bookKey.match(/\d+/);
+                    if (bookNumber) {
+                        const num = parseInt(bookNumber[0]);
+                        if (num >= 1 && num <= 10) {
+                            foundBook = `Book ${num}`;
+                        }
+                    }
+                }
+                
+                // 3. Correspondência parcial
+                if (!foundBook) {
+                    foundBook = bookNames.find(b => 
+                        b.toUpperCase().includes(bookKey) || 
+                        bookKey.includes(b.toUpperCase().replace('BOOK ', ''))
+                    );
+                }
+                
+                if (foundBook) {
+                    groupBookMap[item.group] = foundBook;
+                }
+            }
+        });
+        
+        // Se alguma turma não foi mapeada, tenta inferir pelo nome
+        const allGroups = [...new Set(scheduleData.map(item => item.group).filter(g => g))];
+        allGroups.forEach(group => {
+            if (!groupBookMap[group]) {
+                const upperGroup = group.toUpperCase();
+                const bookNames = Object.keys(BOOK_STRUCTURE);
+                
+                // Tenta encontrar um Book que corresponda ao nome da turma
+                const match = bookNames.find(book => 
+                    upperGroup.includes(book.toUpperCase()) || 
+                    book.toUpperCase().includes(upperGroup) ||
+                    upperGroup.includes(book.replace('Book ', ''))
+                );
+                
+                if (match) {
+                    groupBookMap[group] = match;
+                } else {
+                    // Fallback: tenta inferir pelo número no nome
+                    const numMatch = upperGroup.match(/\d+/);
+                    if (numMatch) {
+                        const num = parseInt(numMatch[0]);
+                        if (num >= 1 && num <= 10) {
+                            groupBookMap[group] = `Book ${num}`;
+                        }
+                    }
+                }
+            }
+        });
+        
+        console.log('📚 Mapa Turma → Book (dinâmico):', groupBookMap);
+    }
+
     function getBookForGroup(group) {
-        // Primeiro tenta o mapeamento direto
-        if (GROUP_BOOK_MAP[group]) {
-            return GROUP_BOOK_MAP[group];
+        if (groupBookMap[group]) {
+            return groupBookMap[group];
         }
         
-        // Tenta encontrar por correspondência parcial
+        // Tenta encontrar novamente
         const upperGroup = group.toUpperCase();
-        for (const [key, book] of Object.entries(GROUP_BOOK_MAP)) {
-            if (upperGroup.includes(key.toUpperCase()) || key.toUpperCase().includes(upperGroup)) {
+        const bookNames = Object.keys(BOOK_STRUCTURE);
+        
+        for (const book of bookNames) {
+            if (upperGroup.includes(book.toUpperCase()) || 
+                book.toUpperCase().includes(upperGroup) ||
+                upperGroup.includes(book.replace('Book ', ''))) {
+                groupBookMap[group] = book;
                 return book;
             }
         }
         
-        // Fallback: tenta encontrar pelo nome do livro no cronograma
-        for (const item of scheduleData) {
-            if (item.group === group && item.book) {
-                const bookKey = item.book.toUpperCase().trim();
-                for (const [bookName] of Object.entries(BOOK_STRUCTURE)) {
-                    if (bookKey.includes(bookName.replace('Book ', '')) || 
-                        bookName.toUpperCase().includes(bookKey)) {
-                        return bookName;
-                    }
-                }
-            }
-        }
-        
-        return 'Book 1'; // Fallback padrão
+        // Fallback
+        return 'Book 1';
     }
 
     function getGroupLessons(group) {
         const bookName = getBookForGroup(group);
         const bookData = BOOK_STRUCTURE[bookName];
+        
         if (bookData && bookData.lessons) {
             return bookData.lessons.map((label, index) => ({
                 id: `lesson_${index}`,
                 label: label,
                 isRevision: label.toUpperCase().includes('REVISION'),
-                isTest: label.toUpperCase().includes('TEST')
+                isTest: label.toUpperCase().includes('TEST') || label.toUpperCase().includes('TEST CORRECTION')
             }));
         }
         return [];
     }
 
     function getGroupTotalLessons(group) {
-        const lessons = getGroupLessons(group);
-        return lessons.length;
+        return getGroupLessons(group).length;
     }
 
-    // ========== NAVEGAÇÃO ==========
+    // ============================================
+    // NAVEGAÇÃO
+    // ============================================
     function showSelection() {
         document.getElementById('selection-screen').classList.remove('hidden');
         document.getElementById('schedule-screen').classList.add('hidden');
@@ -1312,7 +1380,9 @@
         renderGroupLessonPlans();
     }
 
-    // ========== PROFESSORES ==========
+    // ============================================
+    // PROFESSORES E CRONOGRAMA
+    // ============================================
     function renderTeachers() {
         const grid = document.getElementById('teachers-grid');
         grid.innerHTML = '';
@@ -1368,7 +1438,6 @@
         renderSchedule();
     }
 
-    // ========== CRONOGRAMA ==========
     function renderSchedule() {
         const container = document.getElementById('schedule-content');
         container.innerHTML = '';
@@ -1433,7 +1502,9 @@
         });
     }
 
-    // ========== RAD ==========
+    // ============================================
+    // RAD
+    // ============================================
     let currentRadClass = null;
 
     function getRadKey(cls) {
@@ -1603,7 +1674,9 @@
         }
     }
 
-    // ========== LESSON PLANS POR TURMA ==========
+    // ============================================
+    // LESSON PLANS POR TURMA
+    // ============================================
     function loadLessonProgress() {
         const saved = localStorage.getItem('lessonProgress');
         if(saved) {
@@ -1625,11 +1698,12 @@
     function renderGroupLessonPlans() {
         const container = document.getElementById('lesson-plan-content');
         
-        // Pega todas as turmas do cronograma ou do mapeamento
-        let groups = Object.keys(GROUP_BOOK_MAP);
+        // Pega todas as turmas do cronograma
+        let groups = [...new Set(scheduleData.map(item => item.group).filter(g => g))];
         
-        if (groups.length === 0 && scheduleData.length > 0) {
-            groups = [...new Set(scheduleData.map(item => item.group).filter(g => g))];
+        if (groups.length === 0) {
+            // Fallback: usa as turmas do mapeamento
+            groups = Object.keys(groupBookMap);
         }
         
         if (groups.length === 0) {
@@ -1834,7 +1908,9 @@
         }
     }
 
-    // ========== LISTA DE PRESENÇA GERAL ==========
+    // ============================================
+    // LISTA DE PRESENÇA GERAL
+    // ============================================
     function openAttendanceList() {
         document.getElementById('attendance-modal').classList.remove('hidden');
         loadAttendanceTable();
