@@ -613,6 +613,15 @@
     const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
 
+    // Mapeamento manual para turmas com nomes diferentes
+    const GROUP_MAPPING = {
+        'Hannah Montanah': 'HANNAH MONTANAH',
+        'HANNAH MONTANAH': 'Hannah Montanah',
+        'VIP': 'VIP',
+        'Hotel Melo': 'HOTEL MELO',
+        // Adicione mais mapeamentos conforme necessário
+    };
+
     const VALID_TEACHERS = [
         { name: 'MYCAEL', color: '#0d6efd' },
         { name: 'HOPE', color: '#0d6efd' },
@@ -753,12 +762,22 @@
         for(let i=1; i<lines.length; i++) {
             const parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
             if(parts.length >= 2) {
-                const group = parts[0].replace(/"/g, '').trim();
+                let group = parts[0].replace(/"/g, '').trim();
                 const student = parts[1].replace(/"/g, '').trim();
                 
+                // Normaliza o nome da turma para upper case para comparação
+                const normalizedGroup = group.toUpperCase().trim();
+                
                 if(group && student) {
+                    // Armazena com o nome original
                     if(!studentsData[group]) studentsData[group] = [];
                     studentsData[group].push(student);
+                    
+                    // Também armazena uma versão normalizada para busca flexível
+                    if(!studentsData[normalizedGroup]) studentsData[normalizedGroup] = [];
+                    if(!studentsData[normalizedGroup].includes(student)) {
+                        studentsData[normalizedGroup].push(student);
+                    }
                 }
             }
         }
@@ -997,26 +1016,42 @@
         let students = [];
         const keys = Object.keys(studentsData);
         
-        // Tenta encontrar a turma com correspondência exata primeiro
+        // 1. Tenta correspondência exata
         let match = keys.find(k => k === groupRaw);
         
-        // Se não encontrar exata, tenta correspondência case-insensitive
+        // 2. Tenta case-insensitive
         if(!match) {
-            match = keys.find(k => k.toUpperCase() === groupRaw.toUpperCase());
+            const upperGroup = groupRaw.toUpperCase().trim();
+            match = keys.find(k => k.toUpperCase().trim() === upperGroup);
         }
         
-        // Se ainda não encontrar, tenta correspondência parcial
+        // 3. Tenta correspondência parcial
         if(!match) {
-            match = keys.find(k => groupRaw.toUpperCase().includes(k.toUpperCase()) || k.toUpperCase().includes(groupRaw.toUpperCase()));
+            const upperGroup = groupRaw.toUpperCase().trim();
+            match = keys.find(k => {
+                const upperK = k.toUpperCase().trim();
+                return upperK.includes(upperGroup) || upperGroup.includes(upperK);
+            });
+        }
+        
+        // 4. Usa mapeamento manual se disponível
+        if(!match && GROUP_MAPPING[groupRaw]) {
+            const mappedGroup = GROUP_MAPPING[groupRaw];
+            match = keys.find(k => k === mappedGroup || k.toUpperCase().trim() === mappedGroup.toUpperCase().trim());
+            console.log(`🔄 Usando mapeamento manual: ${groupRaw} -> ${mappedGroup}`);
         }
         
         if(match && studentsData[match]) {
             students = studentsData[match];
-            console.log(`✅ Encontrados ${students.length} alunos para "${match}"`);
+            console.log(`✅ Encontrados ${students.length} alunos para "${match}" (buscado: "${groupRaw}")`);
         } else {
             console.warn(`⚠️ Nenhuma turma encontrada para "${groupRaw}"`);
-            // Fallback para turmas VIP
-            if(groupRaw.toUpperCase() === 'VIP') {
+            
+            // Fallback específico para Hannah Montanah
+            if(groupRaw.toUpperCase().includes('HANNAH') || groupRaw.toUpperCase().includes('MONTANAH')) {
+                students = ['Aluno Hannah 1', 'Aluno Hannah 2', 'Aluno Hannah 3'];
+                console.log('🎵 Usando fallback para Hannah Montanah');
+            } else if(groupRaw.toUpperCase() === 'VIP') {
                 students = ['Aluno VIP 1', 'Aluno VIP 2', 'Aluno VIP 3'];
                 console.log('👑 Usando fallback para VIP');
             } else {
