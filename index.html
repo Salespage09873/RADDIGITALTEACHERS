@@ -43,10 +43,6 @@
         }
 
         .hidden { display: none !important; }
-        .flex { display: flex; }
-        .grid { display: grid; }
-        .center { align-items: center; justify-content: center; }
-        .between { justify-content: space-between; }
 
         header {
             text-align: center;
@@ -425,9 +421,6 @@
             background: var(--card-bg);
         }
 
-        .att-present { color: var(--success); font-weight: 700; }
-        .att-absent { color: var(--danger); font-weight: 700; }
-
         #loading-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -613,15 +606,6 @@
     const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
 
-    // Mapeamento manual para turmas com nomes diferentes
-    const GROUP_MAPPING = {
-        'Hannah Montanah': 'HANNAH MONTANAH',
-        'HANNAH MONTANAH': 'Hannah Montanah',
-        'VIP': 'VIP',
-        'Hotel Melo': 'HOTEL MELO',
-        // Adicione mais mapeamentos conforme necessário
-    };
-
     const VALID_TEACHERS = [
         { name: 'MYCAEL', color: '#0d6efd' },
         { name: 'HOPE', color: '#0d6efd' },
@@ -702,8 +686,6 @@
         const lines = text.split('\n').map(l => l.trim()).filter(l => l);
         if(lines.length < 2) return;
 
-        const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
-        
         const COL_BOOK = 1;
         const COL_GROUP = 2;
         const COL_ROOM = 3;
@@ -759,31 +741,72 @@
         
         console.log('📊 Total de linhas na planilha de alunos:', lines.length);
         
+        // Primeiro, vamos limpar e organizar os dados
+        const rawGroups = {};
+        
         for(let i=1; i<lines.length; i++) {
             const parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
             if(parts.length >= 2) {
                 let group = parts[0].replace(/"/g, '').trim();
                 const student = parts[1].replace(/"/g, '').trim();
                 
-                // Normaliza o nome da turma para upper case para comparação
-                const normalizedGroup = group.toUpperCase().trim();
-                
                 if(group && student) {
-                    // Armazena com o nome original
-                    if(!studentsData[group]) studentsData[group] = [];
-                    studentsData[group].push(student);
-                    
-                    // Também armazena uma versão normalizada para busca flexível
-                    if(!studentsData[normalizedGroup]) studentsData[normalizedGroup] = [];
-                    if(!studentsData[normalizedGroup].includes(student)) {
-                        studentsData[normalizedGroup].push(student);
+                    if(!rawGroups[group]) rawGroups[group] = [];
+                    if(!rawGroups[group].includes(student)) {
+                        rawGroups[group].push(student);
                     }
                 }
             }
         }
         
-        console.log('📚 Turmas carregadas:', Object.keys(studentsData));
-        Object.keys(studentsData).forEach(group => {
+        // Agora vamos criar índices para busca flexível
+        // 1. Guardar com o nome original
+        // 2. Guardar em UPPERCASE para busca case-insensitive
+        // 3. Guardar versões simplificadas (sem espaços extras, caracteres especiais)
+        
+        Object.keys(rawGroups).forEach(groupName => {
+            const students = rawGroups[groupName];
+            
+            // Salva com o nome original
+            studentsData[groupName] = students;
+            
+            // Salva em UPPERCASE
+            const upperKey = groupName.toUpperCase().trim();
+            if(upperKey !== groupName) {
+                studentsData[upperKey] = students;
+            }
+            
+            // Salva versão simplificada (removendo espaços extras)
+            const simpleKey = groupName.replace(/\s+/g, ' ').trim();
+            if(simpleKey !== groupName) {
+                studentsData[simpleKey] = students;
+            }
+            
+            // Salva versão UPPERCASE simplificada
+            const simpleUpperKey = simpleKey.toUpperCase().trim();
+            if(simpleUpperKey !== groupName && simpleUpperKey !== upperKey) {
+                studentsData[simpleUpperKey] = students;
+            }
+            
+            // CORREÇÃO ESPECIAL: Se o nome contém "Hannah" ou "Montanah", cria chave específica
+            if(groupName.includes('Hannah') || groupName.includes('Montanah') || 
+               groupName.toUpperCase().includes('HANNAH') || groupName.toUpperCase().includes('MONTANAH')) {
+                const hannahKey = 'Hannah Montanah';
+                if(!studentsData[hannahKey]) {
+                    studentsData[hannahKey] = [];
+                }
+                students.forEach(s => {
+                    if(!studentsData[hannahKey].includes(s)) {
+                        studentsData[hannahKey].push(s);
+                    }
+                });
+                console.log(`🎵 Turma "Hannah Montanah" configurada com ${studentsData[hannahKey].length} alunos`);
+            }
+        });
+        
+        console.log('📚 Turmas carregadas:', Object.keys(studentsData).length);
+        // Mostra as 10 primeiras turmas como exemplo
+        Object.keys(studentsData).slice(0, 10).forEach(group => {
             console.log(`   ${group}: ${studentsData[group].length} alunos`);
         });
     }
@@ -1011,54 +1034,93 @@
         container.innerHTML = '';
         
         console.log('🔍 Buscando alunos para turma:', groupRaw);
-        console.log('📚 Turmas disponíveis:', Object.keys(studentsData));
         
         let students = [];
         const keys = Object.keys(studentsData);
         
-        // 1. Tenta correspondência exata
-        let match = keys.find(k => k === groupRaw);
+        // ESTRATÉGIA DE BUSCA MULTI-NÍVEL:
+        // 1. Busca exata
+        // 2. Busca case-insensitive (UPPERCASE)
+        // 3. Busca simplificada (removendo espaços extras)
+        // 4. Busca parcial (contém o texto)
         
-        // 2. Tenta case-insensitive
-        if(!match) {
-            const upperGroup = groupRaw.toUpperCase().trim();
-            match = keys.find(k => k.toUpperCase().trim() === upperGroup);
+        // Prepara variações do nome da turma para busca
+        const groupVariations = [
+            groupRaw,                                    // Original
+            groupRaw.toUpperCase().trim(),              // UPPERCASE
+            groupRaw.replace(/\s+/g, ' ').trim(),       // Sem espaços extras
+            groupRaw.toUpperCase().replace(/\s+/g, ' ').trim(), // UPPERCASE sem espaços extras
+        ];
+        
+        // Adiciona variações específicas para Hannah Montanah
+        if (groupRaw.includes('Hannah') || groupRaw.includes('Montanah') || 
+            groupRaw.toUpperCase().includes('HANNAH') || groupRaw.toUpperCase().includes('MONTANAH')) {
+            groupVariations.push('Hannah Montanah');
+            groupVariations.push('HANNAH MONTANAH');
         }
         
-        // 3. Tenta correspondência parcial
-        if(!match) {
+        let match = null;
+        
+        // Tenta cada variação
+        for (const variation of groupVariations) {
+            if (match) break;
+            
+            // Busca exata
+            match = keys.find(k => k === variation);
+            
+            // Busca case-insensitive
+            if (!match) {
+                const upperVariation = variation.toUpperCase().trim();
+                match = keys.find(k => k.toUpperCase().trim() === upperVariation);
+            }
+            
+            // Busca simplificada (remove espaços extras e compara)
+            if (!match) {
+                const simpleVariation = variation.replace(/\s+/g, ' ').trim();
+                match = keys.find(k => k.replace(/\s+/g, ' ').trim() === simpleVariation);
+            }
+        }
+        
+        // Se ainda não encontrou, tenta busca parcial
+        if (!match) {
             const upperGroup = groupRaw.toUpperCase().trim();
+            // Tenta encontrar uma turma que contenha o nome buscado
             match = keys.find(k => {
                 const upperK = k.toUpperCase().trim();
                 return upperK.includes(upperGroup) || upperGroup.includes(upperK);
             });
+            
+            // Se encontrou por busca parcial, verifica se é um match válido
+            if (match && studentsData[match].length === 0) {
+                match = null;
+            }
         }
         
-        // 4. Usa mapeamento manual se disponível
-        if(!match && GROUP_MAPPING[groupRaw]) {
-            const mappedGroup = GROUP_MAPPING[groupRaw];
-            match = keys.find(k => k === mappedGroup || k.toUpperCase().trim() === mappedGroup.toUpperCase().trim());
-            console.log(`🔄 Usando mapeamento manual: ${groupRaw} -> ${mappedGroup}`);
-        }
-        
-        if(match && studentsData[match]) {
+        if (match && studentsData[match]) {
             students = studentsData[match];
             console.log(`✅ Encontrados ${students.length} alunos para "${match}" (buscado: "${groupRaw}")`);
         } else {
             console.warn(`⚠️ Nenhuma turma encontrada para "${groupRaw}"`);
             
-            // Fallback específico para Hannah Montanah
-            if(groupRaw.toUpperCase().includes('HANNAH') || groupRaw.toUpperCase().includes('MONTANAH')) {
-                students = ['Aluno Hannah 1', 'Aluno Hannah 2', 'Aluno Hannah 3'];
-                console.log('🎵 Usando fallback para Hannah Montanah');
-            } else if(groupRaw.toUpperCase() === 'VIP') {
-                students = ['Aluno VIP 1', 'Aluno VIP 2', 'Aluno VIP 3'];
-                console.log('👑 Usando fallback para VIP');
+            // Fallback: tenta encontrar qualquer turma que tenha relação
+            const upperGroup = groupRaw.toUpperCase().trim();
+            const partialMatch = keys.find(k => {
+                const upperK = k.toUpperCase().trim();
+                return upperK.includes(upperGroup) || upperGroup.includes(upperK);
+            });
+            
+            if (partialMatch && studentsData[partialMatch]) {
+                students = studentsData[partialMatch];
+                console.log(`🔄 Usando match parcial: "${partialMatch}" para "${groupRaw}"`);
             } else {
+                // Fallback genérico
                 students = ["Aluno 1", "Aluno 2", "Aluno 3"];
                 console.log('📝 Usando fallback genérico');
             }
         }
+
+        // Remove duplicatas
+        students = [...new Set(students)];
 
         students.forEach((student) => {
             const div = document.createElement('div');
@@ -1071,6 +1133,9 @@
             `;
             container.appendChild(div);
         });
+        
+        // Mostra quantos alunos foram renderizados
+        console.log(`📋 Renderizados ${students.length} alunos na lista de presença`);
     }
 
     function saveRad() {
