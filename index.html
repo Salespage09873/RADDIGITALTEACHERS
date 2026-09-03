@@ -593,6 +593,26 @@
             margin-left: 10px;
         }
 
+        .lesson-item.test {
+            background: #f8d7da;
+            border-color: var(--danger);
+        }
+
+        .lesson-item.test:hover {
+            background: #f5c6cb;
+            border-color: var(--danger);
+        }
+
+        .lesson-item .test-badge {
+            background: var(--danger);
+            color: #fff;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 10px;
+        }
+
         .group-lessons-container {
             max-height: 500px;
             overflow-y: auto;
@@ -820,41 +840,7 @@
         { name: 'LUISA', color: '#0d6efd' }
     ];
 
-    // Estrutura padrão para Lesson Plans com Revisions
-    function generateLessonPlan(bookNum, totalLessons) {
-        const lessons = [];
-        for (let i = 1; i <= totalLessons; i++) {
-            if (i % 5 === 0 && i < totalLessons) {
-                // Revision a cada 5 aulas
-                const start = i - 4;
-                const end = i;
-                lessons.push({
-                    id: `b${bookNum}_rev${i/5}`,
-                    label: `Revision ${start}-${end}`,
-                    isRevision: true,
-                    book: bookNum
-                });
-            } else {
-                lessons.push({
-                    id: `b${bookNum}_l${i}`,
-                    label: `Lesson ${i}`,
-                    isRevision: false,
-                    book: bookNum
-                });
-            }
-        }
-        // Adiciona o Test no final
-        lessons.push({
-            id: `b${bookNum}_test`,
-            label: `Test Book ${bookNum}`,
-            isRevision: false,
-            book: bookNum,
-            isTest: true
-        });
-        return lessons;
-    }
-
-    // Mapeamento de livros para turmas
+    // Mapeamento de livros para turmas (fallback)
     const BOOK_MAPPING = {
         'G1': { bookNum: 1, totalLessons: 42 },
         'G2': { bookNum: 2, totalLessons: 46 },
@@ -876,7 +862,7 @@
     let allWeeks = {};
     let currentGroup = null;
     let currentLessonProgress = {};
-    let groupBookMap = {}; // Mapeia turma -> livro
+    let groupBookMap = {};
 
     document.addEventListener('DOMContentLoaded', () => {
         Promise.all([fetchSchedule(), fetchStudents(), fetchLessons()])
@@ -918,17 +904,68 @@
             parseLessonsCSV(text);
         } catch (e) {
             console.warn("Falha ao carregar lesson plans, usando estrutura padrão.", e);
-            // Usar a estrutura gerada automaticamente como fallback
             generateDefaultLessons();
         }
     }
 
+    // ========== GERAR LESSON PLANS PADRÃO (FALLBACK) ==========
     function generateDefaultLessons() {
         lessonsData = {};
         Object.keys(BOOK_MAPPING).forEach(bookKey => {
             const { bookNum, totalLessons } = BOOK_MAPPING[bookKey];
             lessonsData[bookKey] = generateLessonPlan(bookNum, totalLessons);
         });
+    }
+
+    function generateLessonPlan(bookNum, totalLessons) {
+        const lessons = [];
+        let lessonCounter = 1;
+        let revisionCounter = 1;
+        let i = 1;
+        
+        while (i <= totalLessons) {
+            // 5 Lessons
+            for (let j = 0; j < 5 && i <= totalLessons; j++) {
+                lessons.push({
+                    id: `b${bookNum}_l${i}`,
+                    label: `Lesson ${i}`,
+                    isRevision: false,
+                    isTest: false,
+                    book: bookNum,
+                    order: i
+                });
+                i++;
+                lessonCounter++;
+            }
+            
+            // 1 Revision (se ainda não chegou ao final)
+            if (i <= totalLessons) {
+                const start = i - 5;
+                const end = i - 1;
+                lessons.push({
+                    id: `b${bookNum}_rev${revisionCounter}`,
+                    label: `Revision ${start}-${end}`,
+                    isRevision: true,
+                    isTest: false,
+                    book: bookNum,
+                    order: i
+                });
+                revisionCounter++;
+                i++;
+            }
+        }
+        
+        // Adiciona o Test no final
+        lessons.push({
+            id: `b${bookNum}_test`,
+            label: `Test Book ${bookNum}`,
+            isRevision: false,
+            isTest: true,
+            book: bookNum,
+            order: totalLessons + 1
+        });
+        
+        return lessons;
     }
 
     function parseScheduleCSV(text) {
@@ -1029,6 +1066,7 @@
         });
     }
 
+    // ========== PARSE LESSON PLANS DA PLANILHA ==========
     function parseLessonsCSV(text) {
         const lines = text.split('\n').map(l => l.trim()).filter(l => l);
         if(lines.length < 2) {
@@ -1039,43 +1077,64 @@
         // Estrutura esperada: Coluna A = Book, Coluna B = Lesson Name
         const bookLessons = {};
         
+        console.log('📖 Processando lesson plans da planilha...');
+        
         for(let i=1; i<lines.length; i++) {
             const parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
             if(parts.length >= 2) {
-                const book = parts[0] || 'G1';
+                let book = parts[0] || 'G1';
                 const lessonLabel = parts[1] || `Lesson ${i}`;
+                
+                // Limpa o nome do livro
+                book = book.replace(/['"]/g, '').trim();
                 
                 if(!bookLessons[book]) bookLessons[book] = [];
                 
                 // Detecta se é uma revision baseado no nome
                 const isRevision = lessonLabel.toLowerCase().includes('revision') || 
                                    lessonLabel.toLowerCase().includes('review') ||
-                                   lessonLabel.includes('Rev');
+                                   lessonLabel.toLowerCase().includes('rev') ||
+                                   /^\d+-\d+/.test(lessonLabel) || // Padrão "1-5", "6-10"
+                                   lessonLabel.includes('–') || // En dash
+                                   lessonLabel.includes('-'); // Hífen
                 
                 // Detecta se é o test final
                 const isTest = lessonLabel.toLowerCase().includes('test') || 
-                               lessonLabel.toLowerCase().includes('final');
+                               lessonLabel.toLowerCase().includes('final') ||
+                               lessonLabel.toLowerCase().includes('exam');
+                
+                // Tenta extrair o número da lesson
+                let order = i;
+                const numMatch = lessonLabel.match(/\d+/);
+                if (numMatch) {
+                    order = parseInt(numMatch[0]);
+                }
                 
                 bookLessons[book].push({
                     id: `b_${book}_l${i}`,
                     label: lessonLabel,
                     isRevision: isRevision,
                     isTest: isTest,
-                    book: book
+                    book: book,
+                    order: order,
+                    rawLabel: lessonLabel
                 });
             }
         }
         
         // Se não carregou nada, usa o padrão gerado
         if(Object.keys(bookLessons).length === 0) {
+            console.warn('⚠️ Nenhuma lesson plan encontrada na planilha, usando padrão.');
             generateDefaultLessons();
         } else {
             lessonsData = bookLessons;
         }
         
-        console.log('📚 Lesson Plans carregados:', Object.keys(lessonsData));
+        console.log('📚 Lesson Plans carregados do Sheets:', Object.keys(lessonsData));
         Object.keys(lessonsData).forEach(book => {
-            console.log(`   ${book}: ${lessonsData[book].length} aulas`);
+            const revisions = lessonsData[book].filter(l => l.isRevision);
+            const tests = lessonsData[book].filter(l => l.isTest);
+            console.log(`   ${book}: ${lessonsData[book].length} aulas (${revisions.length} revisions, ${tests.length} tests)`);
         });
     }
 
@@ -1094,29 +1153,37 @@
     // ========== CONSTRUIR MAPA TURMA -> LIVRO ==========
     function buildGroupBookMap() {
         groupBookMap = {};
+        
         // Usa os dados do cronograma para mapear
         scheduleData.forEach(item => {
             if (item.group && item.book) {
                 const bookKey = item.book.toUpperCase().trim();
                 // Tenta encontrar o livro correspondente
                 let foundBook = null;
-                Object.keys(BOOK_MAPPING).forEach(book => {
-                    if (bookKey.includes(book) || book.includes(bookKey)) {
-                        foundBook = book;
-                    }
-                });
-                if (foundBook) {
-                    groupBookMap[item.group] = foundBook;
-                } else {
-                    // Fallback: tenta encontrar o livro mais próximo
-                    const books = Object.keys(lessonsData);
-                    const match = books.find(b => 
+                
+                // Primeiro tenta correspondência exata com as chaves do lessonsData
+                const bookKeys = Object.keys(lessonsData);
+                foundBook = bookKeys.find(b => b.toUpperCase() === bookKey);
+                
+                // Se não encontrou, tenta correspondência parcial
+                if (!foundBook) {
+                    foundBook = bookKeys.find(b => 
                         b.toUpperCase().includes(bookKey) || 
                         bookKey.includes(b.toUpperCase())
                     );
-                    if (match) {
-                        groupBookMap[item.group] = match;
-                    }
+                }
+                
+                // Se ainda não encontrou, usa o BOOK_MAPPING
+                if (!foundBook) {
+                    Object.keys(BOOK_MAPPING).forEach(book => {
+                        if (bookKey.includes(book) || book.includes(bookKey)) {
+                            foundBook = book;
+                        }
+                    });
+                }
+                
+                if (foundBook) {
+                    groupBookMap[item.group] = foundBook;
                 }
             }
         });
@@ -1124,13 +1191,15 @@
         // Se ainda não mapeou todas as turmas, tenta inferir pelo nome
         Object.keys(studentsData).forEach(group => {
             if (!groupBookMap[group]) {
-                // Tenta encontrar um livro que combine
                 const upperGroup = group.toUpperCase();
-                Object.keys(BOOK_MAPPING).forEach(book => {
-                    if (upperGroup.includes(book) || book.includes(upperGroup)) {
-                        groupBookMap[group] = book;
-                    }
-                });
+                // Tenta encontrar um livro que combine
+                const bookKeys = Object.keys(lessonsData);
+                const match = bookKeys.find(book => 
+                    upperGroup.includes(book) || book.includes(upperGroup)
+                );
+                if (match) {
+                    groupBookMap[group] = match;
+                }
             }
         });
         
@@ -1298,7 +1367,7 @@
                 return lessons.length;
             }
         }
-        return 46; // Fallback padrão
+        return 46;
     }
 
     // ========== RAD ==========
@@ -1351,7 +1420,6 @@
         const container = document.getElementById('lesson-plan-container');
         container.innerHTML = '';
         
-        // Busca as lições da turma
         const lessons = getGroupLessons(group);
         
         if (lessons.length === 0) {
@@ -1364,17 +1432,23 @@
             div.className = 'checkbox-group';
             if (lesson.isRevision) {
                 div.style.borderLeft = '4px solid var(--warning)';
+                div.style.background = '#fff3cd';
             }
             if (lesson.isTest) {
                 div.style.borderLeft = '4px solid var(--danger)';
+                div.style.background = '#f8d7da';
             }
             
             const lessonId = `lp_${index}`;
             const isChecked = checkedIds.includes(lesson.id) ? 'checked' : '';
             
+            let labelStyle = '';
+            if (lesson.isRevision) labelStyle = 'color: #856404; font-weight: 600;';
+            if (lesson.isTest) labelStyle = 'color: var(--danger); font-weight: 700;';
+            
             div.innerHTML = `
                 <input type="checkbox" id="${lessonId}" value="${lesson.id}" ${isChecked}>
-                <label for="${lessonId}" style="${lesson.isRevision ? 'color: #856404;' : ''} ${lesson.isTest ? 'color: var(--danger); font-weight: 700;' : ''}">
+                <label for="${lessonId}" style="${labelStyle}">
                     ${lesson.label}
                     ${lesson.isRevision ? ' 🔄' : ''}
                     ${lesson.isTest ? ' 📝' : ''}
@@ -1417,7 +1491,6 @@
         let students = [];
         const keys = Object.keys(studentsData);
         
-        // Busca flexível
         let match = null;
         const groupVariations = [
             groupRaw,
@@ -1515,7 +1588,6 @@
     function renderGroupLessonPlans() {
         const container = document.getElementById('lesson-plan-content');
         
-        // Coleta todas as turmas únicas do cronograma
         const groups = [...new Set(scheduleData.map(item => item.group).filter(g => g))];
         
         if (groups.length === 0) {
@@ -1542,12 +1614,20 @@
             const total = lessons.length;
             const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
             
+            // Conta quantas revisions foram concluídas
+            const revisionsCompleted = progress.filter(p => {
+                const lesson = lessons.find(l => l.id === p.lesson);
+                return lesson && lesson.isRevision && p.completed;
+            }).length;
+            const totalRevisions = lessons.filter(l => l.isRevision).length;
+            
             const card = document.createElement('div');
             card.className = 'group-card';
             card.innerHTML = `
                 <h3>${group}</h3>
                 <div class="book-info">📖 ${book}</div>
                 <div class="progress">${completed} de ${total} aulas concluídas</div>
+                ${totalRevisions > 0 ? `<div class="progress" style="font-size:0.8rem; color: var(--warning);">🔄 ${revisionsCompleted}/${totalRevisions} revisions</div>` : ''}
                 <div class="progress-bar">
                     <div class="fill" style="width: ${percentage}%;"></div>
                 </div>
@@ -1583,17 +1663,21 @@
             return;
         }
         
+        const revisions = lessons.filter(l => l.isRevision);
+        const tests = lessons.filter(l => l.isTest);
+        const regularLessons = lessons.filter(l => !l.isRevision && !l.isTest);
+        
         let html = `
             <div class="group-header">
                 <div>
                     <h2>${group}</h2>
                     <span class="book-badge">📖 ${book}</span>
                 </div>
-                <div>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                     <span style="color: var(--text-sec);">Total: ${lessons.length} aulas</span>
-                    <span style="color: var(--success); margin-left: 15px;">
-                        ✅ ${progress.filter(p => p.completed).length} concluídas
-                    </span>
+                    <span style="color: var(--success);">✅ ${progress.filter(p => p.completed).length} concluídas</span>
+                    ${revisions.length > 0 ? `<span style="color: var(--warning);">🔄 ${revisions.length} revisions</span>` : ''}
+                    ${tests.length > 0 ? `<span style="color: var(--danger);">📝 ${tests.length} tests</span>` : ''}
                 </div>
                 <div style="margin-top: 10px; width: 100%; display: flex; gap: 10px; flex-wrap: wrap;">
                     <button onclick="markAllGroupLessons('${group}', true)" style="font-size: 0.8rem; padding: 6px 12px; flex: 1;">
@@ -1612,18 +1696,24 @@
             const isChecked = progressItem ? progressItem.completed : false;
             const date = progressItem ? progressItem.date : '';
             
-            const revisionClass = lesson.isRevision ? ' revision' : '';
-            const revisionBadge = lesson.isRevision ? ' <span class="revision-badge">REVISION</span>' : '';
-            const testBadge = lesson.isTest ? ' 📝' : '';
+            let extraClass = '';
+            let extraBadge = '';
+            if (lesson.isRevision) {
+                extraClass = ' revision';
+                extraBadge = ' <span class="revision-badge">REVISION</span>';
+            }
+            if (lesson.isTest) {
+                extraClass = ' test';
+                extraBadge = ' <span class="test-badge">TEST</span>';
+            }
             
             html += `
-                <div class="lesson-item${revisionClass}">
+                <div class="lesson-item${extraClass}">
                     <input type="checkbox" id="lg_${index}" ${isChecked ? 'checked' : ''} 
                            onchange="toggleGroupLesson('${group}', '${lesson.id}', this.checked)">
                     <label for="lg_${index}" class="lesson-label">
                         ${lesson.label}
-                        ${revisionBadge}
-                        ${testBadge}
+                        ${extraBadge}
                     </label>
                     ${date ? `<span class="lesson-date">📅 ${date}</span>` : ''}
                     ${isChecked ? '<span class="lesson-checked">✓</span>' : ''}
