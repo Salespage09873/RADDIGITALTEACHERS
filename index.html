@@ -1378,15 +1378,21 @@
     function buildGroupBookMap() {
         groupBookMap = {};
         
+        // ============================================
+        // 1. MAPEIA TURMAS DO CRONOGRAMA
+        // ============================================
         scheduleData.forEach(item => {
             if (item.group && item.book) {
+                const groupName = item.group.trim();
                 const bookKey = item.book.toUpperCase().trim();
                 
                 let foundBook = null;
                 const bookNames = Object.keys(BOOK_STRUCTURE);
                 
+                // Match exato
                 foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
                 
+                // Extrai número
                 if (!foundBook) {
                     const bookNumber = bookKey.match(/\d+/);
                     if (bookNumber) {
@@ -1397,6 +1403,7 @@
                     }
                 }
                 
+                // Match parcial
                 if (!foundBook) {
                     foundBook = bookNames.find(b => 
                         b.toUpperCase().includes(bookKey) || 
@@ -1405,41 +1412,71 @@
                 }
                 
                 if (foundBook) {
-                    groupBookMap[item.group] = foundBook;
+                    groupBookMap[groupName] = foundBook;
                 }
             }
         });
         
-        const allGroups = [...new Set(scheduleData.map(item => item.group).filter(g => g))];
-        allGroups.forEach(group => {
-            if (!groupBookMap[group]) {
-                const upperGroup = group.toUpperCase();
-                const bookNames = Object.keys(BOOK_STRUCTURE);
-                
-                const match = bookNames.find(book => 
-                    upperGroup.includes(book.toUpperCase()) || 
-                    book.toUpperCase().includes(upperGroup) ||
-                    upperGroup.includes(book.replace('Book ', ''))
-                );
-                
-                if (match) {
-                    groupBookMap[group] = match;
-                } else {
-                    const numMatch = upperGroup.match(/\d+/);
-                    if (numMatch) {
-                        const num = parseInt(numMatch[0]);
-                        if (num >= 1 && num <= 10) {
-                            groupBookMap[group] = `Book ${num}`;
-                        }
+        // ============================================
+        // 2. MAPEIA TURMAS DA LISTA DE ALUNOS
+        // ============================================
+        Object.keys(studentsData).forEach(group => {
+            if (!groupBookMap[group] && group && group.trim() !== '') {
+                // Tenta extrair "BOOK X" do nome
+                const bookMatch = group.toUpperCase().match(/BOOK\s*(\d+)/);
+                if (bookMatch) {
+                    const num = parseInt(bookMatch[1]);
+                    if (num >= 1 && num <= 10) {
+                        groupBookMap[group] = `Book ${num}`;
                     }
                 }
             }
         });
         
+        // ============================================
+        // 3. MAPEIA TURMAS SEM BOOK DEFINIDO
+        // ============================================
+        const allGroups = new Set([
+            ...scheduleData.map(item => item.group).filter(g => g),
+            ...Object.keys(studentsData)
+        ]);
+        
+        allGroups.forEach(group => {
+            if (!groupBookMap[group] && group && group.trim() !== '') {
+                const upperGroup = group.toUpperCase();
+                
+                // Tenta por "BOOK X" no nome
+                const bookMatch = upperGroup.match(/BOOK\s*(\d+)/);
+                if (bookMatch) {
+                    const num = parseInt(bookMatch[1]);
+                    if (num >= 1 && num <= 10) {
+                        groupBookMap[group] = `Book ${num}`;
+                        return;
+                    }
+                }
+                
+                // Tenta por nome de book
+                const bookNames = Object.keys(BOOK_STRUCTURE);
+                const match = bookNames.find(book => {
+                    const bookUpper = book.toUpperCase();
+                    const bookNum = book.replace('Book ', '');
+                    return upperGroup.includes(bookUpper) || 
+                           upperGroup.includes(`BOOK ${bookNum}`) ||
+                           upperGroup.includes(`BOOK${bookNum}`);
+                });
+                
+                if (match) {
+                    groupBookMap[group] = match;
+                }
+            }
+        });
+        
         console.log('📚 Mapa Turma → Book (dinâmico):', groupBookMap);
+        console.log('📚 Total de turmas mapeadas:', Object.keys(groupBookMap).length);
     }
 
     function getBookForGroup(group) {
+        // Verifica se já está no mapa
         if (groupBookMap[group]) {
             return groupBookMap[group];
         }
@@ -1447,15 +1484,100 @@
         const upperGroup = group.toUpperCase();
         const bookNames = Object.keys(BOOK_STRUCTURE);
         
+        // ============================================
+        // 1. TENTA EXTRAIR "BOOK X" DO NOME DA TURMA
+        // ============================================
+        const bookMatch = upperGroup.match(/BOOK\s*(\d+)/);
+        if (bookMatch) {
+            const num = parseInt(bookMatch[1]);
+            if (num >= 1 && num <= 10) {
+                const foundBook = `Book ${num}`;
+                groupBookMap[group] = foundBook;
+                console.log(`📚 "${group}" → "${foundBook}" (por nome BOOK X)`);
+                return foundBook;
+            }
+        }
+        
+        // ============================================
+        // 2. VERIFICA O CRONOGRAMA PARA ESSA TURMA
+        // ============================================
+        const scheduleItem = scheduleData.find(item => 
+            item.group && item.group.toUpperCase() === upperGroup
+        );
+        
+        if (scheduleItem && scheduleItem.book) {
+            const bookKey = scheduleItem.book.toUpperCase().trim();
+            
+            // Tenta match exato
+            let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
+            
+            // Tenta extrair número do book
+            if (!foundBook) {
+                const numMatch = bookKey.match(/\d+/);
+                if (numMatch) {
+                    const num = parseInt(numMatch[0]);
+                    if (num >= 1 && num <= 10) {
+                        foundBook = `Book ${num}`;
+                    }
+                }
+            }
+            
+            // Tenta match parcial
+            if (!foundBook) {
+                foundBook = bookNames.find(b => 
+                    b.toUpperCase().includes(bookKey) || 
+                    bookKey.includes(b.toUpperCase().replace('BOOK ', ''))
+                );
+            }
+            
+            if (foundBook) {
+                groupBookMap[group] = foundBook;
+                console.log(`📚 "${group}" → "${foundBook}" (por cronograma)`);
+                return foundBook;
+            }
+        }
+        
+        // ============================================
+        // 3. TENTA MATCH PARCIAL COM NOMES DE BOOKS
+        // ============================================
         for (const book of bookNames) {
-            if (upperGroup.includes(book.toUpperCase()) || 
-                book.toUpperCase().includes(upperGroup) ||
-                upperGroup.includes(book.replace('Book ', ''))) {
+            const bookUpper = book.toUpperCase();
+            const bookNum = book.replace('Book ', '');
+            
+            if (upperGroup.includes(bookUpper) || 
+                bookUpper.includes(upperGroup) ||
+                upperGroup.includes(`BOOK ${bookNum}`) ||
+                upperGroup.includes(`BOOK${bookNum}`)) {
                 groupBookMap[group] = book;
+                console.log(`📚 "${group}" → "${book}" (por match parcial)`);
                 return book;
             }
         }
         
+        // ============================================
+        // 4. FALLBACK: USA O PRIMEIRO BOOK DO CRONOGRAMA
+        // ============================================
+        const anyScheduleItem = scheduleData.find(item => 
+            item.group && item.book && 
+            item.group.toUpperCase() === upperGroup
+        );
+        
+        if (anyScheduleItem) {
+            const bookKey = anyScheduleItem.book.toUpperCase();
+            const numMatch = bookKey.match(/\d+/);
+            if (numMatch) {
+                const num = parseInt(numMatch[0]);
+                if (num >= 1 && num <= 10) {
+                    const foundBook = `Book ${num}`;
+                    groupBookMap[group] = foundBook;
+                    return foundBook;
+                }
+            }
+        }
+        
+        // Fallback final
+        groupBookMap[group] = 'Book 1';
+        console.log(`⚠️ "${group}" → "Book 1" (fallback padrão)`);
         return 'Book 1';
     }
 
@@ -1887,11 +2009,34 @@
     function renderGroupLessonPlans() {
         const container = document.getElementById('lesson-plan-content');
         
-        let groups = [...new Set(scheduleData.map(item => item.group).filter(g => g))];
+        // ============================================
+        // COLETA TODAS AS TURMAS DE MÚLTIPLAS FONTES
+        // ============================================
+        const allGroupsSet = new Set();
         
-        if (groups.length === 0) {
-            groups = Object.keys(groupBookMap);
-        }
+        // 1. Turmas do cronograma (scheduleData)
+        scheduleData.forEach(item => {
+            if (item.group && item.group.trim() !== '') {
+                allGroupsSet.add(item.group.trim());
+            }
+        });
+        
+        // 2. Turmas da lista de alunos (studentsData)
+        Object.keys(studentsData).forEach(group => {
+            if (group && group.trim() !== '' && 
+                (group === group.toUpperCase() || !studentsData[group.toUpperCase()])) {
+                allGroupsSet.add(group.trim());
+            }
+        });
+        
+        // 3. Turmas do mapeamento de books
+        Object.keys(groupBookMap).forEach(group => {
+            if (group && group.trim() !== '') {
+                allGroupsSet.add(group.trim());
+            }
+        });
+        
+        let groups = [...allGroupsSet].filter(g => g);
         
         if (groups.length === 0) {
             container.innerHTML = `
@@ -1903,6 +2048,9 @@
         
         container.innerHTML = `
             <h2 style="color: var(--primary); text-align: center; margin-bottom: 30px;">📚 Lesson Plans por Turma</h2>
+            <p style="text-align:center; color: var(--text-sec); margin-bottom: 20px; font-size: 0.9rem;">
+                Total: ${groups.length} turmas encontradas
+            </p>
             <div class="group-lesson-grid" id="group-lesson-grid">
             </div>
         `;
@@ -1933,12 +2081,14 @@
                 <div class="progress-bar">
                     <div class="fill" style="width: ${percentage}%;"></div>
                 </div>
-                <button onclick="openGroupDetail('${group}')" style="margin-top: 15px; width: 100%;">
+                <button onclick="openGroupDetail('${group.replace(/'/g, "\\'")}')" style="margin-top: 15px; width: 100%;">
                     Ver Detalhes
                 </button>
             `;
             grid.appendChild(card);
         });
+        
+        console.log(`📚 Lesson Plans renderizados para ${groups.length} turmas:`, groups);
     }
 
     function openGroupDetail(group) {
@@ -1981,7 +2131,7 @@
                     ${tests.length > 0 ? `<span style="color: var(--danger);">📝 ${tests.length} tests</span>` : ''}
                 </div>
                 <div style="margin-top: 10px; width: 100%;">
-                    <button onclick="markAllGroupLessons('${group}', true)" style="font-size: 0.8rem; padding: 6px 12px; width: 100%;">
+                    <button onclick="markAllGroupLessons('${group.replace(/'/g, "\\'")}', true)" style="font-size: 0.8rem; padding: 6px 12px; width: 100%;">
                         Marcar Todas
                     </button>
                 </div>
@@ -2011,7 +2161,7 @@
             html += `
                 <div class="lesson-item${extraClass}">
                     <input type="checkbox" id="lg_${index}" ${isChecked ? 'checked' : ''} 
-                           onchange="toggleGroupLesson('${group}', '${lesson.id}', this.checked, ${index})">
+                           onchange="toggleGroupLesson('${group.replace(/'/g, "\\'")}', '${lesson.id}', this.checked, ${index})">
                     <label for="lg_${index}" class="lesson-label">
                         ${lesson.label}
                         ${extraBadge}
