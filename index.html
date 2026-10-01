@@ -471,6 +471,30 @@
             font-weight: 600;
         }
 
+        .checkbox-group .done-badge {
+            display: inline-block;
+            background: var(--success);
+            color: #fff;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .checkbox-group .next-badge {
+            display: inline-block;
+            background: var(--warning);
+            color: #000;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
         .attendance-table {
             width: 100%;
             border-collapse: collapse;
@@ -523,6 +547,14 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        #loading-msg {
+            font-size: 0.75rem !important;
+            color: var(--text-sec) !important;
+            text-transform: none !important;
+            letter-spacing: 0 !important;
+            margin-top: 8px !important;
         }
 
         .observations-box {
@@ -693,6 +725,23 @@
             font-weight: 600;
         }
 
+        .lesson-item.next {
+            border: 3px solid var(--warning);
+            background: #fff8e1;
+            box-shadow: 0 0 0 3px rgba(255,193,7,0.25);
+        }
+
+        .lesson-item .next-label-badge {
+            background: var(--warning);
+            color: #000;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 10px;
+            text-transform: uppercase;
+        }
+
         .group-lessons-container {
             max-height: 500px;
             overflow-y: auto;
@@ -754,6 +803,20 @@
             gap: 10px;
         }
 
+        .next-lesson-box {
+            background: var(--primary-light);
+            border-left: 5px solid var(--primary);
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .next-lesson-box strong {
+            color: var(--primary);
+        }
+
         @media (max-width: 600px) {
             .teachers-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
             .classes-list { grid-template-columns: 1fr; padding: 15px; }
@@ -789,7 +852,7 @@
     <div id="loading-screen">
         <div class="loader"></div>
         <p>Carregando Sistema...</p>
-        <p id="loading-msg" style="font-size:0.75rem; color:var(--text-sec); text-transform:none; letter-spacing:0; margin-top:8px;"></p>
+        <p id="loading-msg"></p>
     </div>
 
     <header>
@@ -860,6 +923,8 @@
             
             <div id="rad-class-info" style="margin-bottom: 15px; padding: 12px; background: var(--card-bg); border-radius: 6px; border-left: 4px solid var(--primary);"></div>
 
+            <div id="rad-next-lesson" class="next-lesson-box hidden"></div>
+
             <label>Status da Aula:</label>
             <select id="rad-status" onchange="toggleRadFields()">
                 <option value="">Selecione...</option>
@@ -872,7 +937,10 @@
                 <hr style="border: 0; border-top: 2px solid var(--border-color); margin: 20px 0;">
                 
                 <label>Lesson Plan Realizada:</label>
-                <div id="lesson-plan-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px;">
+                <div class="chain-info" style="text-align:left; margin-bottom:6px;">
+                    💡 Ao marcar uma aula, todas as anteriores são marcadas automaticamente.
+                </div>
+                <div id="lesson-plan-container" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px;">
                 </div>
 
                 <label>Lista de Presença:</label>
@@ -940,7 +1008,7 @@
     // PROTEÇÃO CONTRA ERROS NÃO TRATADOS
     // ============================================
     window.addEventListener('error', function(e) {
-        console.error('❌ Erro global capturado:', e.error || e.message);
+        console.error('❌ Erro global:', e.error || e.message);
         hideLoadingScreen();
         showErrorBanner('Ocorreu um erro inesperado. Alguns dados podem não estar disponíveis.');
     });
@@ -974,7 +1042,7 @@
     // ============================================
     const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
-    const FETCH_TIMEOUT_MS = 10000; // 10s
+    const FETCH_TIMEOUT_MS = 10000;
 
     const VALID_TEACHERS = [
         { name: 'MYCAEL', color: '#0d6efd' },
@@ -991,7 +1059,7 @@
     ];
 
     // ============================================
-    // ESTRUTURA DOS BOOKS (1 a 10)
+    // ESTRUTURA DOS BOOKS
     // ============================================
     const BOOK_STRUCTURE = {};
     (function buildBookStructure() {
@@ -1018,14 +1086,10 @@
 
         for (let n = 1; n <= 10; n++) {
             let arr = [...baseLessons];
-            if (n >= 2) {
-                arr = arr.concat(['LESSON 33', 'LESSON 34', 'LESSON 35']);
-            }
+            if (n >= 2) arr = arr.concat(['LESSON 33', 'LESSON 34', 'LESSON 35']);
             arr = arr.concat(middleRevs);
             arr = arr.concat([`TEST BOOK ${n}`]);
-            if (n >= 2) {
-                arr = arr.concat([`TEST CORRECTION BOOK ${n}`]);
-            }
+            if (n >= 2) arr = arr.concat([`TEST CORRECTION BOOK ${n}`]);
             BOOK_STRUCTURE[`Book ${n}`] = { lessons: arr };
         }
     })();
@@ -1051,7 +1115,7 @@
             const controller = new AbortController();
             const timer = setTimeout(() => {
                 controller.abort();
-                reject(new Error('Timeout ao carregar ' + url));
+                reject(new Error('Timeout: ' + url));
             }, timeoutMs);
 
             fetch(url, { signal: controller.signal })
@@ -1069,12 +1133,11 @@
     }
 
     // ============================================
-    // INICIALIZAÇÃO (sempre garante que a tela carregue)
+    // INICIALIZAÇÃO
     // ============================================
     window.addEventListener('DOMContentLoaded', async () => {
-        // Garante que a loading screen desapareça mesmo que algo trave
         const safetyTimer = setTimeout(() => {
-            console.warn('⚠️ Safety timeout: forçando remoção da loading screen');
+            console.warn('⚠️ Safety timeout');
             hideLoadingScreen();
         }, 15000);
 
@@ -1089,7 +1152,6 @@
                 console.warn('Falha no schedule:', e);
             }
             if (!scheduleOk) {
-                console.warn('⚠️ Schedule vazio ou falhou, usando fallback.');
                 carregarScheduleFallback();
                 showErrorBanner('Não foi possível carregar o cronograma do Google Sheets. Exibindo dados de exemplo.');
             }
@@ -1104,19 +1166,18 @@
             }
 
             showLoadingMsg('Processando dados...');
-
             try { buildGroupBookMap(); } catch(e) { console.warn(e); }
             try { renderTeachers(); } catch(e) { console.warn(e); }
             try { populateGroupSelect(); } catch(e) { console.warn(e); }
             try {
                 const now = new Date();
-                const monthInput = document.getElementById('att-month-select');
-                if (monthInput) monthInput.value = now.toISOString().slice(0, 7);
+                const mi = document.getElementById('att-month-select');
+                if (mi) mi.value = now.toISOString().slice(0, 7);
             } catch(e) { console.warn(e); }
             try { loadLessonProgress(); } catch(e) { console.warn(e); }
 
         } catch (err) {
-            console.error('❌ Erro geral na inicialização:', err);
+            console.error('❌ Erro na inicialização:', err);
             showErrorBanner('Erro ao carregar dados. Tente recarregar a página.');
         } finally {
             clearTimeout(safetyTimer);
@@ -1125,7 +1186,7 @@
     });
 
     // ============================================
-    // FALLBACKS (garantem que a tela nunca fique vazia)
+    // FALLBACKS
     // ============================================
     function carregarScheduleFallback() {
         scheduleData = [
@@ -1181,9 +1242,7 @@
             try {
                 const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
                 parseStudentsCSV(text);
-            } catch(e) {
-                console.warn(e);
-            }
+            } catch(e) { console.warn(e); }
 
             buildGroupBookMap();
             loadLessonProgress();
@@ -1207,20 +1266,14 @@
     }
 
     // ============================================
-    // PARSER DO SCHEDULE (coluna C = turmas)
+    // PARSER DO SCHEDULE
     // ============================================
     function parseScheduleCSV(text) {
         if (!text) return;
         const lines = text.split('\n').map(l => l.trim()).filter(l => l);
         if(lines.length < 2) return;
 
-        const COL_BOOK = 1;
-        const COL_GROUP = 2;
-        const COL_ROOM = 3;
-        const COL_MODAL = 4;
-        const COL_TIME = 5;
-        const DAYS_START = 6;
-
+        const COL_BOOK = 1, COL_GROUP = 2, COL_ROOM = 3, COL_MODAL = 4, COL_TIME = 5, DAYS_START = 6;
         const daysMap = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
 
         scheduleData = [];
@@ -1245,7 +1298,6 @@
                 const cellContent = row[DAYS_START + d];
                 if(cellContent && cellContent.trim() !== '') {
                     const teacherName = findTeacherInString(cellContent);
-                    
                     if(teacherName) {
                         const key = `${book}|${groupRaw}|${room}|${modal}|${time}|${daysMap[d]}|${teacherName}`;
                         if (chavesUnicas.has(key)) continue;
@@ -1268,7 +1320,7 @@
         }
 
         allWeeks = { 'This Week': scheduleData };
-        console.log(`📋 Schedule: ${scheduleData.length} aulas | ${chavesUnicas.size} únicos`);
+        console.log(`📋 Schedule: ${scheduleData.length} aulas`);
     }
 
     // ============================================
@@ -1434,8 +1486,95 @@
     }
 
     // ============================================
-    // RAD SAVE
+    // PROGRESSO COMPARTILHADO (fonte única)
     // ============================================
+    function loadLessonProgress() {
+        try {
+            const saved = localStorage.getItem('lessonProgress');
+            currentLessonProgress = saved ? JSON.parse(saved) : {};
+        } catch(e) {
+            currentLessonProgress = {};
+        }
+    }
+
+    function persistLessonProgress() {
+        try {
+            localStorage.setItem('lessonProgress', JSON.stringify(currentLessonProgress));
+        } catch(e) {
+            console.warn('Falha ao salvar progresso:', e);
+        }
+    }
+
+    function getProgressForGroup(group) {
+        return currentLessonProgress[group] || [];
+    }
+
+    function isLessonDone(group, lessonId) {
+        const arr = getProgressForGroup(group);
+        const item = arr.find(p => p.lesson === lessonId);
+        return !!(item && item.completed);
+    }
+
+    function getNextLessonIndex(group) {
+        const lessons = getGroupLessons(group);
+        const progress = getProgressForGroup(group);
+        for (let i = 0; i < lessons.length; i++) {
+            const p = progress.find(x => x.lesson === lessons[i].id);
+            if (!p || !p.completed) return i;
+        }
+        return -1;
+    }
+
+    /**
+     * Aplica marcação em cadeia:
+     * - Se `completed === true`, marca do índice 0 até clickedIndex
+     * - Se `completed === false`, desmarca do clickedIndex até o fim
+     * Persiste em localStorage e atualiza todas as telas abertas.
+     */
+    function applyChainToggle(group, clickedIndex, completed) {
+        if (!currentLessonProgress[group]) currentLessonProgress[group] = [];
+        const lessons = getGroupLessons(group);
+        const today = new Date().toLocaleDateString('pt-BR');
+
+        if (completed) {
+            for (let i = 0; i <= clickedIndex; i++) {
+                const lesson = lessons[i];
+                if (!lesson) continue;
+                const existing = currentLessonProgress[group].find(p => p.lesson === lesson.id);
+                if (existing) {
+                    existing.completed = true;
+                    existing.date = today;
+                } else {
+                    currentLessonProgress[group].push({
+                        lesson: lesson.id, completed: true, date: today
+                    });
+                }
+            }
+        } else {
+            for (let i = clickedIndex; i < lessons.length; i++) {
+                const lesson = lessons[i];
+                if (!lesson) continue;
+                const existing = currentLessonProgress[group].find(p => p.lesson === lesson.id);
+                if (existing) {
+                    existing.completed = false;
+                    existing.date = '';
+                }
+            }
+        }
+
+        persistLessonProgress();
+
+        // Atualiza TODAS as telas abertas
+        try { if (currentGroup) openGroupDetail(currentGroup); } catch(e) {}
+        try { if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) renderGroupLessonPlans(); } catch(e) {}
+        try { if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule(); } catch(e) {}
+    }
+
+    function getRadKey(cls) {
+        if (!currentTeacher) return 'rad_unknown';
+        return `rad_${currentTeacher.name}_${cls.dayName}_${cls.time}_${cls.group}`;
+    }
+
     function isRadSaved(cls) {
         try {
             const saved = localStorage.getItem(getRadKey(cls));
@@ -1453,11 +1592,6 @@
             if (saved) return JSON.parse(saved);
         } catch(e) {}
         return null;
-    }
-
-    function getRadKey(cls) {
-        if (!currentTeacher) return 'rad_unknown';
-        return `rad_${currentTeacher.name}_${cls.dayName}_${cls.time}_${cls.group}`;
     }
 
     // ============================================
@@ -1490,7 +1624,7 @@
     }
 
     // ============================================
-    // RENDER PROFESSORES
+    // PROFESSORES
     // ============================================
     function renderTeachers() {
         const grid = document.getElementById('teachers-grid');
@@ -1524,8 +1658,7 @@
         if (!container) return;
         container.innerHTML = '';
         
-        const weeks = Object.keys(allWeeks);
-        weeks.forEach((weekName, index) => {
+        Object.keys(allWeeks).forEach((weekName, index) => {
             const btn = document.createElement('button');
             btn.textContent = weekName;
             if(index === 0) btn.classList.add('active');
@@ -1544,13 +1677,16 @@
         renderSchedule();
     }
 
+    // ============================================
+    // RENDER DO CRONOGRAMA (com progresso)
+    // ============================================
     function renderSchedule() {
         const container = document.getElementById('schedule-content');
         if (!container) return;
         container.innerHTML = '';
 
         if(currentWeekData.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color: var(--text-sec); margin-top:50px; font-size:1.1rem;">Nenhuma aula encontrada para esta semana.</p>';
+            container.innerHTML = '<p style="text-align:center; color: var(--text-sec); margin-top:50px; font-size:1.1rem;">Nenhuma aula encontrada.</p>';
             return;
         }
 
@@ -1585,15 +1721,27 @@
                     if(status === 'noshow') statusBadge = '<div class="status-indicator status-noshow" title="No Show"></div>';
                     if(status === 'cancelada') statusBadge = '<div class="status-indicator status-cancel" title="Cancelada"></div>';
 
-                    let savedBadge = '';
-                    if (isSaved) {
-                        savedBadge = `<div class="rad-saved-check" title="RAD salvo">✅</div>`;
-                    }
+                    let savedBadge = isSaved ? `<div class="rad-saved-check" title="RAD salvo">✅</div>` : '';
 
-                    const groupProgress = currentLessonProgress[cls.group] || [];
-                    const completed = groupProgress.filter(p => p.completed).length;
-                    const total = getGroupTotalLessons(cls.group);
+                    // Progresso compartilhado
+                    const lessons = getGroupLessons(cls.group);
+                    const progress = getProgressForGroup(cls.group);
+                    const completed = progress.filter(p => p.completed).length;
+                    const total = lessons.length;
                     const progressText = total > 0 ? `${completed}/${total}` : '';
+
+                    // Próxima aula
+                    const nextIdx = getNextLessonIndex(cls.group);
+                    let nextLessonText = '';
+                    if (nextIdx >= 0 && lessons[nextIdx]) {
+                        nextLessonText = `<div style="margin-top:8px; font-size:0.8rem; color: var(--primary); background: var(--primary-light); padding:6px 10px; border-radius:4px;">
+                            <strong>➡️ Próxima:</strong> ${lessons[nextIdx].label}
+                        </div>`;
+                    } else if (total > 0) {
+                        nextLessonText = `<div style="margin-top:8px; font-size:0.8rem; color: var(--success); background: var(--success-light); padding:6px 10px; border-radius:4px;">
+                            <strong>🏁 Todas as aulas concluídas!</strong>
+                        </div>`;
+                    }
 
                     const btnClass = isSaved ? 'saved' : '';
                     const btnText = isSaved ? '✅ RAD PREENCHIDO' : 'ABRIR RAD';
@@ -1610,6 +1758,7 @@
                             ${progressText ? `<span class="badge" style="background: var(--success);">${progressText}</span>` : ''}
                             ${isSaved ? '<span class="badge badge-saved">✅ SALVO</span>' : ''}
                         </div>
+                        ${nextLessonText}
                         <button class="action-btn ${btnClass}" onclick="openRad('${cls.time.replace(/'/g, "\\'")}', '${cls.group.replace(/'/g, "\\'")}', '${(cls.book||'').replace(/'/g, "\\'")}', '${(cls.room||'').replace(/'/g, "\\'")}', '${cls.dayName}')">
                             ${btnText}
                         </button>
@@ -1631,11 +1780,25 @@
         const modal = document.getElementById('rad-modal');
         const infoDiv = document.getElementById('rad-class-info');
         const savedBadge = document.getElementById('rad-saved-badge');
+        const nextBox = document.getElementById('rad-next-lesson');
         
         infoDiv.innerHTML = `
             <strong style="color: var(--primary);">${day} - ${time}</strong><br>
             <span style="color: var(--text-sec);">Turma: ${group} | Book: ${book} | Sala: ${room}</span>
         `;
+
+        // Próxima aula em destaque
+        const lessons = getGroupLessons(group);
+        const nextIdx = getNextLessonIndex(group);
+        if (nextIdx >= 0 && lessons[nextIdx]) {
+            nextBox.innerHTML = `➡️ <strong>Próxima aula a realizar:</strong> ${lessons[nextIdx].label}`;
+            nextBox.classList.remove('hidden');
+        } else if (lessons.length > 0) {
+            nextBox.innerHTML = `🏁 <strong>Todas as aulas deste book já foram concluídas!</strong>`;
+            nextBox.classList.remove('hidden');
+        } else {
+            nextBox.classList.add('hidden');
+        }
 
         document.getElementById('rad-status').value = '';
         document.getElementById('rad-observations').value = '';
@@ -1650,14 +1813,14 @@
                 document.getElementById('rad-status').value = data.status;
                 document.getElementById('rad-observations').value = data.observations || '';
                 toggleRadFields();
-                renderLessonPlanCheckboxes(group, data.lessons || []);
+                renderLessonPlanCheckboxes(group);
                 renderAttendanceCheckboxes(group, data.attendance || []);
             } catch(e) {
-                renderLessonPlanCheckboxes(group, []);
+                renderLessonPlanCheckboxes(group);
                 renderAttendanceCheckboxes(group, []);
             }
         } else {
-            renderLessonPlanCheckboxes(group, []);
+            renderLessonPlanCheckboxes(group);
             renderAttendanceCheckboxes(group, []);
         }
 
@@ -1671,7 +1834,10 @@
         else fields.classList.add('hidden');
     }
 
-    function renderLessonPlanCheckboxes(group, checkedIds) {
+    // ============================================
+    // LESSON PLAN (dentro do RAD) — usa o progresso global
+    // ============================================
+    function renderLessonPlanCheckboxes(group) {
         const container = document.getElementById('lesson-plan-container');
         if (!container) return;
         container.innerHTML = '';
@@ -1683,36 +1849,69 @@
             return;
         }
 
+        const nextIdx = getNextLessonIndex(group);
+
         lessons.forEach((lesson, index) => {
+            const done = isLessonDone(group, lesson.id);
+            const isNext = (index === nextIdx);
+
             const div = document.createElement('div');
             div.className = 'checkbox-group';
-            const isChecked = checkedIds.includes(lesson.id) ? 'checked' : '';
-            
-            if (lesson.isRevision) {
+            if (done) div.classList.add('checked');
+            if (isNext) {
+                div.style.borderLeft = '4px solid var(--primary)';
+                div.style.background = '#e7f1ff';
+            } else if (lesson.isRevision) {
                 div.style.borderLeft = '4px solid var(--warning)';
-                div.style.background = '#fff3cd';
-            }
-            if (lesson.isTest) {
+                if (!done) div.style.background = '#fff3cd';
+            } else if (lesson.isTest) {
                 div.style.borderLeft = '4px solid var(--danger)';
-                div.style.background = '#f8d7da';
+                if (!done) div.style.background = '#f8d7da';
             }
-            if (isChecked) div.classList.add('checked');
             
-            const lessonId = `lp_${index}`;
+            const lessonId = `rad_lp_${index}`;
+            
             let labelStyle = '';
             if (lesson.isRevision) labelStyle = 'color: #856404; font-weight: 600;';
             if (lesson.isTest) labelStyle = 'color: var(--danger); font-weight: 700;';
+            if (done) labelStyle = 'color: var(--success); font-weight: 600;';
             
             div.innerHTML = `
-                <input type="checkbox" id="${lessonId}" value="${lesson.id}" ${isChecked}>
+                <input type="checkbox" id="${lessonId}" ${done ? 'checked' : ''} 
+                       onchange="onRadLessonToggle('${group.replace(/'/g, "\\'")}', ${index}, this.checked)">
                 <label for="${lessonId}" style="${labelStyle}">
                     ${lesson.label}
                     ${lesson.isRevision ? ' 🔄' : ''}
                     ${lesson.isTest ? ' 📝' : ''}
+                    ${done ? '<span class="done-badge">✓ FEITA</span>' : ''}
+                    ${isNext ? '<span class="next-badge">➡️ PRÓXIMA</span>' : ''}
                 </label>
             `;
             container.appendChild(div);
         });
+    }
+
+    /**
+     * Handler dos checkboxes do RAD.
+     * Aplica marcação em cadeia no progresso global.
+     */
+    function onRadLessonToggle(group, index, checked) {
+        applyChainToggle(group, index, checked);
+        // Re-renderiza o conteúdo do RAD
+        renderLessonPlanCheckboxes(group);
+        // Atualiza o destaque da próxima aula
+        const lessons = getGroupLessons(group);
+        const nextIdx = getNextLessonIndex(group);
+        const nextBox = document.getElementById('rad-next-lesson');
+        if (nextBox) {
+            if (nextIdx >= 0 && lessons[nextIdx]) {
+                nextBox.innerHTML = `➡️ <strong>Próxima aula a realizar:</strong> ${lessons[nextIdx].label}`;
+                nextBox.classList.remove('hidden');
+            } else if (lessons.length > 0) {
+                nextBox.innerHTML = `🏁 <strong>Todas as aulas deste book já foram concluídas!</strong>`;
+                nextBox.classList.remove('hidden');
+            }
+        }
     }
 
     function renderAttendanceCheckboxes(groupRaw, presentList) {
@@ -1722,7 +1921,6 @@
         
         const targetKey = normalizeGroupKey(groupRaw);
         let students = [];
-        
         const keys = Object.keys(studentsData);
         let match = keys.find(k => normalizeGroupKey(k) === targetKey);
         
@@ -1758,19 +1956,26 @@
         const status = document.getElementById('rad-status').value;
         if(!status) { alert('Selecione o status da aula!'); return; }
 
-        const lessonsChecked = Array.from(document.querySelectorAll('#lesson-plan-container input:checked')).map(cb => cb.value);
         const attendanceChecked = Array.from(document.querySelectorAll('.att-check:checked')).map(cb => cb.value);
         const observations = document.getElementById('rad-observations').value.trim();
 
+        // Coleta as aulas marcadas (vêm do progresso global)
+        const lessonsDone = getProgressForGroup(currentRadClass.group)
+            .filter(p => p.completed)
+            .map(p => p.lesson);
+
         const data = {
-            status, lessons: lessonsChecked, attendance: attendanceChecked,
-            observations, dateSaved: new Date().toISOString()
+            status,
+            lessons: lessonsDone,
+            attendance: attendanceChecked,
+            observations,
+            dateSaved: new Date().toISOString()
         };
 
         localStorage.setItem(getRadKey(currentRadClass), JSON.stringify(data));
         closeModal('rad-modal');
         renderSchedule();
-        alert('✅ RAD Salvo com Sucesso!');
+        alert('✅ RAD Salvo com Sucesso! O progresso já está sincronizado com o Lesson Plan por Turma.');
     }
 
     function clearRad() {
@@ -1782,22 +1987,12 @@
     }
 
     // ============================================
-    // LESSON PROGRESS
+    // LESSON PLANS POR TURMA
     // ============================================
-    function loadLessonProgress() {
-        try {
-            const saved = localStorage.getItem('lessonProgress');
-            currentLessonProgress = saved ? JSON.parse(saved) : {};
-        } catch(e) {
-            currentLessonProgress = {};
-        }
-    }
-
     function saveLessonProgress() {
-        try {
-            localStorage.setItem('lessonProgress', JSON.stringify(currentLessonProgress));
-        } catch(e) {}
+        persistLessonProgress();
         renderGroupLessonPlans();
+        if (currentGroup) openGroupDetail(currentGroup);
     }
 
     function renderGroupLessonPlans() {
@@ -1835,10 +2030,18 @@
         groups.forEach(group => {
             const bookName = getBookForGroup(group);
             const lessons = getGroupLessons(group);
-            const progress = currentLessonProgress[group] || [];
+            const progress = getProgressForGroup(group);
             const completed = progress.filter(p => p.completed).length;
             const total = lessons.length;
             const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+            const nextIdx = getNextLessonIndex(group);
+
+            let nextText = '';
+            if (nextIdx >= 0 && lessons[nextIdx]) {
+                nextText = `<div style="font-size:0.8rem; color: var(--primary); margin-top:6px;">➡️ Próxima: ${lessons[nextIdx].label}</div>`;
+            } else if (total > 0) {
+                nextText = `<div style="font-size:0.8rem; color: var(--success); margin-top:6px;">🏁 Concluído</div>`;
+            }
             
             const card = document.createElement('div');
             card.className = 'group-card';
@@ -1846,6 +2049,7 @@
                 <h3>${group}</h3>
                 <div class="book-info">📖 ${bookName}</div>
                 <div class="progress">${completed} de ${total} aulas concluídas</div>
+                ${nextText}
                 <div class="progress-bar"><div class="fill" style="width: ${percentage}%;"></div></div>
                 <button onclick="openGroupDetail('${group.replace(/'/g, "\\'")}')" style="margin-top: 15px; width: 100%;">
                     Ver Detalhes
@@ -1865,7 +2069,8 @@
         title.textContent = `📖 Lesson Plan - ${group}`;
         
         const lessons = getGroupLessons(group);
-        const progress = currentLessonProgress[group] || [];
+        const progress = getProgressForGroup(group);
+        const nextIdx = getNextLessonIndex(group);
         
         if (lessons.length === 0) {
             content.innerHTML = `<p style="color: var(--text-sec);">Nenhuma lesson plan disponível.</p>`;
@@ -1896,18 +2101,22 @@
             const progressItem = progress.find(p => p.lesson === lesson.id);
             const isChecked = progressItem ? progressItem.completed : false;
             const date = progressItem ? progressItem.date : '';
+            const isNext = (index === nextIdx);
             
             let extraClass = '';
             let extraBadge = '';
             if (lesson.isRevision) { extraClass = ' revision'; extraBadge = ' <span class="revision-badge">REV</span>'; }
             if (lesson.isTest) { extraClass = ' test'; extraBadge = ' <span class="test-badge">TEST</span>'; }
             if (isChecked) extraClass += ' checked';
+            if (isNext) extraClass += ' next';
+
+            let nextBadge = isNext ? '<span class="next-label-badge">➡️ PRÓXIMA</span>' : '';
             
             html += `
                 <div class="lesson-item${extraClass}">
                     <input type="checkbox" id="lg_${index}" ${isChecked ? 'checked' : ''} 
                            onchange="toggleGroupLesson('${group.replace(/'/g, "\\'")}', '${lesson.id}', this.checked, ${index})">
-                    <label for="lg_${index}" class="lesson-label">${lesson.label}${extraBadge}</label>
+                    <label for="lg_${index}" class="lesson-label">${lesson.label}${extraBadge}${nextBadge}</label>
                     ${date ? `<span class="lesson-date">📅 ${date}</span>` : ''}
                     ${isChecked ? '<span class="lesson-checked">✓</span>' : ''}
                 </div>
@@ -1920,78 +2129,40 @@
     }
 
     function toggleGroupLesson(group, lessonId, completed, clickedIndex) {
-        if(!currentLessonProgress[group]) currentLessonProgress[group] = [];
-        const lessons = getGroupLessons(group);
-        
-        if (completed) {
-            for (let i = 0; i <= clickedIndex; i++) {
-                const lesson = lessons[i];
-                if (!lesson) continue;
-                const existing = currentLessonProgress[group].find(p => p.lesson === lesson.id);
-                if (existing) {
-                    existing.completed = true;
-                    existing.date = new Date().toLocaleDateString('pt-BR');
-                } else {
-                    currentLessonProgress[group].push({
-                        lesson: lesson.id, completed: true,
-                        date: new Date().toLocaleDateString('pt-BR')
-                    });
-                }
-            }
-        } else {
-            for (let i = clickedIndex; i < lessons.length; i++) {
-                const lesson = lessons[i];
-                if (!lesson) continue;
-                const existing = currentLessonProgress[group].find(p => p.lesson === lesson.id);
-                if (existing) {
-                    existing.completed = false;
-                    existing.date = '';
-                }
-            }
-        }
-        
-        try {
-            localStorage.setItem('lessonProgress', JSON.stringify(currentLessonProgress));
-        } catch(e) {}
-        
-        if(currentGroup) openGroupDetail(currentGroup);
-        renderGroupLessonPlans();
+        applyChainToggle(group, clickedIndex, completed);
     }
 
     function markAllGroupLessons(group, completed) {
         const lessons = getGroupLessons(group);
         if(!currentLessonProgress[group]) currentLessonProgress[group] = [];
+        const today = completed ? new Date().toLocaleDateString('pt-BR') : '';
         
         lessons.forEach(lesson => {
             const existing = currentLessonProgress[group].find(p => p.lesson === lesson.id);
             if(existing) {
                 existing.completed = completed;
-                existing.date = completed ? new Date().toLocaleDateString('pt-BR') : '';
+                existing.date = today;
             } else {
                 currentLessonProgress[group].push({
-                    lesson: lesson.id, completed,
-                    date: completed ? new Date().toLocaleDateString('pt-BR') : ''
+                    lesson: lesson.id, completed, date: today
                 });
             }
         });
         
-        try {
-            localStorage.setItem('lessonProgress', JSON.stringify(currentLessonProgress));
-        } catch(e) {}
-        
+        persistLessonProgress();
         if(currentGroup) openGroupDetail(currentGroup);
         renderGroupLessonPlans();
+        if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule();
     }
 
     function resetLessonProgress() {
         if(!currentGroup) return;
         if(confirm(`Resetar todo o progresso da turma ${currentGroup}?`)) {
             currentLessonProgress[currentGroup] = [];
-            try {
-                localStorage.setItem('lessonProgress', JSON.stringify(currentLessonProgress));
-            } catch(e) {}
+            persistLessonProgress();
             if(currentGroup) openGroupDetail(currentGroup);
             renderGroupLessonPlans();
+            if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule();
         }
     }
 
@@ -2064,10 +2235,9 @@
     }
 
     // ============================================
-    // INICIA MESMO SE O DOM JÁ ESTIVER PRONTO
+    // DISPARO MANUAL DO DOMContentLoaded (fallback)
     // ============================================
     if (document.readyState === 'interactive' || document.readyState === 'complete') {
-        // Já passou do DOMContentLoaded? Dispara manualmente.
         setTimeout(() => {
             window.dispatchEvent(new Event('DOMContentLoaded'));
         }, 0);
