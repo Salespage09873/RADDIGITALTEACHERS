@@ -603,6 +603,7 @@
             color: var(--primary);
             font-size: 1.2rem;
             margin-bottom: 10px;
+            word-break: break-word;
         }
 
         .group-card .book-info {
@@ -761,6 +762,7 @@
 
         .group-header h2 {
             color: var(--primary);
+            word-break: break-word;
         }
 
         .group-header .book-badge {
@@ -1099,6 +1101,7 @@
     // ============================================
     let scheduleData = [];
     let studentsData = {};
+    let allGroupsFromSchedule = new Map(); // chave normalizada → nome exibição (TODAS as turmas da coluna C)
     let currentTeacher = null;
     let currentWeekData = [];
     let allWeeks = {};
@@ -1147,11 +1150,11 @@
             try {
                 const text = await fetchWithTimeout(SCHEDULE_URL, FETCH_TIMEOUT_MS);
                 parseScheduleCSV(text);
-                scheduleOk = scheduleData.length > 0;
+                scheduleOk = true;
             } catch (e) {
                 console.warn('Falha no schedule:', e);
             }
-            if (!scheduleOk) {
+            if (!scheduleOk || scheduleData.length === 0) {
                 carregarScheduleFallback();
                 showErrorBanner('Não foi possível carregar o cronograma do Google Sheets. Exibindo dados de exemplo.');
             }
@@ -1176,6 +1179,9 @@
             } catch(e) { console.warn(e); }
             try { loadLessonProgress(); } catch(e) { console.warn(e); }
 
+            console.log(`✅ Total de turmas únicas carregadas da coluna C: ${allGroupsFromSchedule.size}`);
+            console.log('📋 Lista completa de turmas:', [...allGroupsFromSchedule.values()]);
+
         } catch (err) {
             console.error('❌ Erro na inicialização:', err);
             showErrorBanner('Erro ao carregar dados. Tente recarregar a página.');
@@ -1189,6 +1195,15 @@
     // FALLBACKS
     // ============================================
     function carregarScheduleFallback() {
+        const fallbackGroups = [
+            'G1 - TURMA 1', 'G2 - TURMA 2', 'G3 - TURMA 3', 'G4 - TURMA 4', 'G5 - TURMA 5',
+            'G6 - TURMA 6', 'G7 - TURMA 7', 'G8 - TURMA 8', 'G9 - TURMA 9', 'G10 - TURMA 10'
+        ];
+        fallbackGroups.forEach(g => {
+            const key = normalizeGroupKey(g);
+            if (!allGroupsFromSchedule.has(key)) allGroupsFromSchedule.set(key, g);
+        });
+
         scheduleData = [
             { book: 'Book 1', group: 'G1 - TURMA 1', room: 'Sala 1', modal: 'REGULAR', time: '14:10', dayName: 'Terça', teacher: 'MYCAEL' },
             { book: 'Book 2', group: 'G2 - TURMA 2', room: 'Sala 2', modal: 'REGULAR', time: '15:10', dayName: 'Segunda', teacher: 'HOPE' },
@@ -1256,7 +1271,7 @@
                 renderGroupLessonPlans();
             }
 
-            alert('✅ Dados atualizados com sucesso!');
+            alert(`✅ Dados atualizados! ${allGroupsFromSchedule.size} turmas carregadas.`);
         } catch (err) {
             console.error(err);
             alert('❌ Erro ao atualizar dados.');
@@ -1267,17 +1282,27 @@
 
     // ============================================
     // PARSER DO SCHEDULE
+    // Captura TODAS as turmas da coluna C, mesmo sem professor/horário
     // ============================================
     function parseScheduleCSV(text) {
         if (!text) return;
         const lines = text.split('\n').map(l => l.trim()).filter(l => l);
         if(lines.length < 2) return;
 
+        // Ajuste conforme a planilha:
+        // 0 = (vazio)
+        // 1 = Book (coluna B)
+        // 2 = Group / Turma (coluna C)  ← OFICIAL
+        // 3 = Room
+        // 4 = Modal
+        // 5 = Time
+        // 6+ = Dias (Segunda a Sexta)
         const COL_BOOK = 1, COL_GROUP = 2, COL_ROOM = 3, COL_MODAL = 4, COL_TIME = 5, DAYS_START = 6;
         const daysMap = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
 
         scheduleData = [];
-        const chavesUnicas = new Set();
+        allGroupsFromSchedule = new Map();
+        const chavesAulas = new Set();
 
         for(let i=1; i<lines.length; i++) {
             let row;
@@ -1291,7 +1316,25 @@
             const modal = row[COL_MODAL] || '';
             const time = row[COL_TIME] || '';
 
+            // 🔑 Ignora linhas SEM turma. Só filtra por isso.
             if(!groupRaw || groupRaw.trim() === '') continue;
+
+            const groupClean = cleanText(groupRaw);
+            const bookClean = cleanText(book);
+
+            // 📌 REGISTRA A TURMA no mapa global (independente de ter professor)
+            const normKey = normalizeGroupKey(groupClean);
+            if (!allGroupsFromSchedule.has(normKey)) {
+                allGroupsFromSchedule.set(normKey, {
+                    display: groupClean,
+                    book: bookClean,
+                    room: cleanText(room),
+                    modal: cleanText(modal),
+                    time: cleanText(time)
+                });
+            }
+
+            // ⏭️ Se não tem horário, NÃO cria aula no cronograma, mas a turma JÁ foi registrada
             if(!time) continue;
 
             for(let d=0; d<5; d++) {
@@ -1299,13 +1342,13 @@
                 if(cellContent && cellContent.trim() !== '') {
                     const teacherName = findTeacherInString(cellContent);
                     if(teacherName) {
-                        const key = `${book}|${groupRaw}|${room}|${modal}|${time}|${daysMap[d]}|${teacherName}`;
-                        if (chavesUnicas.has(key)) continue;
-                        chavesUnicas.add(key);
+                        const key = `${bookClean}|${groupClean}|${room}|${modal}|${time}|${daysMap[d]}|${teacherName}`;
+                        if (chavesAulas.has(key)) continue;
+                        chavesAulas.add(key);
 
                         scheduleData.push({
-                            book: cleanText(book),
-                            group: cleanText(groupRaw),
+                            book: bookClean,
+                            group: groupClean,
                             room: cleanText(room),
                             modal: cleanText(modal),
                             time: cleanText(time),
@@ -1320,7 +1363,7 @@
         }
 
         allWeeks = { 'This Week': scheduleData };
-        console.log(`📋 Schedule: ${scheduleData.length} aulas`);
+        console.log(`📋 Schedule: ${scheduleData.length} aulas | ${allGroupsFromSchedule.size} turmas únicas da coluna C`);
     }
 
     // ============================================
@@ -1384,9 +1427,8 @@
     function buildGroupBookMap() {
         groupBookMap = {};
 
-        scheduleData.forEach(item => {
-            if (!item.group || !item.group.trim()) return;
-            const group = item.group.trim();
+        allGroupsFromSchedule.forEach((info, normKey) => {
+            const group = info.display;
             if (groupBookMap[group]) return;
 
             const bookFromName = getBookFromGroupName(group);
@@ -1395,8 +1437,8 @@
                 return;
             }
 
-            if (item.book) {
-                const bookKey = item.book.toUpperCase().trim();
+            if (info.book) {
+                const bookKey = info.book.toUpperCase().trim();
                 const bookNames = Object.keys(BOOK_STRUCTURE);
                 let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
 
@@ -1440,13 +1482,11 @@
             return bookFromName;
         }
 
-        const targetKey = normalizeGroupKey(group);
-        const scheduleItem = scheduleData.find(item =>
-            item.group && normalizeGroupKey(item.group) === targetKey
-        );
-
-        if (scheduleItem && scheduleItem.book) {
-            const bookKey = scheduleItem.book.toUpperCase().trim();
+        // Busca no mapa global normalizado
+        const normKey = normalizeGroupKey(group);
+        const info = allGroupsFromSchedule.get(normKey);
+        if (info && info.book) {
+            const bookKey = info.book.toUpperCase().trim();
             const bookNames = Object.keys(BOOK_STRUCTURE);
             let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
             if (!foundBook) {
@@ -1486,7 +1526,7 @@
     }
 
     // ============================================
-    // PROGRESSO COMPARTILHADO (fonte única)
+    // PROGRESSO COMPARTILHADO
     // ============================================
     function loadLessonProgress() {
         try {
@@ -1525,12 +1565,6 @@
         return -1;
     }
 
-    /**
-     * Aplica marcação em cadeia:
-     * - Se `completed === true`, marca do índice 0 até clickedIndex
-     * - Se `completed === false`, desmarca do clickedIndex até o fim
-     * Persiste em localStorage e atualiza todas as telas abertas.
-     */
     function applyChainToggle(group, clickedIndex, completed) {
         if (!currentLessonProgress[group]) currentLessonProgress[group] = [];
         const lessons = getGroupLessons(group);
@@ -1563,8 +1597,6 @@
         }
 
         persistLessonProgress();
-
-        // Atualiza TODAS as telas abertas
         try { if (currentGroup) openGroupDetail(currentGroup); } catch(e) {}
         try { if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) renderGroupLessonPlans(); } catch(e) {}
         try { if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule(); } catch(e) {}
@@ -1678,7 +1710,7 @@
     }
 
     // ============================================
-    // RENDER DO CRONOGRAMA (com progresso)
+    // RENDER DO CRONOGRAMA
     // ============================================
     function renderSchedule() {
         const container = document.getElementById('schedule-content');
@@ -1723,14 +1755,12 @@
 
                     let savedBadge = isSaved ? `<div class="rad-saved-check" title="RAD salvo">✅</div>` : '';
 
-                    // Progresso compartilhado
                     const lessons = getGroupLessons(cls.group);
                     const progress = getProgressForGroup(cls.group);
                     const completed = progress.filter(p => p.completed).length;
                     const total = lessons.length;
                     const progressText = total > 0 ? `${completed}/${total}` : '';
 
-                    // Próxima aula
                     const nextIdx = getNextLessonIndex(cls.group);
                     let nextLessonText = '';
                     if (nextIdx >= 0 && lessons[nextIdx]) {
@@ -1787,7 +1817,6 @@
             <span style="color: var(--text-sec);">Turma: ${group} | Book: ${book} | Sala: ${room}</span>
         `;
 
-        // Próxima aula em destaque
         const lessons = getGroupLessons(group);
         const nextIdx = getNextLessonIndex(group);
         if (nextIdx >= 0 && lessons[nextIdx]) {
@@ -1834,9 +1863,6 @@
         else fields.classList.add('hidden');
     }
 
-    // ============================================
-    // LESSON PLAN (dentro do RAD) — usa o progresso global
-    // ============================================
     function renderLessonPlanCheckboxes(group) {
         const container = document.getElementById('lesson-plan-container');
         if (!container) return;
@@ -1891,15 +1917,9 @@
         });
     }
 
-    /**
-     * Handler dos checkboxes do RAD.
-     * Aplica marcação em cadeia no progresso global.
-     */
     function onRadLessonToggle(group, index, checked) {
         applyChainToggle(group, index, checked);
-        // Re-renderiza o conteúdo do RAD
         renderLessonPlanCheckboxes(group);
-        // Atualiza o destaque da próxima aula
         const lessons = getGroupLessons(group);
         const nextIdx = getNextLessonIndex(group);
         const nextBox = document.getElementById('rad-next-lesson');
@@ -1959,7 +1979,6 @@
         const attendanceChecked = Array.from(document.querySelectorAll('.att-check:checked')).map(cb => cb.value);
         const observations = document.getElementById('rad-observations').value.trim();
 
-        // Coleta as aulas marcadas (vêm do progresso global)
         const lessonsDone = getProgressForGroup(currentRadClass.group)
             .filter(p => p.completed)
             .map(p => p.lesson);
@@ -1988,6 +2007,7 @@
 
     // ============================================
     // LESSON PLANS POR TURMA
+    // USA allGroupsFromSchedule (TODAS as turmas da coluna C)
     // ============================================
     function saveLessonProgress() {
         persistLessonProgress();
@@ -1999,20 +2019,15 @@
         const container = document.getElementById('lesson-plan-content');
         if (!container) return;
         
-        const groupsMap = new Map();
-        scheduleData.forEach(item => {
-            if (!item.group || !item.group.trim()) return;
-            const key = normalizeGroupKey(item.group);
-            if (!key) return;
-            if (!groupsMap.has(key)) groupsMap.set(key, item.group.trim());
-        });
-        
-        const groups = [...groupsMap.values()].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
+        // ✅ Fonte oficial: TODAS as turmas da coluna C, sem depender de ter aula agendada
+        const groups = [...allGroupsFromSchedule.values()]
+            .map(info => info.display)
+            .sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
         
         if (groups.length === 0) {
             container.innerHTML = `
                 <h2 style="color: var(--primary); text-align: center; margin-bottom: 30px;">📚 Lesson Plans por Turma</h2>
-                <p style="text-align:center; color: var(--text-sec);">Nenhuma turma encontrada.</p>
+                <p style="text-align:center; color: var(--text-sec);">Nenhuma turma encontrada na coluna C do Schedule.</p>
             `;
             return;
         }
@@ -2020,7 +2035,7 @@
         container.innerHTML = `
             <h2 style="color: var(--primary); text-align: center; margin-bottom: 30px;">📚 Lesson Plans por Turma</h2>
             <p style="text-align:center; color: var(--text-sec); margin-bottom: 20px; font-size: 0.9rem;">
-                Total: ${groups.length} turmas
+                Total: ${groups.length} turmas da coluna C do Schedule
             </p>
             <div class="group-lesson-grid" id="group-lesson-grid"></div>
         `;
@@ -2057,6 +2072,8 @@
             `;
             grid.appendChild(card);
         });
+        
+        console.log(`📚 Renderizados ${groups.length} cards de lesson plan`);
     }
 
     function openGroupDetail(group) {
@@ -2178,14 +2195,10 @@
         const select = document.getElementById('att-group-select');
         if (!select) return;
         
-        const groupsMap = new Map();
-        scheduleData.forEach(item => {
-            if (!item.group || !item.group.trim()) return;
-            const key = normalizeGroupKey(item.group);
-            if (!groupsMap.has(key)) groupsMap.set(key, item.group.trim());
-        });
-        
-        const groups = [...groupsMap.values()].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
+        // Fonte: allGroupsFromSchedule (TODAS as turmas da coluna C)
+        const groups = [...allGroupsFromSchedule.values()]
+            .map(info => info.display)
+            .sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
         
         select.innerHTML = '<option value="">Selecione a Turma...</option>';
         groups.forEach(g => {
@@ -2235,7 +2248,7 @@
     }
 
     // ============================================
-    // DISPARO MANUAL DO DOMContentLoaded (fallback)
+    // FALLBACK DOMCONTENTLOADED
     // ============================================
     if (document.readyState === 'interactive' || document.readyState === 'complete') {
         setTimeout(() => {
