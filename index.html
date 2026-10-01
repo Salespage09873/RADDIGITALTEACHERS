@@ -1207,6 +1207,7 @@
                 
                 buildGroupBookMap();
                 loadLessonProgress();
+                populateGroupSelect();
                 
                 if (!document.getElementById('schedule-screen').classList.contains('hidden')) {
                     if (currentTeacher) {
@@ -1341,22 +1342,21 @@
                 const student = parts[1].replace(/"/g, '').trim();
                 
                 if(group && student) {
-                    if(!rawGroups[group]) rawGroups[group] = [];
-                    if(!rawGroups[group].includes(student)) {
-                        rawGroups[group].push(student);
+                    // Normaliza a chave da turma para evitar duplicação
+                    const key = normalizeGroupKey(group);
+                    if(!rawGroups[key]) rawGroups[key] = { display: group, students: [] };
+                    if(!rawGroups[key].students.includes(student)) {
+                        rawGroups[key].students.push(student);
                     }
                 }
             }
         }
         
-        Object.keys(rawGroups).forEach(groupName => {
-            const students = rawGroups[groupName];
-            studentsData[groupName] = students;
-            
-            const upperKey = groupName.toUpperCase().trim();
-            if(upperKey !== groupName) {
-                studentsData[upperKey] = students;
-            }
+        // Reconstrói studentsData SEM duplicar chaves
+        studentsData = {};
+        Object.keys(rawGroups).forEach(key => {
+            const { display, students } = rawGroups[key];
+            studentsData[display] = students;
         });
     }
 
@@ -1372,6 +1372,14 @@
         return null;
     }
 
+    // Normaliza o nome da turma para comparação (evita duplicatas)
+    function normalizeGroupKey(str) {
+        if (!str) return '';
+        return str.toUpperCase()
+                  .replace(/\s+/g, ' ')
+                  .trim();
+    }
+
     // ============================================
     // MAPEAMENTO DINÂMICO TURMA → BOOK
     // REGRA PRINCIPAL: G1..G10 no nome da turma
@@ -1379,30 +1387,38 @@
     function buildGroupBookMap() {
         groupBookMap = {};
 
-        const allGroups = new Set([
-            ...scheduleData.map(item => item.group).filter(g => g),
-            ...Object.keys(studentsData)
-        ]);
+        // Coleta normalizada para evitar duplicatas
+        const allGroupsMap = new Map(); // normalizado → display
 
-        allGroups.forEach(group => {
-            if (!group || group.trim() === '') return;
+        function addGroup(name) {
+            if (!name || !name.trim()) return;
+            const key = normalizeGroupKey(name);
+            if (key && !allGroupsMap.has(key)) {
+                allGroupsMap.set(key, name.trim());
+            }
+        }
 
-            // 1️⃣ PRIORIDADE: extrai do padrão G1..G10 do nome
+        scheduleData.forEach(item => addGroup(item.group));
+        Object.keys(studentsData).forEach(g => addGroup(g));
+
+        allGroupsMap.forEach((displayName) => {
+            const group = displayName;
+
+            // 1️⃣ Prioridade: código Gx no nome
             const bookFromName = getBookFromGroupName(group);
             if (bookFromName) {
                 groupBookMap[group] = bookFromName;
                 return;
             }
 
-            // 2️⃣ Fallback: tenta pelo cronograma (coluna Book)
+            // 2️⃣ Cronograma
             const scheduleItem = scheduleData.find(item =>
-                item.group && item.group.toUpperCase().trim() === group.toUpperCase().trim()
+                item.group && normalizeGroupKey(item.group) === normalizeGroupKey(group)
             );
 
             if (scheduleItem && scheduleItem.book) {
                 const bookKey = scheduleItem.book.toUpperCase().trim();
                 const bookNames = Object.keys(BOOK_STRUCTURE);
-
                 let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
 
                 if (!foundBook) {
@@ -1419,14 +1435,15 @@
                 }
             }
 
-            // 3️⃣ Fallback: match parcial com nome de Book
+            // 3️⃣ Match parcial
             const bookNames = Object.keys(BOOK_STRUCTURE);
             const match = bookNames.find(book => {
                 const bookUpper = book.toUpperCase();
                 const bookNum = book.replace('Book ', '');
-                return group.toUpperCase().includes(bookUpper) ||
-                       group.toUpperCase().includes(`BOOK ${bookNum}`) ||
-                       group.toUpperCase().includes(`BOOK${bookNum}`);
+                const gUpper = group.toUpperCase();
+                return gUpper.includes(bookUpper) ||
+                       gUpper.includes(`BOOK ${bookNum}`) ||
+                       gUpper.includes(`BOOK${bookNum}`);
             });
 
             if (match) {
@@ -1434,12 +1451,12 @@
                 return;
             }
 
-            // 4️⃣ Fallback final
+            // 4️⃣ Fallback
             groupBookMap[group] = 'Book 1';
         });
 
-        console.log('📚 Mapa Turma → Book (via código Gx):', groupBookMap);
-        console.log('📚 Total de turmas mapeadas:', Object.keys(groupBookMap).length);
+        console.log('📚 Mapa Turma → Book (sem duplicatas):', groupBookMap);
+        console.log('📚 Total de turmas únicas:', Object.keys(groupBookMap).length);
     }
 
     // ============================================
@@ -1482,7 +1499,7 @@
 
         // 2️⃣ Cronograma
         const scheduleItem = scheduleData.find(item =>
-            item.group && item.group.toUpperCase().trim() === group.toUpperCase().trim()
+            item.group && normalizeGroupKey(item.group) === normalizeGroupKey(group)
         );
         if (scheduleItem && scheduleItem.book) {
             const bookKey = scheduleItem.book.toUpperCase().trim();
@@ -1846,31 +1863,18 @@
         const container = document.getElementById('attendance-container');
         container.innerHTML = '';
         
+        const targetKey = normalizeGroupKey(groupRaw);
         let students = [];
+        
+        // Busca exata normalizada
         const keys = Object.keys(studentsData);
+        let match = keys.find(k => normalizeGroupKey(k) === targetKey);
         
-        let match = null;
-        const groupVariations = [
-            groupRaw,
-            groupRaw.toUpperCase().trim(),
-            groupRaw.replace(/\s+/g, ' ').trim(),
-            groupRaw.toUpperCase().replace(/\s+/g, ' ').trim(),
-        ];
-        
-        for (const variation of groupVariations) {
-            if (match) break;
-            match = keys.find(k => k === variation);
-            if (!match) {
-                const upperVariation = variation.toUpperCase().trim();
-                match = keys.find(k => k.toUpperCase().trim() === upperVariation);
-            }
-        }
-        
+        // Fallback: match parcial
         if (!match) {
-            const upperGroup = groupRaw.toUpperCase().trim();
             match = keys.find(k => {
-                const upperK = k.toUpperCase().trim();
-                return upperK.includes(upperGroup) || upperGroup.includes(upperK);
+                const kNorm = normalizeGroupKey(k);
+                return kNorm.includes(targetKey) || targetKey.includes(kNorm);
             });
         }
         
@@ -1879,9 +1883,12 @@
         } else {
             students = ["Aluno 1", "Aluno 2", "Aluno 3"];
         }
-
-        students = [...new Set(students)];
-
+        
+        // Remove duplicatas e ordena
+        students = [...new Set(students)].sort((a, b) => 
+            a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })
+        );
+        
         students.forEach((student) => {
             const div = document.createElement('div');
             div.className = 'checkbox-group';
@@ -1951,28 +1958,34 @@
     function renderGroupLessonPlans() {
         const container = document.getElementById('lesson-plan-content');
         
-        const allGroupsSet = new Set();
+        // ============================================
+        // COLETA TODAS AS TURMAS - SEM DUPLICATAS
+        // Usa um Map normalizado: chave normalizada → nome de exibição
+        // ============================================
+        const groupsMap = new Map(); // chave_normalizada → nome_exibicao
         
-        scheduleData.forEach(item => {
-            if (item.group && item.group.trim() !== '') {
-                allGroupsSet.add(item.group.trim());
+        function addGroup(name) {
+            if (!name || !name.trim()) return;
+            const key = normalizeGroupKey(name);
+            if (!key) return;
+            if (!groupsMap.has(key)) {
+                groupsMap.set(key, name.trim());
             }
-        });
+        }
         
-        Object.keys(studentsData).forEach(group => {
-            if (group && group.trim() !== '' && 
-                (group === group.toUpperCase() || !studentsData[group.toUpperCase()])) {
-                allGroupsSet.add(group.trim());
-            }
-        });
+        // 1. Turmas do cronograma
+        scheduleData.forEach(item => addGroup(item.group));
         
-        Object.keys(groupBookMap).forEach(group => {
-            if (group && group.trim() !== '') {
-                allGroupsSet.add(group.trim());
-            }
-        });
+        // 2. Turmas da lista de alunos
+        Object.keys(studentsData).forEach(group => addGroup(group));
         
-        let groups = [...allGroupsSet].filter(g => g);
+        // 3. Turmas do mapeamento de books
+        Object.keys(groupBookMap).forEach(group => addGroup(group));
+        
+        // Ordena alfabeticamente pelo nome de exibição
+        const groups = [...groupsMap.values()].sort((a, b) => 
+            a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })
+        );
         
         if (groups.length === 0) {
             container.innerHTML = `
@@ -1993,7 +2006,7 @@
         
         const grid = document.getElementById('group-lesson-grid');
         
-        groups.sort().forEach(group => {
+        groups.forEach(group => {
             const bookName = getBookForGroup(group);
             const lessons = getGroupLessons(group);
             const progress = currentLessonProgress[group] || [];
@@ -2024,7 +2037,7 @@
             grid.appendChild(card);
         });
         
-        console.log(`📚 Lesson Plans renderizados para ${groups.length} turmas:`, groups);
+        console.log(`📚 Lesson Plans renderizados para ${groups.length} turmas únicas:`, groups);
     }
 
     function openGroupDetail(group) {
@@ -2212,7 +2225,23 @@
 
     function populateGroupSelect() {
         const select = document.getElementById('att-group-select');
-        const groups = Object.keys(studentsData).sort();
+        
+        // Normaliza para não duplicar
+        const groupsMap = new Map();
+        Object.keys(studentsData).forEach(group => {
+            const key = normalizeGroupKey(group);
+            if (!groupsMap.has(key)) {
+                groupsMap.set(key, group);
+            }
+        });
+        
+        const groups = [...groupsMap.values()].sort((a, b) => 
+            a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })
+        );
+        
+        // Limpa antes de popular (evita duplicar em refresh)
+        select.innerHTML = '<option value="">Selecione a Turma...</option>';
+        
         groups.forEach(g => {
             const opt = document.createElement('option');
             opt.value = g;
