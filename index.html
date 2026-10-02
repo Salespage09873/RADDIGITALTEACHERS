@@ -1052,18 +1052,18 @@
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
     const FETCH_TIMEOUT_MS = 10000;
 
+    // ✅ Lista atualizada: removidos MYCAEL, TOSCA, SARA, LIVIA, IAGO
+    // ✅ Adicionados: CARLOS, BARBARA (sem acento), MAT
     const VALID_TEACHERS = [
-        { name: 'MYCAEL', color: '#0d6efd' },
-        { name: 'HOPE', color: '#0d6efd' },
-        { name: 'PEDRO', color: '#0d6efd' },
-        { name: 'DIOGO', color: '#0d6efd' },
-        { name: 'LIVIA', color: '#0d6efd' },
-        { name: 'TOSCA', color: '#0d6efd' },
-        { name: 'IAGO', color: '#0d6efd' },
-        { name: 'SARA', color: '#0d6efd' },
-        { name: 'CAROL', color: '#0d6efd' },
+        { name: 'BARBARA', color: '#0d6efd' },
         { name: 'CARLA', color: '#0d6efd' },
-        { name: 'LUISA', color: '#0d6efd' }
+        { name: 'CARLOS', color: '#0d6efd' },
+        { name: 'CAROL', color: '#0d6efd' },
+        { name: 'DIOGO', color: '#0d6efd' },
+        { name: 'HOPE', color: '#0d6efd' },
+        { name: 'LUISA', color: '#0d6efd' },
+        { name: 'MAT', color: '#0d6efd' },
+        { name: 'PEDRO', color: '#0d6efd' }
     ];
 
     // ============================================
@@ -1153,7 +1153,6 @@
         }, 15000);
 
         try {
-            // ---------- THIS WEEK ----------
             showLoadingMsg('Baixando cronograma (This Week)...');
             try {
                 const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
@@ -1163,7 +1162,6 @@
                 console.warn('Falha no This Week:', e);
             }
 
-            // ---------- NEXT WEEK ----------
             showLoadingMsg('Baixando cronograma (Next Week)...');
             try {
                 const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS);
@@ -1183,7 +1181,6 @@
                 'Next Week': nextWeekData
             };
 
-            // ---------- ALUNOS ----------
             showLoadingMsg('Baixando lista de alunos...');
             try {
                 const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
@@ -1193,7 +1190,6 @@
                 carregarAlunosFallback();
             }
 
-            // ---------- PROCESSAMENTO ----------
             showLoadingMsg('Processando dados...');
             try { buildGroupBookMap(); } catch(e) { console.warn(e); }
             try { renderTeachers(); } catch(e) { console.warn(e); }
@@ -1230,16 +1226,16 @@
         });
 
         scheduleData = [
-            { book: 'Book 1', group: 'G1 - TURMA 1', room: 'Sala 1', modal: 'REGULAR', time: '14:10', dayName: 'Terça', teacher: 'MYCAEL' },
+            { book: 'Book 1', group: 'G1 - TURMA 1', room: 'Sala 1', modal: 'REGULAR', time: '14:10', dayName: 'Terça', teacher: 'PEDRO' },
             { book: 'Book 2', group: 'G2 - TURMA 2', room: 'Sala 2', modal: 'REGULAR', time: '15:10', dayName: 'Segunda', teacher: 'HOPE' },
-            { book: 'Book 3', group: 'G3 - TURMA 3', room: 'Sala 3', modal: 'REGULAR', time: '08:10', dayName: 'Segunda', teacher: 'PEDRO' },
+            { book: 'Book 3', group: 'G3 - TURMA 3', room: 'Sala 3', modal: 'REGULAR', time: '08:10', dayName: 'Segunda', teacher: 'CARLOS' },
             { book: 'Book 4', group: 'G4 - TURMA 4', room: 'Sala 4', modal: 'REGULAR', time: '08:00', dayName: 'Terça', teacher: 'DIOGO' },
-            { book: 'Book 5', group: 'G5 - TURMA 5', room: 'Sala 5', modal: 'REGULAR', time: '14:10', dayName: 'Terça', teacher: 'LIVIA' },
-            { book: 'Book 6', group: 'G6 - TURMA 6', room: 'VIP', modal: 'VIP', time: 'VIP', dayName: 'VIP', teacher: 'TOSCA' },
-            { book: 'Book 7', group: 'G7 - TURMA 7', room: 'Sala 7', modal: 'REGULAR', time: '15:10', dayName: 'Terça', teacher: 'IAGO' },
-            { book: 'Book 8', group: 'G8 - TURMA 8', room: 'Sala 8', modal: 'REGULAR', time: '11:10', dayName: 'Segunda', teacher: 'SARA' },
-            { book: 'Book 9', group: 'G9 - TURMA 9', room: 'Sala 9', modal: 'REGULAR', time: '15:10', dayName: 'Segunda', teacher: 'CAROL' },
-            { book: 'Book 10', group: 'G10 - TURMA 10', room: 'Sala 10', modal: 'INTENSIVE', time: '11:10', dayName: 'Intensive', teacher: 'CARLA' }
+            { book: 'Book 5', group: 'G5 - TURMA 5', room: 'Sala 5', modal: 'REGULAR', time: '14:10', dayName: 'Terça', teacher: 'BARBARA' },
+            { book: 'Book 6', group: 'G6 - TURMA 6', room: 'VIP', modal: 'VIP', time: 'VIP', dayName: 'VIP', teacher: 'MAT' },
+            { book: 'Book 7', group: 'G7 - TURMA 7', room: 'Sala 7', modal: 'REGULAR', time: '15:10', dayName: 'Terça', teacher: 'CAROL' },
+            { book: 'Book 8', group: 'G8 - TURMA 8', room: 'Sala 8', modal: 'REGULAR', time: '11:10', dayName: 'Segunda', teacher: 'LUISA' },
+            { book: 'Book 9', group: 'G9 - TURMA 9', room: 'Sala 9', modal: 'REGULAR', time: '15:10', dayName: 'Segunda', teacher: 'CARLA' },
+            { book: 'Book 10', group: 'G10 - TURMA 10', room: 'Sala 10', modal: 'INTENSIVE', time: '11:10', dayName: 'Intensive', teacher: 'PEDRO' }
         ];
     }
 
@@ -1347,7 +1343,6 @@
             const groupClean = cleanText(groupRaw);
             const bookClean = cleanText(book);
 
-            // Só registra no mapa global se NÃO for skipGroupRegistration
             if (!skipGroupRegistration) {
                 const normKey = normalizeGroupKey(groupClean);
                 if (!allGroupsFromSchedule.has(normKey)) {
@@ -1436,7 +1431,9 @@
         if (!str) return null;
         const upperStr = str.toUpperCase();
         for(const t of VALID_TEACHERS) {
-            if(upperStr.includes(t.name)) return t.name;
+            // Usa word boundary pra evitar matches parciais (ex: MAT dentro de MATHEUS)
+            const regex = new RegExp(`\\b${t.name}\\b`, 'i');
+            if(regex.test(upperStr)) return t.name;
         }
         return null;
     }
