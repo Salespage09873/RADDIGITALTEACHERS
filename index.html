@@ -968,7 +968,7 @@
     }
 
     // ============================================
-    // CARREGA OS LESSON PLANS KIDS DA PLANILHA
+    // CARREGA OS LESSON PLANS KIDS
     // ============================================
     async function loadKidsLessonPlans() {
         const bookNames = Object.keys(KIDS_BOOK_GIDS);
@@ -992,7 +992,7 @@
         });
 
         await Promise.all(promises);
-        console.log(`✅ Total de lesson plans kids carregados: ${Object.keys(KIDS_BOOK_STRUCTURE).length}`);
+        console.log(`✅ Total kids carregados: ${Object.keys(KIDS_BOOK_STRUCTURE).length}`);
     }
 
     function parseKidsLessonPlanCSV(text) {
@@ -1420,12 +1420,63 @@
     }
 
     // ============================================
+    // MATCH DE BOOK KIDS (inteligente)
+    // ============================================
+    /**
+     * Tenta achar o book kids correto a partir de um texto (nome da turma OU coluna B).
+     * Estratégias em ordem:
+     *   1. Igualdade exata (após normalização)
+     *   2. Prefixo AW/WF + segunda palavra em comum
+     *   3. Contém / é contido
+     */
+    function findKidsBook(text) {
+        if (!text) return null;
+        const norm = normalizeGroupKeyAgressive(text);
+        if (!norm) return null;
+
+        const books = Object.keys(KIDS_BOOK_GIDS);
+
+        // 1️⃣ Igualdade exata
+        for (const b of books) {
+            if (normalizeGroupKeyAgressive(b) === norm) return b;
+        }
+
+        // 2️⃣ Prefixo AW/WF + segunda palavra em comum
+        const prefixMatch = norm.match(/^(AW|WF)\b/);
+        if (prefixMatch) {
+            const prefix = prefixMatch[1];
+            const words = norm.split(' ').filter(w => w.length > 1 && w !== prefix);
+            
+            for (const b of books) {
+                const bNorm = normalizeGroupKeyAgressive(b);
+                if (!bNorm.startsWith(prefix + ' ')) continue;
+                
+                const bWords = bNorm.split(' ').filter(w => w.length > 1 && w !== prefix);
+                // Se alguma palavra significativa casa, considera match
+                const common = words.filter(w => bWords.includes(w));
+                if (common.length > 0) return b;
+            }
+        }
+
+        // 3️⃣ Contém / é contido (só se o texto tiver 2+ palavras)
+        const words = norm.split(' ').filter(w => w.length > 1);
+        if (words.length >= 2) {
+            for (const b of books) {
+                const bNorm = normalizeGroupKeyAgressive(b);
+                if (bNorm.includes(norm) || norm.includes(bNorm)) return b;
+            }
+        }
+
+        return null;
+    }
+
+    // ============================================
     // MAPEAMENTO TURMA → BOOK
-    // REGRAS:
-    //   1. Igualdade exata com kids book (coluna B) → kids
-    //   2. Match parcial com kids book MAS só se 2+ palavras na coluna B
-    //   3. Gx no nome da turma → Book X
-    //   4. "Book X" na coluna B → Book X
+    // Prioridade:
+    //   1. Book kids pela COLUNA B
+    //   2. Book kids pelo NOME DA TURMA
+    //   3. Gx no nome da turma
+    //   4. "Book X" na coluna B
     //   5. Fallback → Book 1
     // ============================================
     function buildGroupBookMap() {
@@ -1435,64 +1486,32 @@
             const group = info.display;
             if (groupBookMap[group]) return;
 
-            // 1️⃣ Book kids EXATO via coluna B
+            // 1️⃣ Book kids pela coluna B
             if (info.book) {
-                const bookNorm = normalizeGroupKeyAgressive(info.book);
-                const exactMatch = Object.keys(KIDS_BOOK_GIDS).find(k => 
-                    normalizeGroupKeyAgressive(k) === bookNorm
-                );
-                if (exactMatch) {
-                    groupBookMap[group] = exactMatch;
-                    console.log(`🎯 Kids EXATO: "${group}" → "${exactMatch}"`);
+                const kids = findKidsBook(info.book);
+                if (kids) {
+                    groupBookMap[group] = kids;
+                    console.log(`🎯 Kids (col B): "${group}" [col B: "${info.book}"] → "${kids}"`);
                     return;
-                }
-                // Match parcial APENAS se o nome tem 2+ palavras (evita "AW" sozinho)
-                const bookWords = bookNorm.split(' ').filter(w => w.length > 1);
-                if (bookWords.length >= 2) {
-                    const partialMatch = Object.keys(KIDS_BOOK_GIDS).find(k => {
-                        const kNorm = normalizeGroupKeyAgressive(k);
-                        return kNorm.includes(bookNorm) || bookNorm.includes(kNorm);
-                    });
-                    if (partialMatch) {
-                        groupBookMap[group] = partialMatch;
-                        console.log(`🎯 Kids PARCIAL: "${group}" → "${partialMatch}" (via coluna B "${info.book}")`);
-                        return;
-                    }
                 }
             }
 
-            // 1️⃣b Book kids EXATO via nome da turma
-            const groupNorm = normalizeGroupKeyAgressive(group);
-            const kidsExact = Object.keys(KIDS_BOOK_GIDS).find(k => 
-                normalizeGroupKeyAgressive(k) === groupNorm
-            );
-            if (kidsExact) {
-                groupBookMap[group] = kidsExact;
-                console.log(`🎯 Kids EXATO (nome turma): "${group}" → "${kidsExact}"`);
+            // 2️⃣ Book kids pelo nome da turma
+            const kidsFromGroup = findKidsBook(group);
+            if (kidsFromGroup) {
+                groupBookMap[group] = kidsFromGroup;
+                console.log(`🎯 Kids (nome turma): "${group}" → "${kidsFromGroup}"`);
                 return;
             }
-            // Match parcial pelo nome da turma APENAS se 2+ palavras
-            const groupWords = groupNorm.split(' ').filter(w => w.length > 1);
-            if (groupWords.length >= 2) {
-                const kidsPartial = Object.keys(KIDS_BOOK_GIDS).find(k => {
-                    const kNorm = normalizeGroupKeyAgressive(k);
-                    return kNorm.includes(groupNorm) || groupNorm.includes(kNorm);
-                });
-                if (kidsPartial) {
-                    groupBookMap[group] = kidsPartial;
-                    console.log(`🎯 Kids PARCIAL (nome turma): "${group}" → "${kidsPartial}"`);
-                    return;
-                }
-            }
 
-            // 2️⃣ Código Gx no nome
+            // 3️⃣ Gx no nome
             const bookFromName = getBookFromGroupName(group);
             if (bookFromName) {
                 groupBookMap[group] = bookFromName;
                 return;
             }
 
-            // 3️⃣ Coluna B tem "Book X" ou número
+            // 4️⃣ "Book X" da coluna B
             if (info.book) {
                 const bookKey = info.book.toUpperCase().trim();
                 const bookNames = Object.keys(BOOK_STRUCTURE);
@@ -1512,7 +1531,7 @@
                 }
             }
 
-            // 4️⃣ Fallback
+            // 5️⃣ Fallback
             groupBookMap[group] = 'Book 1';
         });
 
@@ -1536,58 +1555,30 @@
         const normKey = normalizeGroupKey(group);
         const info = allGroupsFromSchedule.get(normKey);
 
-        // 1️⃣ Book kids EXATO via coluna B
+        // 1️⃣ Book kids pela coluna B
         if (info && info.book) {
-            const bookNorm = normalizeGroupKeyAgressive(info.book);
-            const exactMatch = Object.keys(KIDS_BOOK_GIDS).find(k => 
-                normalizeGroupKeyAgressive(k) === bookNorm
-            );
-            if (exactMatch) {
-                groupBookMap[group] = exactMatch;
-                return exactMatch;
-            }
-            const bookWords = bookNorm.split(' ').filter(w => w.length > 1);
-            if (bookWords.length >= 2) {
-                const partialMatch = Object.keys(KIDS_BOOK_GIDS).find(k => {
-                    const kNorm = normalizeGroupKeyAgressive(k);
-                    return kNorm.includes(bookNorm) || bookNorm.includes(kNorm);
-                });
-                if (partialMatch) {
-                    groupBookMap[group] = partialMatch;
-                    return partialMatch;
-                }
+            const kids = findKidsBook(info.book);
+            if (kids) {
+                groupBookMap[group] = kids;
+                return kids;
             }
         }
 
-        // 1️⃣b Book kids EXATO via nome da turma
-        const groupNorm = normalizeGroupKeyAgressive(group);
-        const kidsExact = Object.keys(KIDS_BOOK_GIDS).find(k => 
-            normalizeGroupKeyAgressive(k) === groupNorm
-        );
-        if (kidsExact) {
-            groupBookMap[group] = kidsExact;
-            return kidsExact;
-        }
-        const groupWords = groupNorm.split(' ').filter(w => w.length > 1);
-        if (groupWords.length >= 2) {
-            const kidsPartial = Object.keys(KIDS_BOOK_GIDS).find(k => {
-                const kNorm = normalizeGroupKeyAgressive(k);
-                return kNorm.includes(groupNorm) || groupNorm.includes(kNorm);
-            });
-            if (kidsPartial) {
-                groupBookMap[group] = kidsPartial;
-                return kidsPartial;
-            }
+        // 2️⃣ Book kids pelo nome da turma
+        const kidsFromGroup = findKidsBook(group);
+        if (kidsFromGroup) {
+            groupBookMap[group] = kidsFromGroup;
+            return kidsFromGroup;
         }
 
-        // 2️⃣ Gx no nome
+        // 3️⃣ Gx
         const bookFromName = getBookFromGroupName(group);
         if (bookFromName) {
             groupBookMap[group] = bookFromName;
             return bookFromName;
         }
 
-        // 3️⃣ "Book X" da coluna B
+        // 4️⃣ "Book X" da coluna B
         if (info && info.book) {
             const bookKey = info.book.toUpperCase().trim();
             const bookNames = Object.keys(BOOK_STRUCTURE);
