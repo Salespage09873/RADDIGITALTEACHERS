@@ -857,6 +857,25 @@
     const SCHEDULE_THIS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
     const SCHEDULE_NEXT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz-bXwql9tWFhbu7vU4QV2Mh2X-wS8Dg104Y31VzdsPCdQM08rUPGSBphEfeL94kbgCnJOJorYwFjO/pub?output=csv';
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRJ50UB29UDqy1PTkOJrUI81d4kZtzB0Qyfo1wPs2rbm9uftJdlcH88h-sfDrxW2o7Fi_5LZVSI4jul/pub?gid=335122343&single=true&output=csv';
+
+    // ✅ NOVO: Planilha LESSON PLANS (kids AW / WF)
+    const LESSON_PLANS_BASE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR8P-aCBn4HeNpri88Hd-VWSfD8pXaNZ5Y0vYCJ_FSCmDGpEJDHwnRU_72NS7rhpLEQAa_CzGklUu2p/pub';
+
+    // Mapa: nome do book no Schedule → gid da aba na planilha LESSON PLANS
+    const KIDS_BOOK_GIDS = {
+        'AW HIGH FIVE':     '0',
+        'AW FRIENDSHIP':    '852178178',
+        'AW ADVENTURE':     '1274563307',
+        'AW PLAYTIME':      '403683685',
+        'AW WINNERS':       '1259782943',
+        'WF HIGH FIVE':     '749978300',
+        'WF PIECE OF CAKE': '903327626',
+        'WF PLAYTIME':      '491371915',
+        'WF WINNERS':       '506732494',
+        'WF ADVENTURE':     '2075038143',
+        'WF FRIENDSHIP':    '1798862018'
+    };
+
     const FETCH_TIMEOUT_MS = 10000;
 
     const VALID_TEACHERS = [
@@ -872,7 +891,7 @@
     ];
 
     // ============================================
-    // ESTRUTURA DOS BOOKS
+    // ESTRUTURA DOS BOOKS 1 a 10 (adultos)
     // ============================================
     const BOOK_STRUCTURE = {};
     (function buildBookStructure() {
@@ -906,6 +925,13 @@
             BOOK_STRUCTURE[`Book ${n}`] = { lessons: arr };
         }
     })();
+
+    // ============================================
+    // ESTRUTURA DOS BOOKS KIDS (carregada da planilha)
+    // Chave = nome do book (ex: "AW HIGH FIVE")
+    // Valor = { lessons: [...] }
+    // ============================================
+    const KIDS_BOOK_STRUCTURE = {};
 
     // ============================================
     // ESTADO GLOBAL
@@ -949,15 +975,78 @@
     }
 
     // ============================================
+    // CARREGA OS LESSON PLANS KIDS DA PLANILHA
+    // ============================================
+    async function loadKidsLessonPlans() {
+        const bookNames = Object.keys(KIDS_BOOK_GIDS);
+        console.log(`📚 Carregando ${bookNames.length} lesson plans kids...`);
+
+        const promises = bookNames.map(async (bookName) => {
+            const gid = KIDS_BOOK_GIDS[bookName];
+            const url = `${LESSON_PLANS_BASE_URL}?gid=${gid}&single=true&output=csv`;
+            try {
+                const text = await fetchWithTimeout(url, FETCH_TIMEOUT_MS);
+                const lessons = parseKidsLessonPlanCSV(text);
+                if (lessons.length > 0) {
+                    KIDS_BOOK_STRUCTURE[bookName] = { lessons };
+                    console.log(`✅ ${bookName}: ${lessons.length} aulas`);
+                } else {
+                    console.warn(`⚠️ ${bookName}: nenhuma aula encontrada`);
+                }
+            } catch (e) {
+                console.warn(`❌ Falha ao carregar ${bookName}:`, e);
+            }
+        });
+
+        await Promise.all(promises);
+        console.log(`✅ Total de lesson plans kids carregados: ${Object.keys(KIDS_BOOK_STRUCTURE).length}`);
+    }
+
+    /**
+     * Parseia o CSV de uma aba kids.
+     * Estrutura: coluna A = nome da aula, linha 1 = "Lesson" (cabeçalho)
+     * Ignora a linha 1 (cabeçalho) e linhas vazias.
+     */
+    function parseKidsLessonPlanCSV(text) {
+        if (!text) return [];
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+        if (lines.length < 2) return [];
+
+        const lessons = [];
+        for (let i = 1; i < lines.length; i++) {
+            // Pega só a coluna A (antes da primeira vírgula, respeitando aspas)
+            let row;
+            try {
+                row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            } catch(e) { continue; }
+            
+            const lesson = (row[0] || '').replace(/"/g, '').trim();
+            if (lesson && lesson.toUpperCase() !== 'LESSON') {
+                lessons.push(lesson);
+            }
+        }
+        return lessons;
+    }
+
+    // ============================================
     // INICIALIZAÇÃO
     // ============================================
     window.addEventListener('DOMContentLoaded', async () => {
         const safetyTimer = setTimeout(() => {
             console.warn('⚠️ Safety timeout');
             hideLoadingScreen();
-        }, 15000);
+        }, 20000);
 
         try {
+            // ---------- LESSON PLANS KIDS ----------
+            showLoadingMsg('Baixando lesson plans kids (AW / WF)...');
+            try {
+                await loadKidsLessonPlans();
+            } catch (e) {
+                console.warn('Falha ao carregar lesson plans kids:', e);
+            }
+
+            // ---------- THIS WEEK ----------
             showLoadingMsg('Baixando cronograma (This Week)...');
             try {
                 const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
@@ -967,6 +1056,7 @@
                 console.warn('Falha no This Week:', e);
             }
 
+            // ---------- NEXT WEEK ----------
             showLoadingMsg('Baixando cronograma (Next Week)...');
             try {
                 const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS);
@@ -986,6 +1076,7 @@
                 'Next Week': nextWeekData
             };
 
+            // ---------- ALUNOS ----------
             showLoadingMsg('Baixando lista de alunos...');
             try {
                 const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
@@ -996,6 +1087,7 @@
                 carregarAlunosFallback();
             }
 
+            // ---------- PROCESSAMENTO ----------
             showLoadingMsg('Processando dados...');
             try { buildGroupBookMap(); } catch(e) { console.warn(e); }
             try { renderTeachers(); } catch(e) { console.warn(e); }
@@ -1072,6 +1164,8 @@
         if (banner) banner.classList.add('hidden');
 
         try {
+            try { await loadKidsLessonPlans(); } catch(e) { console.warn(e); }
+
             try {
                 const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
                 scheduleData = parseScheduleCSV(text);
@@ -1107,7 +1201,7 @@
                 renderGroupLessonPlans();
             }
 
-            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length} aulas\nNext Week: ${nextWeekData.length} aulas\nTurmas com alunos: ${Object.keys(studentsData).length}`);
+            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length} aulas\nNext Week: ${nextWeekData.length} aulas\nKids: ${Object.keys(KIDS_BOOK_STRUCTURE).length} lesson plans`);
         } catch (err) {
             console.error(err);
             alert('❌ Erro ao atualizar dados.');
@@ -1274,9 +1368,6 @@
         const groupUpper = (groupName || '').toUpperCase();
         const keys = Object.keys(studentsData);
 
-        // ============================================
-        // REGRA ESPECIAL 1: CONNECT
-        // ============================================
         if (groupUpper.includes('CONNECT')) {
             const wantKids = bookUpper.includes('KIDS') || targetKey.includes('KIDS');
             const suffix = wantKids ? 'KIDS' : 'GET IT';
@@ -1290,14 +1381,8 @@
                 console.log(`🎯 CONNECT + book "${bookHint||'—'}" → "${match}"`);
                 return studentsData[match];
             }
-
-            console.log(`⚠️ CONNECT: não achei "${suffix}" na lista de alunos.`);
         }
 
-        // ============================================
-        // REGRA ESPECIAL 2: MUFASA / TIMBÓ
-        // Usa MUFASA ou TIMBO (não usar SPLIT, porque existe "Split Itajaí")
-        // ============================================
         if (groupUpper.includes('MUFASA') 
             || groupUpper.includes('TIMBÓ') 
             || groupUpper.includes('TIMBO')
@@ -1313,13 +1398,8 @@
                 console.log(`🎯 MUFASA/TIMBÓ → "${match}"`);
                 return studentsData[match];
             }
-
-            console.log(`⚠️ MUFASA: não achei "MUFASA" ou "TIMBO" na lista de alunos.`);
         }
 
-        // ============================================
-        // BUSCA GENÉRICA
-        // ============================================
         function score(k) {
             const kNorm = normalizeGroupKeyAgressive(k);
             let s = 0;
@@ -1354,12 +1434,16 @@
             return studentsData[bestKey];
         }
 
-        console.log(`❌ Nenhuma turma encontrada para "${groupName}" (book "${bookHint||'—'}")`);
         return [];
     }
 
     // ============================================
     // MAPEAMENTO TURMA → BOOK
+    // Prioridade:
+    //   1. Coluna B do Schedule tem nome de book kids (AW/WF) → usa KIDS_BOOK_STRUCTURE
+    //   2. Código Gx no nome da turma → Book 1..10
+    //   3. Coluna B com "Book X" → Book X
+    //   4. Fallback → Book 1
     // ============================================
     function buildGroupBookMap() {
         groupBookMap = {};
@@ -1368,12 +1452,26 @@
             const group = info.display;
             if (groupBookMap[group]) return;
 
+            // 1️⃣ PRIORIDADE MÁXIMA: book kids (coluna B)
+            if (info.book) {
+                const bookNorm = normalizeGroupKeyAgressive(info.book);
+                const kidsBookName = Object.keys(KIDS_BOOK_GIDS).find(k => 
+                    normalizeGroupKeyAgressive(k) === bookNorm
+                );
+                if (kidsBookName) {
+                    groupBookMap[group] = kidsBookName;
+                    return;
+                }
+            }
+
+            // 2️⃣ Código Gx no nome da turma
             const bookFromName = getBookFromGroupName(group);
             if (bookFromName) {
                 groupBookMap[group] = bookFromName;
                 return;
             }
 
+            // 3️⃣ Coluna B tem "Book X" ou número
             if (info.book) {
                 const bookKey = info.book.toUpperCase().trim();
                 const bookNames = Object.keys(BOOK_STRUCTURE);
@@ -1393,6 +1491,7 @@
                 }
             }
 
+            // 4️⃣ Fallback
             groupBookMap[group] = 'Book 1';
         });
 
@@ -1422,6 +1521,15 @@
         const normKey = normalizeGroupKey(group);
         const info = allGroupsFromSchedule.get(normKey);
         if (info && info.book) {
+            const bookNorm = normalizeGroupKeyAgressive(info.book);
+            const kidsBookName = Object.keys(KIDS_BOOK_GIDS).find(k => 
+                normalizeGroupKeyAgressive(k) === bookNorm
+            );
+            if (kidsBookName) {
+                groupBookMap[group] = kidsBookName;
+                return kidsBookName;
+            }
+
             const bookKey = info.book.toUpperCase().trim();
             const bookNames = Object.keys(BOOK_STRUCTURE);
             let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
@@ -1442,8 +1550,27 @@
         return 'Book 1';
     }
 
+    /**
+     * Retorna as lessons do book da turma.
+     * Se for book kids (KIDS_BOOK_STRUCTURE) usa de lá.
+     * Senão usa BOOK_STRUCTURE (Books 1-10).
+     */
     function getGroupLessons(group) {
         const bookName = getBookForGroup(group);
+        
+        // ✅ Book kids (AW / WF)
+        if (KIDS_BOOK_STRUCTURE[bookName]) {
+            const lessons = KIDS_BOOK_STRUCTURE[bookName].lessons;
+            return lessons.map((label, index) => ({
+                id: `lesson_${index}`,
+                label: label,
+                isRevision: label.toUpperCase().includes('REVISION') || label.toUpperCase().includes('REVIEW'),
+                isTest: label.toUpperCase().includes('TEST'),
+                order: index
+            }));
+        }
+
+        // Books 1-10
         const bookData = BOOK_STRUCTURE[bookName];
         if (bookData && bookData.lessons) {
             return bookData.lessons.map((label, index) => ({
