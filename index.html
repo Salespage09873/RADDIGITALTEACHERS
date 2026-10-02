@@ -227,6 +227,10 @@
             opacity: 1;
         }
 
+        .class-card.next-week-card {
+            border-left: 5px solid var(--warning);
+        }
+
         .class-time {
             font-size: 1.3rem;
             color: var(--primary);
@@ -258,6 +262,7 @@
         .badge-room { background: var(--success); }
         .badge-modal { background: var(--primary); }
         .badge-saved { background: var(--success); }
+        .badge-next-week { background: var(--warning); color: #000; }
 
         .action-btn {
             width: 100%;
@@ -1042,9 +1047,19 @@
     // ============================================
     // CONFIGURAÇÕES
     // ============================================
-    const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
+    const BASE_SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
     const FETCH_TIMEOUT_MS = 10000;
+
+    // Variações possíveis do nome da aba "Next Week"
+    // Será tentado na ordem: primeiro as mais prováveis
+    const NEXT_WEEK_SHEET_NAMES = [
+        'NEXT WEEK',
+        'Next Week',
+        'Next week',
+        'NEXT_WEEK',
+        'NEXTWEEK'
+    ];
 
     const VALID_TEACHERS = [
         { name: 'MYCAEL', color: '#0d6efd' },
@@ -1099,10 +1114,12 @@
     // ============================================
     // ESTADO GLOBAL
     // ============================================
-    let scheduleData = [];
+    let scheduleData = [];                 // aulas de "This Week"
+    let nextWeekData = [];                 // aulas de "Next Week"
     let studentsData = {};
-    let allGroupsFromSchedule = new Map(); // chave normalizada → nome exibição (TODAS as turmas da coluna C)
+    let allGroupsFromSchedule = new Map(); // chave normalizada → info (de TODAS as turmas da coluna C)
     let currentTeacher = null;
+    let currentWeekName = 'This Week';
     let currentWeekData = [];
     let allWeeks = {};
     let currentGroup = null;
@@ -1136,6 +1153,30 @@
     }
 
     // ============================================
+    // URL DA ABA NEXT WEEK (tenta várias variações)
+    // ============================================
+    function buildSheetUrl(sheetName) {
+        return `${BASE_SCHEDULE_URL}&sheet=${encodeURIComponent(sheetName)}`;
+    }
+
+    async function fetchNextWeekCSV() {
+        for (const name of NEXT_WEEK_SHEET_NAMES) {
+            try {
+                const url = buildSheetUrl(name);
+                const text = await fetchWithTimeout(url, FETCH_TIMEOUT_MS);
+                if (text && text.trim().length > 10 && text.toLowerCase().includes(',')) {
+                    console.log(`✅ Next Week carregada com aba "${name}"`);
+                    return { text, sheetName: name };
+                }
+            } catch (e) {
+                // Tenta o próximo
+            }
+        }
+        console.warn('⚠️ Não foi possível carregar Next Week em nenhuma variação de nome.');
+        return null;
+    }
+
+    // ============================================
     // INICIALIZAÇÃO
     // ============================================
     window.addEventListener('DOMContentLoaded', async () => {
@@ -1145,20 +1186,38 @@
         }, 15000);
 
         try {
-            showLoadingMsg('Baixando cronograma...');
-            let scheduleOk = false;
+            // ---------- THIS WEEK ----------
+            showLoadingMsg('Baixando cronograma (This Week)...');
             try {
-                const text = await fetchWithTimeout(SCHEDULE_URL, FETCH_TIMEOUT_MS);
-                parseScheduleCSV(text);
-                scheduleOk = true;
+                const text = await fetchWithTimeout(BASE_SCHEDULE_URL, FETCH_TIMEOUT_MS);
+                scheduleData = parseScheduleCSV(text, { mergeGroups: true });
             } catch (e) {
-                console.warn('Falha no schedule:', e);
-            }
-            if (!scheduleOk || scheduleData.length === 0) {
-                carregarScheduleFallback();
-                showErrorBanner('Não foi possível carregar o cronograma do Google Sheets. Exibindo dados de exemplo.');
+                console.warn('Falha no This Week:', e);
             }
 
+            // ---------- NEXT WEEK ----------
+            showLoadingMsg('Baixando cronograma (Next Week)...');
+            try {
+                const result = await fetchNextWeekCSV();
+                if (result) {
+                    nextWeekData = parseScheduleCSV(result.text, { mergeGroups: true });
+                }
+            } catch (e) {
+                console.warn('Falha no Next Week:', e);
+            }
+
+            // Fallback se nada carregou
+            if (scheduleData.length === 0 && nextWeekData.length === 0) {
+                carregarScheduleFallback();
+                showErrorBanner('Não foi possível carregar o cronograma. Exibindo dados de exemplo.');
+            }
+
+            allWeeks = {
+                'This Week': scheduleData,
+                'Next Week': nextWeekData
+            };
+
+            // ---------- ALUNOS ----------
             showLoadingMsg('Baixando lista de alunos...');
             try {
                 const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
@@ -1168,6 +1227,7 @@
                 carregarAlunosFallback();
             }
 
+            // ---------- PROCESSAMENTO ----------
             showLoadingMsg('Processando dados...');
             try { buildGroupBookMap(); } catch(e) { console.warn(e); }
             try { renderTeachers(); } catch(e) { console.warn(e); }
@@ -1179,8 +1239,10 @@
             } catch(e) { console.warn(e); }
             try { loadLessonProgress(); } catch(e) { console.warn(e); }
 
-            console.log(`✅ Total de turmas únicas carregadas da coluna C: ${allGroupsFromSchedule.size}`);
-            console.log('📋 Lista completa de turmas:', [...allGroupsFromSchedule.values()]);
+            console.log(`✅ This Week: ${scheduleData.length} aulas`);
+            console.log(`✅ Next Week: ${nextWeekData.length} aulas`);
+            console.log(`✅ Total de turmas únicas: ${allGroupsFromSchedule.size}`);
+            console.log('📋 Lista completa de turmas:', [...allGroupsFromSchedule.values()].map(i => i.display));
 
         } catch (err) {
             console.error('❌ Erro na inicialização:', err);
@@ -1201,7 +1263,11 @@
         ];
         fallbackGroups.forEach(g => {
             const key = normalizeGroupKey(g);
-            if (!allGroupsFromSchedule.has(key)) allGroupsFromSchedule.set(key, g);
+            if (!allGroupsFromSchedule.has(key)) {
+                allGroupsFromSchedule.set(key, {
+                    display: g, book: '', room: '', modal: '', time: ''
+                });
+            }
         });
 
         scheduleData = [
@@ -1216,7 +1282,7 @@
             { book: 'Book 9', group: 'G9 - TURMA 9', room: 'Sala 9', modal: 'REGULAR', time: '15:10', dayName: 'Segunda', teacher: 'CAROL' },
             { book: 'Book 10', group: 'G10 - TURMA 10', room: 'Sala 10', modal: 'INTENSIVE', time: '11:10', dayName: 'Intensive', teacher: 'CARLA' }
         ];
-        allWeeks = { 'This Week': scheduleData };
+        nextWeekData = [];
     }
 
     function carregarAlunosFallback() {
@@ -1246,14 +1312,26 @@
         if (banner) banner.classList.add('hidden');
 
         try {
+            // This Week
             try {
-                const text = await fetchWithTimeout(SCHEDULE_URL, FETCH_TIMEOUT_MS);
-                parseScheduleCSV(text);
-            } catch(e) {
-                console.warn(e);
-                showErrorBanner('Falha ao atualizar cronograma.');
-            }
+                const text = await fetchWithTimeout(BASE_SCHEDULE_URL, FETCH_TIMEOUT_MS);
+                scheduleData = parseScheduleCSV(text, { mergeGroups: true });
+            } catch(e) { console.warn(e); }
 
+            // Next Week
+            try {
+                const result = await fetchNextWeekCSV();
+                if (result) {
+                    nextWeekData = parseScheduleCSV(result.text, { mergeGroups: true });
+                }
+            } catch(e) { console.warn(e); }
+
+            allWeeks = {
+                'This Week': scheduleData,
+                'Next Week': nextWeekData
+            };
+
+            // Alunos
             try {
                 const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
                 parseStudentsCSV(text);
@@ -1265,13 +1343,13 @@
             renderTeachers();
 
             if (!document.getElementById('schedule-screen').classList.contains('hidden') && currentTeacher) {
-                loadWeekData('This Week');
+                loadWeekData(currentWeekName);
             }
             if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) {
                 renderGroupLessonPlans();
             }
 
-            alert(`✅ Dados atualizados! ${allGroupsFromSchedule.size} turmas carregadas.`);
+            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length} aulas\nNext Week: ${nextWeekData.length} aulas\nTurmas únicas: ${allGroupsFromSchedule.size}`);
         } catch (err) {
             console.error(err);
             alert('❌ Erro ao atualizar dados.');
@@ -1284,24 +1362,17 @@
     // PARSER DO SCHEDULE
     // Captura TODAS as turmas da coluna C, mesmo sem professor/horário
     // ============================================
-    function parseScheduleCSV(text) {
-        if (!text) return;
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-        if(lines.length < 2) return;
+    function parseScheduleCSV(text, opts = {}) {
+        const { mergeGroups = false } = opts;
+        if (!text) return [];
 
-        // Ajuste conforme a planilha:
-        // 0 = (vazio)
-        // 1 = Book (coluna B)
-        // 2 = Group / Turma (coluna C)  ← OFICIAL
-        // 3 = Room
-        // 4 = Modal
-        // 5 = Time
-        // 6+ = Dias (Segunda a Sexta)
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+        if(lines.length < 2) return [];
+
         const COL_BOOK = 1, COL_GROUP = 2, COL_ROOM = 3, COL_MODAL = 4, COL_TIME = 5, DAYS_START = 6;
         const daysMap = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
 
-        scheduleData = [];
-        allGroupsFromSchedule = new Map();
+        const aulas = [];
         const chavesAulas = new Set();
 
         for(let i=1; i<lines.length; i++) {
@@ -1316,14 +1387,13 @@
             const modal = row[COL_MODAL] || '';
             const time = row[COL_TIME] || '';
 
-            // 🔑 Ignora linhas SEM turma. Só filtra por isso.
             if(!groupRaw || groupRaw.trim() === '') continue;
 
             const groupClean = cleanText(groupRaw);
             const bookClean = cleanText(book);
-
-            // 📌 REGISTRA A TURMA no mapa global (independente de ter professor)
             const normKey = normalizeGroupKey(groupClean);
+
+            // 📌 REGISTRA A TURMA no mapa global (mesmo sem professor/horário)
             if (!allGroupsFromSchedule.has(normKey)) {
                 allGroupsFromSchedule.set(normKey, {
                     display: groupClean,
@@ -1332,9 +1402,16 @@
                     modal: cleanText(modal),
                     time: cleanText(time)
                 });
+            } else if (mergeGroups) {
+                // Se já existe, mantém a primeira ocorrência (geralmente This Week é mais completa)
+                // Mas se a nova tiver book que a antiga não tinha, atualiza
+                const existing = allGroupsFromSchedule.get(normKey);
+                if (!existing.book && bookClean) existing.book = bookClean;
+                if (!existing.room && room) existing.room = cleanText(room);
+                if (!existing.modal && modal) existing.modal = cleanText(modal);
             }
 
-            // ⏭️ Se não tem horário, NÃO cria aula no cronograma, mas a turma JÁ foi registrada
+            // ⏭️ Se não tem horário, NÃO cria aula no cronograma (mas a turma JÁ foi registrada)
             if(!time) continue;
 
             for(let d=0; d<5; d++) {
@@ -1346,7 +1423,7 @@
                         if (chavesAulas.has(key)) continue;
                         chavesAulas.add(key);
 
-                        scheduleData.push({
+                        aulas.push({
                             book: bookClean,
                             group: groupClean,
                             room: cleanText(room),
@@ -1362,8 +1439,7 @@
             }
         }
 
-        allWeeks = { 'This Week': scheduleData };
-        console.log(`📋 Schedule: ${scheduleData.length} aulas | ${allGroupsFromSchedule.size} turmas únicas da coluna C`);
+        return aulas;
     }
 
     // ============================================
@@ -1482,7 +1558,6 @@
             return bookFromName;
         }
 
-        // Busca no mapa global normalizado
         const normKey = normalizeGroupKey(group);
         const info = allGroupsFromSchedule.get(normKey);
         if (info && info.book) {
@@ -1682,6 +1757,7 @@
         title.textContent = `CRONOGRAMA: ${name}`;
         title.style.color = color;
         renderWeekSelector();
+        // Sempre inicia em "This Week"
         loadWeekData('This Week');
     }
 
@@ -1690,13 +1766,17 @@
         if (!container) return;
         container.innerHTML = '';
         
-        Object.keys(allWeeks).forEach((weekName, index) => {
+        const weekNames = ['This Week', 'Next Week'];
+        const labels = { 'This Week': '📅 This Week', 'Next Week': '📅 Next Week' };
+
+        weekNames.forEach((weekName) => {
             const btn = document.createElement('button');
-            btn.textContent = weekName;
-            if(index === 0) btn.classList.add('active');
+            btn.textContent = labels[weekName] || weekName;
+            if (weekName === currentWeekName) btn.classList.add('active');
             btn.onclick = () => {
                 document.querySelectorAll('.week-selector button').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                currentWeekName = weekName;
                 loadWeekData(weekName);
             };
             container.appendChild(btn);
@@ -1704,6 +1784,7 @@
     }
 
     function loadWeekData(weekName) {
+        currentWeekName = weekName;
         const data = allWeeks[weekName] || [];
         currentWeekData = data.filter(item => item.teacher === currentTeacher.name);
         renderSchedule();
@@ -1718,11 +1799,14 @@
         container.innerHTML = '';
 
         if(currentWeekData.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color: var(--text-sec); margin-top:50px; font-size:1.1rem;">Nenhuma aula encontrada.</p>';
+            container.innerHTML = `<p style="text-align:center; color: var(--text-sec); margin-top:50px; font-size:1.1rem;">
+                Nenhuma aula encontrada em "${currentWeekName}".
+            </p>`;
             return;
         }
 
         const daysOrder = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
+        const isNextWeek = currentWeekName === 'Next Week';
         
         daysOrder.forEach(day => {
             const dayClasses = currentWeekData.filter(c => c.dayName === day);
@@ -1741,9 +1825,10 @@
                 dayClasses.forEach(cls => {
                     const card = document.createElement('div');
                     card.className = 'class-card';
+                    if (isNextWeek) card.classList.add('next-week-card');
                     
-                    const isSaved = isRadSaved(cls);
-                    const savedData = getRadSavedData(cls);
+                    const isSaved = !isNextWeek && isRadSaved(cls);
+                    const savedData = !isNextWeek ? getRadSavedData(cls) : null;
                     const status = savedData ? savedData.status : null;
 
                     if (isSaved) card.classList.add('rad-saved');
@@ -1773,8 +1858,21 @@
                         </div>`;
                     }
 
-                    const btnClass = isSaved ? 'saved' : '';
-                    const btnText = isSaved ? '✅ RAD PREENCHIDO' : 'ABRIR RAD';
+                    let btnHtml = '';
+                    if (isNextWeek) {
+                        // Em Next Week, botão apenas visual (não abre RAD)
+                        btnHtml = `<button class="action-btn" disabled style="opacity:0.6; cursor:not-allowed; background: var(--card-bg); color: var(--text-sec);">
+                            🔒 Aguardando próxima semana
+                        </button>`;
+                    } else {
+                        const btnClass = isSaved ? 'saved' : '';
+                        const btnText = isSaved ? '✅ RAD PREENCHIDO' : 'ABRIR RAD';
+                        btnHtml = `<button class="action-btn ${btnClass}" onclick="openRad('${cls.time.replace(/'/g, "\\'")}', '${cls.group.replace(/'/g, "\\'")}', '${(cls.book||'').replace(/'/g, "\\'")}', '${(cls.room||'').replace(/'/g, "\\'")}', '${cls.dayName}')">
+                            ${btnText}
+                        </button>`;
+                    }
+
+                    const nextWeekBadge = isNextWeek ? '<span class="badge badge-next-week">📅 PRÓXIMA SEMANA</span>' : '';
 
                     card.innerHTML = `
                         ${statusBadge}
@@ -1786,12 +1884,11 @@
                             <span class="badge badge-room">Sala: ${cls.room || '-'}</span>
                             <span class="badge badge-modal">${cls.modal || 'REGULAR'}</span>
                             ${progressText ? `<span class="badge" style="background: var(--success);">${progressText}</span>` : ''}
+                            ${nextWeekBadge}
                             ${isSaved ? '<span class="badge badge-saved">✅ SALVO</span>' : ''}
                         </div>
                         ${nextLessonText}
-                        <button class="action-btn ${btnClass}" onclick="openRad('${cls.time.replace(/'/g, "\\'")}', '${cls.group.replace(/'/g, "\\'")}', '${(cls.book||'').replace(/'/g, "\\'")}', '${(cls.room||'').replace(/'/g, "\\'")}', '${cls.dayName}')">
-                            ${btnText}
-                        </button>
+                        ${btnHtml}
                     `;
                     list.appendChild(card);
                 });
@@ -2007,7 +2104,6 @@
 
     // ============================================
     // LESSON PLANS POR TURMA
-    // USA allGroupsFromSchedule (TODAS as turmas da coluna C)
     // ============================================
     function saveLessonProgress() {
         persistLessonProgress();
@@ -2019,7 +2115,6 @@
         const container = document.getElementById('lesson-plan-content');
         if (!container) return;
         
-        // ✅ Fonte oficial: TODAS as turmas da coluna C, sem depender de ter aula agendada
         const groups = [...allGroupsFromSchedule.values()]
             .map(info => info.display)
             .sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
@@ -2195,7 +2290,6 @@
         const select = document.getElementById('att-group-select');
         if (!select) return;
         
-        // Fonte: allGroupsFromSchedule (TODAS as turmas da coluna C)
         const groups = [...allGroupsFromSchedule.values()]
             .map(info => info.display)
             .sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
