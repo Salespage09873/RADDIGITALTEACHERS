@@ -858,7 +858,6 @@
     const SCHEDULE_NEXT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz-bXwql9tWFhbu7vU4QV2Mh2X-wS8Dg104Y31VzdsPCdQM08rUPGSBphEfeL94kbgCnJOJorYwFjO/pub?output=csv';
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRJ50UB29UDqy1PTkOJrUI81d4kZtzB0Qyfo1wPs2rbm9uftJdlcH88h-sfDrxW2o7Fi_5LZVSI4jul/pub?gid=335122343&single=true&output=csv';
 
-    // ✅ Planilha LESSON PLANS (kids AW / WF)
     const LESSON_PLANS_BASE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR8P-aCBn4HeNpri88Hd-VWSfD8pXaNZ5Y0vYCJ_FSCmDGpEJDHwnRU_72NS7rhpLEQAa_CzGklUu2p/pub';
 
     const KIDS_BOOK_GIDS = {
@@ -925,9 +924,6 @@
         }
     })();
 
-    // ============================================
-    // ESTRUTURA DOS BOOKS KIDS (carregada da planilha)
-    // ============================================
     const KIDS_BOOK_STRUCTURE = {};
 
     // ============================================
@@ -1029,7 +1025,6 @@
         }, 20000);
 
         try {
-            // ---------- LESSON PLANS KIDS ----------
             showLoadingMsg('Baixando lesson plans kids (AW / WF)...');
             try {
                 await loadKidsLessonPlans();
@@ -1037,7 +1032,6 @@
                 console.warn('Falha ao carregar lesson plans kids:', e);
             }
 
-            // ---------- THIS WEEK ----------
             showLoadingMsg('Baixando cronograma (This Week)...');
             try {
                 const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
@@ -1047,7 +1041,6 @@
                 console.warn('Falha no This Week:', e);
             }
 
-            // ---------- NEXT WEEK ----------
             showLoadingMsg('Baixando cronograma (Next Week)...');
             try {
                 const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS);
@@ -1067,7 +1060,6 @@
                 'Next Week': nextWeekData
             };
 
-            // ---------- ALUNOS ----------
             showLoadingMsg('Baixando lista de alunos...');
             try {
                 const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
@@ -1078,7 +1070,6 @@
                 carregarAlunosFallback();
             }
 
-            // ---------- PROCESSAMENTO ----------
             showLoadingMsg('Processando dados...');
             try { buildGroupBookMap(); } catch(e) { console.warn(e); }
             try { renderTeachers(); } catch(e) { console.warn(e); }
@@ -1429,7 +1420,13 @@
     }
 
     // ============================================
-    // MAPEAMENTO TURMA → BOOK (com match flexível para kids)
+    // MAPEAMENTO TURMA → BOOK
+    // REGRAS:
+    //   1. Igualdade exata com kids book (coluna B) → kids
+    //   2. Match parcial com kids book MAS só se 2+ palavras na coluna B
+    //   3. Gx no nome da turma → Book X
+    //   4. "Book X" na coluna B → Book X
+    //   5. Fallback → Book 1
     // ============================================
     function buildGroupBookMap() {
         groupBookMap = {};
@@ -1438,34 +1435,54 @@
             const group = info.display;
             if (groupBookMap[group]) return;
 
-            // 1️⃣ Book kids (coluna B) - match flexível
+            // 1️⃣ Book kids EXATO via coluna B
             if (info.book) {
                 const bookNorm = normalizeGroupKeyAgressive(info.book);
-                const kidsBookName = Object.keys(KIDS_BOOK_GIDS).find(k => {
-                    const kNorm = normalizeGroupKeyAgressive(k);
-                    return kNorm === bookNorm 
-                        || kNorm.includes(bookNorm) 
-                        || bookNorm.includes(kNorm);
-                });
-                if (kidsBookName) {
-                    groupBookMap[group] = kidsBookName;
-                    console.log(`🎯 Kids: "${group}" → "${kidsBookName}" (via coluna B)`);
+                const exactMatch = Object.keys(KIDS_BOOK_GIDS).find(k => 
+                    normalizeGroupKeyAgressive(k) === bookNorm
+                );
+                if (exactMatch) {
+                    groupBookMap[group] = exactMatch;
+                    console.log(`🎯 Kids EXATO: "${group}" → "${exactMatch}"`);
                     return;
+                }
+                // Match parcial APENAS se o nome tem 2+ palavras (evita "AW" sozinho)
+                const bookWords = bookNorm.split(' ').filter(w => w.length > 1);
+                if (bookWords.length >= 2) {
+                    const partialMatch = Object.keys(KIDS_BOOK_GIDS).find(k => {
+                        const kNorm = normalizeGroupKeyAgressive(k);
+                        return kNorm.includes(bookNorm) || bookNorm.includes(kNorm);
+                    });
+                    if (partialMatch) {
+                        groupBookMap[group] = partialMatch;
+                        console.log(`🎯 Kids PARCIAL: "${group}" → "${partialMatch}" (via coluna B "${info.book}")`);
+                        return;
+                    }
                 }
             }
 
-            // 1️⃣b Book kids pelo nome da própria turma
+            // 1️⃣b Book kids EXATO via nome da turma
             const groupNorm = normalizeGroupKeyAgressive(group);
-            const kidsFromGroupName = Object.keys(KIDS_BOOK_GIDS).find(k => {
-                const kNorm = normalizeGroupKeyAgressive(k);
-                return kNorm === groupNorm 
-                    || groupNorm.includes(kNorm) 
-                    || kNorm.includes(groupNorm);
-            });
-            if (kidsFromGroupName) {
-                groupBookMap[group] = kidsFromGroupName;
-                console.log(`🎯 Kids: "${group}" → "${kidsFromGroupName}" (via nome da turma)`);
+            const kidsExact = Object.keys(KIDS_BOOK_GIDS).find(k => 
+                normalizeGroupKeyAgressive(k) === groupNorm
+            );
+            if (kidsExact) {
+                groupBookMap[group] = kidsExact;
+                console.log(`🎯 Kids EXATO (nome turma): "${group}" → "${kidsExact}"`);
                 return;
+            }
+            // Match parcial pelo nome da turma APENAS se 2+ palavras
+            const groupWords = groupNorm.split(' ').filter(w => w.length > 1);
+            if (groupWords.length >= 2) {
+                const kidsPartial = Object.keys(KIDS_BOOK_GIDS).find(k => {
+                    const kNorm = normalizeGroupKeyAgressive(k);
+                    return kNorm.includes(groupNorm) || groupNorm.includes(kNorm);
+                });
+                if (kidsPartial) {
+                    groupBookMap[group] = kidsPartial;
+                    console.log(`🎯 Kids PARCIAL (nome turma): "${group}" → "${kidsPartial}"`);
+                    return;
+                }
             }
 
             // 2️⃣ Código Gx no nome
@@ -1519,32 +1536,48 @@
         const normKey = normalizeGroupKey(group);
         const info = allGroupsFromSchedule.get(normKey);
 
-        // 1️⃣ Book kids (coluna B)
+        // 1️⃣ Book kids EXATO via coluna B
         if (info && info.book) {
             const bookNorm = normalizeGroupKeyAgressive(info.book);
-            const kidsBookName = Object.keys(KIDS_BOOK_GIDS).find(k => {
-                const kNorm = normalizeGroupKeyAgressive(k);
-                return kNorm === bookNorm 
-                    || kNorm.includes(bookNorm) 
-                    || bookNorm.includes(kNorm);
-            });
-            if (kidsBookName) {
-                groupBookMap[group] = kidsBookName;
-                return kidsBookName;
+            const exactMatch = Object.keys(KIDS_BOOK_GIDS).find(k => 
+                normalizeGroupKeyAgressive(k) === bookNorm
+            );
+            if (exactMatch) {
+                groupBookMap[group] = exactMatch;
+                return exactMatch;
+            }
+            const bookWords = bookNorm.split(' ').filter(w => w.length > 1);
+            if (bookWords.length >= 2) {
+                const partialMatch = Object.keys(KIDS_BOOK_GIDS).find(k => {
+                    const kNorm = normalizeGroupKeyAgressive(k);
+                    return kNorm.includes(bookNorm) || bookNorm.includes(kNorm);
+                });
+                if (partialMatch) {
+                    groupBookMap[group] = partialMatch;
+                    return partialMatch;
+                }
             }
         }
 
-        // 1️⃣b Book kids pelo nome da turma
+        // 1️⃣b Book kids EXATO via nome da turma
         const groupNorm = normalizeGroupKeyAgressive(group);
-        const kidsFromGroupName = Object.keys(KIDS_BOOK_GIDS).find(k => {
-            const kNorm = normalizeGroupKeyAgressive(k);
-            return kNorm === groupNorm 
-                || groupNorm.includes(kNorm) 
-                || kNorm.includes(groupNorm);
-        });
-        if (kidsFromGroupName) {
-            groupBookMap[group] = kidsFromGroupName;
-            return kidsFromGroupName;
+        const kidsExact = Object.keys(KIDS_BOOK_GIDS).find(k => 
+            normalizeGroupKeyAgressive(k) === groupNorm
+        );
+        if (kidsExact) {
+            groupBookMap[group] = kidsExact;
+            return kidsExact;
+        }
+        const groupWords = groupNorm.split(' ').filter(w => w.length > 1);
+        if (groupWords.length >= 2) {
+            const kidsPartial = Object.keys(KIDS_BOOK_GIDS).find(k => {
+                const kNorm = normalizeGroupKeyAgressive(k);
+                return kNorm.includes(groupNorm) || groupNorm.includes(kNorm);
+            });
+            if (kidsPartial) {
+                groupBookMap[group] = kidsPartial;
+                return kidsPartial;
+            }
         }
 
         // 2️⃣ Gx no nome
@@ -1579,7 +1612,6 @@
     function getGroupLessons(group) {
         const bookName = getBookForGroup(group);
         
-        // Book kids (AW / WF)
         if (KIDS_BOOK_STRUCTURE[bookName]) {
             const lessons = KIDS_BOOK_STRUCTURE[bookName].lessons;
             return lessons.map((label, index) => ({
@@ -1591,7 +1623,6 @@
             }));
         }
 
-        // Books 1-10
         const bookData = BOOK_STRUCTURE[bookName];
         if (bookData && bookData.lessons) {
             return bookData.lessons.map((label, index) => ({
