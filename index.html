@@ -1194,7 +1194,6 @@
 
     // ============================================
     // PARSER DOS ALUNOS
-    // Lê SOMENTE colunas A (turma) e B (aluno)
     // ============================================
     function parseStudentsCSV(text) {
         if (!text) return;
@@ -1251,24 +1250,12 @@
         return str.toUpperCase().replace(/\s+/g, ' ').trim();
     }
 
-    /**
-     * Normalização agressiva:
-     * - Remove acentos
-     * - MANTÉM o conteúdo dos parênteses (não apaga!)
-     * - Remove símbolos especiais (~, etc)
-     * - Normaliza espaços
-     * 
-     * Ex: "~Split Timbó (Mufasa)" → "SPLIT TIMBO MUFASA"
-     * Ex: "(Connect) Get it"      → "CONNECT GET IT"
-     */
     function normalizeGroupKeyAgressive(str) {
         if (!str) return '';
         return str
             .toUpperCase()
             .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-            // Remove parênteses mas MANTÉM o conteúdo dentro
             .replace(/[\(\)\[\]]/g, ' ')
-            // Remove outros símbolos especiais
             .replace(/[~\-_/\\|:;,.!?@#$%^&*+=<>"']/g, ' ')
             .replace(/[^A-Z0-9 ]+/g, ' ')
             .replace(/\s+/g, ' ')
@@ -1276,7 +1263,7 @@
     }
 
     // ============================================
-    // BUSCA DE ALUNOS POR TURMA (com tolerância + regras especiais)
+    // BUSCA DE ALUNOS POR TURMA
     // ============================================
     function findStudentsForGroup(groupName, bookHint) {
         if (!groupName) return [];
@@ -1288,10 +1275,7 @@
         const keys = Object.keys(studentsData);
 
         // ============================================
-        // 🔧 REGRA ESPECIAL 1: turmas "CONNECT"
-        // Se o nome da turma do Schedule for CONNECT:
-        //   - Book tem "KIDS"   → (Connect) Kids
-        //   - Qualquer outro    → (Connect) Get it
+        // REGRA ESPECIAL 1: CONNECT
         // ============================================
         if (groupUpper.includes('CONNECT')) {
             const wantKids = bookUpper.includes('KIDS') || targetKey.includes('KIDS');
@@ -1311,30 +1295,30 @@
         }
 
         // ============================================
-        // 🔧 REGRA ESPECIAL 2: turmas "MUFASA" / "SPLIT TIMBÓ"
-        // A lista de alunos tem "~Split Timbó (Mufasa)"
-        // O Schedule pode ter "MUFASA" ou "SPLIT TIMBO"
+        // REGRA ESPECIAL 2: MUFASA / TIMBÓ
+        // Usa MUFASA ou TIMBO (não usar SPLIT, porque existe "Split Itajaí")
         // ============================================
         if (groupUpper.includes('MUFASA') 
-            || groupUpper.includes('SPLIT') 
+            || groupUpper.includes('TIMBÓ') 
+            || groupUpper.includes('TIMBO')
             || targetKey.includes('MUFASA') 
-            || targetKey.includes('SPLIT')) {
+            || targetKey.includes('TIMBO')) {
             
             const match = keys.find(k => {
                 const kNorm = normalizeGroupKeyAgressive(k);
-                return kNorm.includes('MUFASA') || kNorm.includes('SPLIT');
+                return kNorm.includes('MUFASA') || kNorm.includes('TIMBO');
             });
 
             if (match && studentsData[match]) {
-                console.log(`🎯 MUFASA/SPLIT → "${match}"`);
+                console.log(`🎯 MUFASA/TIMBÓ → "${match}"`);
                 return studentsData[match];
             }
 
-            console.log(`⚠️ MUFASA: não achei "MUFASA" ou "SPLIT" na lista de alunos.`);
+            console.log(`⚠️ MUFASA: não achei "MUFASA" ou "TIMBO" na lista de alunos.`);
         }
 
         // ============================================
-        // BUSCA GENÉRICA (resto das turmas)
+        // BUSCA GENÉRICA
         // ============================================
         function score(k) {
             const kNorm = normalizeGroupKeyAgressive(k);
@@ -1907,7 +1891,6 @@
         }
     }
 
-    // ✅ Recebe o book como parâmetro pra desempatar turmas com mesmo nome
     function renderAttendanceCheckboxes(groupRaw, bookHint, presentList) {
         const container = document.getElementById('attendance-container');
         if (!container) return;
