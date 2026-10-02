@@ -1048,18 +1048,9 @@
     // CONFIGURAÇÕES
     // ============================================
     const BASE_SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
+    const NEXT_WEEK_URL = BASE_SCHEDULE_URL + '&sheet=' + encodeURIComponent('NEXT WEEK');
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
     const FETCH_TIMEOUT_MS = 10000;
-
-    // Variações possíveis do nome da aba "Next Week"
-    // Será tentado na ordem: primeiro as mais prováveis
-    const NEXT_WEEK_SHEET_NAMES = [
-        'NEXT WEEK',
-        'Next Week',
-        'Next week',
-        'NEXT_WEEK',
-        'NEXTWEEK'
-    ];
 
     const VALID_TEACHERS = [
         { name: 'MYCAEL', color: '#0d6efd' },
@@ -1117,7 +1108,7 @@
     let scheduleData = [];                 // aulas de "This Week"
     let nextWeekData = [];                 // aulas de "Next Week"
     let studentsData = {};
-    let allGroupsFromSchedule = new Map(); // chave normalizada → info (de TODAS as turmas da coluna C)
+    let allGroupsFromSchedule = new Map(); // chave normalizada → info
     let currentTeacher = null;
     let currentWeekName = 'This Week';
     let currentWeekData = [];
@@ -1153,30 +1144,6 @@
     }
 
     // ============================================
-    // URL DA ABA NEXT WEEK (tenta várias variações)
-    // ============================================
-    function buildSheetUrl(sheetName) {
-        return `${BASE_SCHEDULE_URL}&sheet=${encodeURIComponent(sheetName)}`;
-    }
-
-    async function fetchNextWeekCSV() {
-        for (const name of NEXT_WEEK_SHEET_NAMES) {
-            try {
-                const url = buildSheetUrl(name);
-                const text = await fetchWithTimeout(url, FETCH_TIMEOUT_MS);
-                if (text && text.trim().length > 10 && text.toLowerCase().includes(',')) {
-                    console.log(`✅ Next Week carregada com aba "${name}"`);
-                    return { text, sheetName: name };
-                }
-            } catch (e) {
-                // Tenta o próximo
-            }
-        }
-        console.warn('⚠️ Não foi possível carregar Next Week em nenhuma variação de nome.');
-        return null;
-    }
-
-    // ============================================
     // INICIALIZAÇÃO
     // ============================================
     window.addEventListener('DOMContentLoaded', async () => {
@@ -1190,7 +1157,8 @@
             showLoadingMsg('Baixando cronograma (This Week)...');
             try {
                 const text = await fetchWithTimeout(BASE_SCHEDULE_URL, FETCH_TIMEOUT_MS);
-                scheduleData = parseScheduleCSV(text, { mergeGroups: true });
+                scheduleData = parseScheduleCSV(text);
+                console.log(`📋 This Week: ${scheduleData.length} aulas`);
             } catch (e) {
                 console.warn('Falha no This Week:', e);
             }
@@ -1198,10 +1166,9 @@
             // ---------- NEXT WEEK ----------
             showLoadingMsg('Baixando cronograma (Next Week)...');
             try {
-                const result = await fetchNextWeekCSV();
-                if (result) {
-                    nextWeekData = parseScheduleCSV(result.text, { mergeGroups: true });
-                }
+                const text = await fetchWithTimeout(NEXT_WEEK_URL, FETCH_TIMEOUT_MS);
+                nextWeekData = parseScheduleCSV(text);
+                console.log(`📋 Next Week: ${nextWeekData.length} aulas`);
             } catch (e) {
                 console.warn('Falha no Next Week:', e);
             }
@@ -1239,10 +1206,8 @@
             } catch(e) { console.warn(e); }
             try { loadLessonProgress(); } catch(e) { console.warn(e); }
 
-            console.log(`✅ This Week: ${scheduleData.length} aulas`);
-            console.log(`✅ Next Week: ${nextWeekData.length} aulas`);
             console.log(`✅ Total de turmas únicas: ${allGroupsFromSchedule.size}`);
-            console.log('📋 Lista completa de turmas:', [...allGroupsFromSchedule.values()].map(i => i.display));
+            console.log('📋 Turmas:', [...allGroupsFromSchedule.values()].map(i => i.display));
 
         } catch (err) {
             console.error('❌ Erro na inicialização:', err);
@@ -1315,15 +1280,13 @@
             // This Week
             try {
                 const text = await fetchWithTimeout(BASE_SCHEDULE_URL, FETCH_TIMEOUT_MS);
-                scheduleData = parseScheduleCSV(text, { mergeGroups: true });
+                scheduleData = parseScheduleCSV(text);
             } catch(e) { console.warn(e); }
 
             // Next Week
             try {
-                const result = await fetchNextWeekCSV();
-                if (result) {
-                    nextWeekData = parseScheduleCSV(result.text, { mergeGroups: true });
-                }
+                const text = await fetchWithTimeout(NEXT_WEEK_URL, FETCH_TIMEOUT_MS);
+                nextWeekData = parseScheduleCSV(text);
             } catch(e) { console.warn(e); }
 
             allWeeks = {
@@ -1349,7 +1312,7 @@
                 renderGroupLessonPlans();
             }
 
-            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length} aulas\nNext Week: ${nextWeekData.length} aulas\nTurmas únicas: ${allGroupsFromSchedule.size}`);
+            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length} aulas\nNext Week: ${nextWeekData.length} aulas\nTurmas: ${allGroupsFromSchedule.size}`);
         } catch (err) {
             console.error(err);
             alert('❌ Erro ao atualizar dados.');
@@ -1360,10 +1323,9 @@
 
     // ============================================
     // PARSER DO SCHEDULE
-    // Captura TODAS as turmas da coluna C, mesmo sem professor/horário
+    // Registra TODAS as turmas da coluna C, mesmo sem professor/horário
     // ============================================
-    function parseScheduleCSV(text, opts = {}) {
-        const { mergeGroups = false } = opts;
+    function parseScheduleCSV(text) {
         if (!text) return [];
 
         const lines = text.split('\n').map(l => l.trim()).filter(l => l);
@@ -1393,7 +1355,7 @@
             const bookClean = cleanText(book);
             const normKey = normalizeGroupKey(groupClean);
 
-            // 📌 REGISTRA A TURMA no mapa global (mesmo sem professor/horário)
+            // Registra a turma no mapa global
             if (!allGroupsFromSchedule.has(normKey)) {
                 allGroupsFromSchedule.set(normKey, {
                     display: groupClean,
@@ -1402,16 +1364,15 @@
                     modal: cleanText(modal),
                     time: cleanText(time)
                 });
-            } else if (mergeGroups) {
-                // Se já existe, mantém a primeira ocorrência (geralmente This Week é mais completa)
-                // Mas se a nova tiver book que a antiga não tinha, atualiza
+            } else {
+                // Atualiza info se estiver faltando
                 const existing = allGroupsFromSchedule.get(normKey);
                 if (!existing.book && bookClean) existing.book = bookClean;
                 if (!existing.room && room) existing.room = cleanText(room);
                 if (!existing.modal && modal) existing.modal = cleanText(modal);
             }
 
-            // ⏭️ Se não tem horário, NÃO cria aula no cronograma (mas a turma JÁ foi registrada)
+            // Se não tem horário, não cria aula no cronograma
             if(!time) continue;
 
             for(let d=0; d<5; d++) {
@@ -1503,7 +1464,7 @@
     function buildGroupBookMap() {
         groupBookMap = {};
 
-        allGroupsFromSchedule.forEach((info, normKey) => {
+        allGroupsFromSchedule.forEach((info) => {
             const group = info.display;
             if (groupBookMap[group]) return;
 
@@ -1756,8 +1717,8 @@
         const title = document.getElementById('current-teacher-name');
         title.textContent = `CRONOGRAMA: ${name}`;
         title.style.color = color;
+        currentWeekName = 'This Week';
         renderWeekSelector();
-        // Sempre inicia em "This Week"
         loadWeekData('This Week');
     }
 
@@ -1860,7 +1821,6 @@
 
                     let btnHtml = '';
                     if (isNextWeek) {
-                        // Em Next Week, botão apenas visual (não abre RAD)
                         btnHtml = `<button class="action-btn" disabled style="opacity:0.6; cursor:not-allowed; background: var(--card-bg); color: var(--text-sec);">
                             🔒 Aguardando próxima semana
                         </button>`;
@@ -2130,7 +2090,7 @@
         container.innerHTML = `
             <h2 style="color: var(--primary); text-align: center; margin-bottom: 30px;">📚 Lesson Plans por Turma</h2>
             <p style="text-align:center; color: var(--text-sec); margin-bottom: 20px; font-size: 0.9rem;">
-                Total: ${groups.length} turmas da coluna C do Schedule
+                Total: ${groups.length} turmas
             </p>
             <div class="group-lesson-grid" id="group-lesson-grid"></div>
         `;
