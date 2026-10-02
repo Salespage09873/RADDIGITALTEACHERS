@@ -227,10 +227,6 @@
             opacity: 1;
         }
 
-        .class-card.next-week-card {
-            border-left: 5px solid var(--warning);
-        }
-
         .class-time {
             font-size: 1.3rem;
             color: var(--primary);
@@ -262,7 +258,6 @@
         .badge-room { background: var(--success); }
         .badge-modal { background: var(--primary); }
         .badge-saved { background: var(--success); }
-        .badge-next-week { background: var(--warning); color: #000; }
 
         .action-btn {
             width: 100%;
@@ -896,9 +891,6 @@
                     ← Voltar
                 </button>
                 <h2 id="current-teacher-name" style="color: var(--primary); text-align: center;"></h2>
-                
-                <div class="week-selector" id="week-selector">
-                </div>
             </div>
 
             <div id="schedule-content">
@@ -1047,11 +1039,8 @@
     // ============================================
     // CONFIGURAÇÕES
     // ============================================
-    // Abas: "1" (This Week) e "2" (Next Week)
-    // A1 de cada aba tem o título ("This Week" / "Next Week"), que será ignorado no parser
-    const BASE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal';
-    const SCHEDULE_THIS_URL = BASE_URL + '/gviz/tq?tqx=out:csv&sheet=1';
-    const SCHEDULE_NEXT_URL = BASE_URL + '/gviz/tq?tqx=out:csv&sheet=2';
+    // ✅ Voltando ao que funcionava: link /pub?output=csv (baixa a aba ativa/pré-definida)
+    const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
     const FETCH_TIMEOUT_MS = 10000;
 
@@ -1109,13 +1098,10 @@
     // ESTADO GLOBAL
     // ============================================
     let scheduleData = [];
-    let nextWeekData = [];
     let studentsData = {};
     let allGroupsFromSchedule = new Map();
     let currentTeacher = null;
-    let currentWeekName = 'This Week';
     let currentWeekData = [];
-    let allWeeks = {};
     let currentGroup = null;
     let currentLessonProgress = {};
     let groupBookMap = {};
@@ -1156,37 +1142,21 @@
         }, 15000);
 
         try {
-            // ---------- ABA 1 (This Week) ----------
-            showLoadingMsg('Baixando cronograma (This Week)...');
+            showLoadingMsg('Baixando cronograma...');
+            let scheduleOk = false;
             try {
-                const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
+                const text = await fetchWithTimeout(SCHEDULE_URL, FETCH_TIMEOUT_MS);
                 scheduleData = parseScheduleCSV(text);
-                console.log(`📋 This Week (aba 1): ${scheduleData.length} aulas`);
+                scheduleOk = scheduleData.length > 0;
+                console.log(`📋 Cronograma: ${scheduleData.length} aulas`);
             } catch (e) {
-                console.warn('Falha na aba 1:', e);
+                console.warn('Falha no cronograma:', e);
             }
-
-            // ---------- ABA 2 (Next Week) ----------
-            showLoadingMsg('Baixando cronograma (Next Week)...');
-            try {
-                const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS);
-                nextWeekData = parseScheduleCSV(text);
-                console.log(`📋 Next Week (aba 2): ${nextWeekData.length} aulas`);
-            } catch (e) {
-                console.warn('Falha na aba 2:', e);
-            }
-
-            if (scheduleData.length === 0 && nextWeekData.length === 0) {
+            if (!scheduleOk) {
                 carregarScheduleFallback();
                 showErrorBanner('Não foi possível carregar o cronograma. Exibindo dados de exemplo.');
             }
 
-            allWeeks = {
-                'This Week': scheduleData,
-                'Next Week': nextWeekData
-            };
-
-            // ---------- ALUNOS ----------
             showLoadingMsg('Baixando lista de alunos...');
             try {
                 const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
@@ -1196,7 +1166,6 @@
                 carregarAlunosFallback();
             }
 
-            // ---------- PROCESSAMENTO ----------
             showLoadingMsg('Processando dados...');
             try { buildGroupBookMap(); } catch(e) { console.warn(e); }
             try { renderTeachers(); } catch(e) { console.warn(e); }
@@ -1209,7 +1178,6 @@
             try { loadLessonProgress(); } catch(e) { console.warn(e); }
 
             console.log(`✅ Total de turmas únicas: ${allGroupsFromSchedule.size}`);
-            console.log('📋 Turmas:', [...allGroupsFromSchedule.values()].map(i => i.display));
 
         } catch (err) {
             console.error('❌ Erro na inicialização:', err);
@@ -1249,7 +1217,6 @@
             { book: 'Book 9', group: 'G9 - TURMA 9', room: 'Sala 9', modal: 'REGULAR', time: '15:10', dayName: 'Segunda', teacher: 'CAROL' },
             { book: 'Book 10', group: 'G10 - TURMA 10', room: 'Sala 10', modal: 'INTENSIVE', time: '11:10', dayName: 'Intensive', teacher: 'CARLA' }
         ];
-        nextWeekData = [];
     }
 
     function carregarAlunosFallback() {
@@ -1280,19 +1247,12 @@
 
         try {
             try {
-                const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
+                const text = await fetchWithTimeout(SCHEDULE_URL, FETCH_TIMEOUT_MS);
                 scheduleData = parseScheduleCSV(text);
-            } catch(e) { console.warn(e); }
-
-            try {
-                const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS);
-                nextWeekData = parseScheduleCSV(text);
-            } catch(e) { console.warn(e); }
-
-            allWeeks = {
-                'This Week': scheduleData,
-                'Next Week': nextWeekData
-            };
+            } catch(e) {
+                console.warn(e);
+                showErrorBanner('Falha ao atualizar cronograma.');
+            }
 
             try {
                 const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
@@ -1305,13 +1265,13 @@
             renderTeachers();
 
             if (!document.getElementById('schedule-screen').classList.contains('hidden') && currentTeacher) {
-                loadWeekData(currentWeekName);
+                loadWeekData();
             }
             if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) {
                 renderGroupLessonPlans();
             }
 
-            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length} aulas\nNext Week: ${nextWeekData.length} aulas\nTurmas: ${allGroupsFromSchedule.size}`);
+            alert(`✅ Dados atualizados! ${scheduleData.length} aulas carregadas.`);
         } catch (err) {
             console.error(err);
             alert('❌ Erro ao atualizar dados.');
@@ -1322,7 +1282,6 @@
 
     // ============================================
     // PARSER DO SCHEDULE
-    // Pula a linha A1 (título) e deduplica
     // ============================================
     function parseScheduleCSV(text) {
         if (!text) return [];
@@ -1330,14 +1289,6 @@
         const lines = text.split('\n').map(l => l.trim()).filter(l => l);
         if(lines.length < 2) return [];
 
-        // Colunas (0-indexado):
-        // 0 = A (ignorada — na aba 1 é "This Week" e na aba 2 é "Next Week")
-        // 1 = B (Book)
-        // 2 = C (Turma)
-        // 3 = D (Sala)
-        // 4 = E (Modal)
-        // 5 = F (Horário)
-        // 6+ = G+ (Segunda..Sexta)
         const COL_BOOK = 1, COL_GROUP = 2, COL_ROOM = 3, COL_MODAL = 4, COL_TIME = 5, DAYS_START = 6;
         const daysMap = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
 
@@ -1356,7 +1307,6 @@
             const modal = row[COL_MODAL] || '';
             const time = row[COL_TIME] || '';
 
-            // Pula linhas que não tenham turma (cabeçalhos extras, linhas vazias)
             if(!groupRaw || groupRaw.trim() === '') continue;
 
             const groupClean = cleanText(groupRaw);
@@ -1722,37 +1672,11 @@
         const title = document.getElementById('current-teacher-name');
         title.textContent = `CRONOGRAMA: ${name}`;
         title.style.color = color;
-        currentWeekName = 'This Week';
-        renderWeekSelector();
-        loadWeekData('This Week');
+        loadWeekData();
     }
 
-    function renderWeekSelector() {
-        const container = document.getElementById('week-selector');
-        if (!container) return;
-        container.innerHTML = '';
-        
-        const weekNames = ['This Week', 'Next Week'];
-        const labels = { 'This Week': '📅 This Week', 'Next Week': '📅 Next Week' };
-
-        weekNames.forEach((weekName) => {
-            const btn = document.createElement('button');
-            btn.textContent = labels[weekName] || weekName;
-            if (weekName === currentWeekName) btn.classList.add('active');
-            btn.onclick = () => {
-                document.querySelectorAll('.week-selector button').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentWeekName = weekName;
-                loadWeekData(weekName);
-            };
-            container.appendChild(btn);
-        });
-    }
-
-    function loadWeekData(weekName) {
-        currentWeekName = weekName;
-        const data = allWeeks[weekName] || [];
-        currentWeekData = data.filter(item => item.teacher === currentTeacher.name);
+    function loadWeekData() {
+        currentWeekData = scheduleData.filter(item => item.teacher === currentTeacher.name);
         renderSchedule();
     }
 
@@ -1766,13 +1690,12 @@
 
         if(currentWeekData.length === 0) {
             container.innerHTML = `<p style="text-align:center; color: var(--text-sec); margin-top:50px; font-size:1.1rem;">
-                Nenhuma aula encontrada em "${currentWeekName}".
+                Nenhuma aula encontrada.
             </p>`;
             return;
         }
 
         const daysOrder = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
-        const isNextWeek = currentWeekName === 'Next Week';
         
         daysOrder.forEach(day => {
             const dayClasses = currentWeekData.filter(c => c.dayName === day);
@@ -1791,10 +1714,9 @@
                 dayClasses.forEach(cls => {
                     const card = document.createElement('div');
                     card.className = 'class-card';
-                    if (isNextWeek) card.classList.add('next-week-card');
                     
-                    const isSaved = !isNextWeek && isRadSaved(cls);
-                    const savedData = !isNextWeek ? getRadSavedData(cls) : null;
+                    const isSaved = isRadSaved(cls);
+                    const savedData = getRadSavedData(cls);
                     const status = savedData ? savedData.status : null;
 
                     if (isSaved) card.classList.add('rad-saved');
@@ -1824,20 +1746,8 @@
                         </div>`;
                     }
 
-                    let btnHtml = '';
-                    if (isNextWeek) {
-                        btnHtml = `<button class="action-btn" disabled style="opacity:0.6; cursor:not-allowed; background: var(--card-bg); color: var(--text-sec);">
-                            🔒 Aguardando próxima semana
-                        </button>`;
-                    } else {
-                        const btnClass = isSaved ? 'saved' : '';
-                        const btnText = isSaved ? '✅ RAD PREENCHIDO' : 'ABRIR RAD';
-                        btnHtml = `<button class="action-btn ${btnClass}" onclick="openRad('${cls.time.replace(/'/g, "\\'")}', '${cls.group.replace(/'/g, "\\'")}', '${(cls.book||'').replace(/'/g, "\\'")}', '${(cls.room||'').replace(/'/g, "\\'")}', '${cls.dayName}')">
-                            ${btnText}
-                        </button>`;
-                    }
-
-                    const nextWeekBadge = isNextWeek ? '<span class="badge badge-next-week">📅 PRÓXIMA SEMANA</span>' : '';
+                    const btnClass = isSaved ? 'saved' : '';
+                    const btnText = isSaved ? '✅ RAD PREENCHIDO' : 'ABRIR RAD';
 
                     card.innerHTML = `
                         ${statusBadge}
@@ -1849,11 +1759,12 @@
                             <span class="badge badge-room">Sala: ${cls.room || '-'}</span>
                             <span class="badge badge-modal">${cls.modal || 'REGULAR'}</span>
                             ${progressText ? `<span class="badge" style="background: var(--success);">${progressText}</span>` : ''}
-                            ${nextWeekBadge}
                             ${isSaved ? '<span class="badge badge-saved">✅ SALVO</span>' : ''}
                         </div>
                         ${nextLessonText}
-                        ${btnHtml}
+                        <button class="action-btn ${btnClass}" onclick="openRad('${cls.time.replace(/'/g, "\\'")}', '${cls.group.replace(/'/g, "\\'")}', '${(cls.book||'').replace(/'/g, "\\'")}', '${(cls.room||'').replace(/'/g, "\\'")}', '${cls.dayName}')">
+                            ${btnText}
+                        </button>
                     `;
                     list.appendChild(card);
                 });
@@ -2087,7 +1998,7 @@
         if (groups.length === 0) {
             container.innerHTML = `
                 <h2 style="color: var(--primary); text-align: center; margin-bottom: 30px;">📚 Lesson Plans por Turma</h2>
-                <p style="text-align:center; color: var(--text-sec);">Nenhuma turma encontrada no Schedule.</p>
+                <p style="text-align:center; color: var(--text-sec);">Nenhuma turma encontrada.</p>
             `;
             return;
         }
