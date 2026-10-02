@@ -1047,8 +1047,11 @@
     // ============================================
     // CONFIGURAÇÕES
     // ============================================
+    // ✅ ÚNICA CORREÇÃO: Next Week usa gviz (respeita sheet=)
+    // O link /pub?output=csv IGNORA o parâmetro sheet=, por isso vinha duplicado.
+    // O link /gviz/tq?tqx=out:csv&sheet=NOME respeita corretamente.
     const BASE_SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
-    const NEXT_WEEK_URL = BASE_SCHEDULE_URL + '&sheet=' + encodeURIComponent('NEXT WEEK');
+    const NEXT_WEEK_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/gviz/tq?tqx=out:csv&sheet=NEXT%20WEEK';
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
     const FETCH_TIMEOUT_MS = 10000;
 
@@ -1105,10 +1108,10 @@
     // ============================================
     // ESTADO GLOBAL
     // ============================================
-    let scheduleData = [];                 // aulas de "This Week"
-    let nextWeekData = [];                 // aulas de "Next Week"
+    let scheduleData = [];
+    let nextWeekData = [];
     let studentsData = {};
-    let allGroupsFromSchedule = new Map(); // chave normalizada → info
+    let allGroupsFromSchedule = new Map();
     let currentTeacher = null;
     let currentWeekName = 'This Week';
     let currentWeekData = [];
@@ -1173,7 +1176,6 @@
                 console.warn('Falha no Next Week:', e);
             }
 
-            // Fallback se nada carregou
             if (scheduleData.length === 0 && nextWeekData.length === 0) {
                 carregarScheduleFallback();
                 showErrorBanner('Não foi possível carregar o cronograma. Exibindo dados de exemplo.');
@@ -1277,13 +1279,11 @@
         if (banner) banner.classList.add('hidden');
 
         try {
-            // This Week
             try {
                 const text = await fetchWithTimeout(BASE_SCHEDULE_URL, FETCH_TIMEOUT_MS);
                 scheduleData = parseScheduleCSV(text);
             } catch(e) { console.warn(e); }
 
-            // Next Week
             try {
                 const text = await fetchWithTimeout(NEXT_WEEK_URL, FETCH_TIMEOUT_MS);
                 nextWeekData = parseScheduleCSV(text);
@@ -1294,7 +1294,6 @@
                 'Next Week': nextWeekData
             };
 
-            // Alunos
             try {
                 const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
                 parseStudentsCSV(text);
@@ -1323,7 +1322,6 @@
 
     // ============================================
     // PARSER DO SCHEDULE
-    // Registra TODAS as turmas da coluna C, mesmo sem professor/horário
     // ============================================
     function parseScheduleCSV(text) {
         if (!text) return [];
@@ -1355,7 +1353,6 @@
             const bookClean = cleanText(book);
             const normKey = normalizeGroupKey(groupClean);
 
-            // Registra a turma no mapa global
             if (!allGroupsFromSchedule.has(normKey)) {
                 allGroupsFromSchedule.set(normKey, {
                     display: groupClean,
@@ -1365,14 +1362,12 @@
                     time: cleanText(time)
                 });
             } else {
-                // Atualiza info se estiver faltando
                 const existing = allGroupsFromSchedule.get(normKey);
                 if (!existing.book && bookClean) existing.book = bookClean;
                 if (!existing.room && room) existing.room = cleanText(room);
                 if (!existing.modal && modal) existing.modal = cleanText(modal);
             }
 
-            // Se não tem horário, não cria aula no cronograma
             if(!time) continue;
 
             for(let d=0; d<5; d++) {
