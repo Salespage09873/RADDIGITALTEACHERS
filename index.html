@@ -1049,8 +1049,8 @@
     // ============================================
     const SCHEDULE_THIS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
     const SCHEDULE_NEXT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz-bXwql9tWFhbu7vU4QV2Mh2X-wS8Dg104Y31VzdsPCdQM08rUPGSBphEfeL94kbgCnJOJorYwFjO/pub?output=csv';
-    // ✅ NOVA URL: lista de alunos com apenas Coluna A (turma) e Coluna B (aluno)
-    const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRJ50UB29UDqy1PTkOJrUI81d4kZtzB0Qyfo1wPs2rbm9uftJdlcH88h-sfDrxW2o7Fi_5LZVSI4jul/pub?output=csv';
+    // ✅ URL NOVA dos alunos
+    const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRJ50UB29UDqy1PTkOJrUI81d4kZtzB0Qyfo1wPs2rbm9uftJdlcH88h-sfDrxW2o7Fi_5LZVSI4jul/pub?gid=335122343&single=true&output=csv';
     const FETCH_TIMEOUT_MS = 10000;
 
     const VALID_TEACHERS = [
@@ -1409,7 +1409,6 @@
                 const student = parts[1].replace(/"/g, '').trim();
                 
                 if(group && student) {
-                    // Usa chave normalizada agressiva pra agrupar variações
                     const key = normalizeGroupKeyAgressive(group);
                     if(!rawGroups[key]) rawGroups[key] = { display: group, students: [] };
                     if(!rawGroups[key].students.includes(student)) {
@@ -1442,25 +1441,18 @@
         return null;
     }
 
-    // Normalização simples (para chaves do scheduleData)
     function normalizeGroupKey(str) {
         if (!str) return '';
         return str.toUpperCase().replace(/\s+/g, ' ').trim();
     }
 
-    // ✅ Normalização AGRESSIVA (para casar turma do Schedule com turma da Lista de Alunos)
-    // Remove acentos, prefixos "TURMA", sufixos "(VIP)", pontuação extra
     function normalizeGroupKeyAgressive(str) {
         if (!str) return '';
         return str
             .toUpperCase()
-            // Remove acentos: BÁRBARA → BARBARA
             .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-            // Remove sufixos tipo "(VIP)", "[VIP]"
             .replace(/[\(\[].*?[\)\]]/g, '')
-            // Remove tudo que não for letra, número ou espaço
             .replace(/[^A-Z0-9 ]+/g, ' ')
-            // Normaliza espaços
             .replace(/\s+/g, ' ')
             .trim();
     }
@@ -1477,7 +1469,7 @@
         // 1️⃣ Match exato normalizado
         let match = keys.find(k => normalizeGroupKeyAgressive(k) === targetKey);
         
-        // 2️⃣ Match por inclusão (uma string contém a outra)
+        // 2️⃣ Match por inclusão
         if (!match) {
             match = keys.find(k => {
                 const kNorm = normalizeGroupKeyAgressive(k);
@@ -1485,7 +1477,7 @@
             });
         }
 
-        // 3️⃣ Match por "Gx" (se ambos têm G1, G2...)
+        // 3️⃣ Match por "Gx"
         if (!match) {
             const targetGx = targetKey.match(/\bG\s*0?(\d{1,2})\b/);
             if (targetGx) {
@@ -1497,7 +1489,7 @@
             }
         }
 
-        // 4️⃣ Match por palavras-chave em comum (último recurso)
+        // 4️⃣ Match por palavras-chave em comum
         if (!match) {
             const targetWords = targetKey.split(' ').filter(w => w.length > 3);
             if (targetWords.length > 0) {
@@ -2047,7 +2039,6 @@
         }
     }
 
-    // ✅ Usa findStudentsForGroup (com tolerância) em vez de match exato
     function renderAttendanceCheckboxes(groupRaw, presentList) {
         const container = document.getElementById('attendance-container');
         if (!container) return;
@@ -2309,7 +2300,6 @@
         });
     }
 
-    // ✅ Usa findStudentsForGroup (com tolerância)
     function loadAttendanceTable() {
         const group = document.getElementById('att-group-select').value;
         const monthVal = document.getElementById('att-month-select').value;
@@ -2353,7 +2343,7 @@
     // ============================================
     if (document.readyState === 'interactive' || document.readyState === 'complete') {
         setTimeout(() => {
-            window.dispatchEvent(new DOMContentLoaded());
+            window.dispatchEvent(new Event('DOMContentLoaded'));
         }, 0);
     }
 
