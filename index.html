@@ -1047,7 +1047,8 @@
     // ============================================
     // CONFIGURAÇÕES
     // ============================================
-    // ✅ ABAS: "1" (This Week) e "2" (Next Week)
+    // Abas: "1" (This Week) e "2" (Next Week)
+    // A1 de cada aba tem o título ("This Week" / "Next Week"), que será ignorado no parser
     const BASE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal';
     const SCHEDULE_THIS_URL = BASE_URL + '/gviz/tq?tqx=out:csv&sheet=1';
     const SCHEDULE_NEXT_URL = BASE_URL + '/gviz/tq?tqx=out:csv&sheet=2';
@@ -1156,21 +1157,21 @@
 
         try {
             // ---------- ABA 1 (This Week) ----------
-            showLoadingMsg('Baixando cronograma (semana 1)...');
+            showLoadingMsg('Baixando cronograma (This Week)...');
             try {
                 const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
                 scheduleData = parseScheduleCSV(text);
-                console.log(`📋 Aba 1 (This Week): ${scheduleData.length} aulas`);
+                console.log(`📋 This Week (aba 1): ${scheduleData.length} aulas`);
             } catch (e) {
                 console.warn('Falha na aba 1:', e);
             }
 
             // ---------- ABA 2 (Next Week) ----------
-            showLoadingMsg('Baixando cronograma (semana 2)...');
+            showLoadingMsg('Baixando cronograma (Next Week)...');
             try {
                 const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS);
                 nextWeekData = parseScheduleCSV(text);
-                console.log(`📋 Aba 2 (Next Week): ${nextWeekData.length} aulas`);
+                console.log(`📋 Next Week (aba 2): ${nextWeekData.length} aulas`);
             } catch (e) {
                 console.warn('Falha na aba 2:', e);
             }
@@ -1310,7 +1311,7 @@
                 renderGroupLessonPlans();
             }
 
-            alert(`✅ Dados atualizados!\nAba 1 (This Week): ${scheduleData.length} aulas\nAba 2 (Next Week): ${nextWeekData.length} aulas\nTurmas: ${allGroupsFromSchedule.size}`);
+            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length} aulas\nNext Week: ${nextWeekData.length} aulas\nTurmas: ${allGroupsFromSchedule.size}`);
         } catch (err) {
             console.error(err);
             alert('❌ Erro ao atualizar dados.');
@@ -1321,6 +1322,7 @@
 
     // ============================================
     // PARSER DO SCHEDULE
+    // Pula a linha A1 (título) e deduplica
     // ============================================
     function parseScheduleCSV(text) {
         if (!text) return [];
@@ -1328,6 +1330,14 @@
         const lines = text.split('\n').map(l => l.trim()).filter(l => l);
         if(lines.length < 2) return [];
 
+        // Colunas (0-indexado):
+        // 0 = A (ignorada — na aba 1 é "This Week" e na aba 2 é "Next Week")
+        // 1 = B (Book)
+        // 2 = C (Turma)
+        // 3 = D (Sala)
+        // 4 = E (Modal)
+        // 5 = F (Horário)
+        // 6+ = G+ (Segunda..Sexta)
         const COL_BOOK = 1, COL_GROUP = 2, COL_ROOM = 3, COL_MODAL = 4, COL_TIME = 5, DAYS_START = 6;
         const daysMap = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
 
@@ -1346,6 +1356,7 @@
             const modal = row[COL_MODAL] || '';
             const time = row[COL_TIME] || '';
 
+            // Pula linhas que não tenham turma (cabeçalhos extras, linhas vazias)
             if(!groupRaw || groupRaw.trim() === '') continue;
 
             const groupClean = cleanText(groupRaw);
