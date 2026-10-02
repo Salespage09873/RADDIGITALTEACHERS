@@ -1047,11 +1047,10 @@
     // ============================================
     // CONFIGURAÇÕES
     // ============================================
-    // ✅ ÚNICA CORREÇÃO: Next Week usa gviz (respeita sheet=)
-    // O link /pub?output=csv IGNORA o parâmetro sheet=, por isso vinha duplicado.
-    // O link /gviz/tq?tqx=out:csv&sheet=NOME respeita corretamente.
-    const BASE_SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
-    const NEXT_WEEK_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/gviz/tq?tqx=out:csv&sheet=NEXT%20WEEK';
+    // ✅ ABAS: "1" (This Week) e "2" (Next Week)
+    const BASE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal';
+    const SCHEDULE_THIS_URL = BASE_URL + '/gviz/tq?tqx=out:csv&sheet=1';
+    const SCHEDULE_NEXT_URL = BASE_URL + '/gviz/tq?tqx=out:csv&sheet=2';
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
     const FETCH_TIMEOUT_MS = 10000;
 
@@ -1156,24 +1155,24 @@
         }, 15000);
 
         try {
-            // ---------- THIS WEEK ----------
-            showLoadingMsg('Baixando cronograma (This Week)...');
+            // ---------- ABA 1 (This Week) ----------
+            showLoadingMsg('Baixando cronograma (semana 1)...');
             try {
-                const text = await fetchWithTimeout(BASE_SCHEDULE_URL, FETCH_TIMEOUT_MS);
+                const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
                 scheduleData = parseScheduleCSV(text);
-                console.log(`📋 This Week: ${scheduleData.length} aulas`);
+                console.log(`📋 Aba 1 (This Week): ${scheduleData.length} aulas`);
             } catch (e) {
-                console.warn('Falha no This Week:', e);
+                console.warn('Falha na aba 1:', e);
             }
 
-            // ---------- NEXT WEEK ----------
-            showLoadingMsg('Baixando cronograma (Next Week)...');
+            // ---------- ABA 2 (Next Week) ----------
+            showLoadingMsg('Baixando cronograma (semana 2)...');
             try {
-                const text = await fetchWithTimeout(NEXT_WEEK_URL, FETCH_TIMEOUT_MS);
+                const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS);
                 nextWeekData = parseScheduleCSV(text);
-                console.log(`📋 Next Week: ${nextWeekData.length} aulas`);
+                console.log(`📋 Aba 2 (Next Week): ${nextWeekData.length} aulas`);
             } catch (e) {
-                console.warn('Falha no Next Week:', e);
+                console.warn('Falha na aba 2:', e);
             }
 
             if (scheduleData.length === 0 && nextWeekData.length === 0) {
@@ -1280,12 +1279,12 @@
 
         try {
             try {
-                const text = await fetchWithTimeout(BASE_SCHEDULE_URL, FETCH_TIMEOUT_MS);
+                const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
                 scheduleData = parseScheduleCSV(text);
             } catch(e) { console.warn(e); }
 
             try {
-                const text = await fetchWithTimeout(NEXT_WEEK_URL, FETCH_TIMEOUT_MS);
+                const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS);
                 nextWeekData = parseScheduleCSV(text);
             } catch(e) { console.warn(e); }
 
@@ -1311,7 +1310,7 @@
                 renderGroupLessonPlans();
             }
 
-            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length} aulas\nNext Week: ${nextWeekData.length} aulas\nTurmas: ${allGroupsFromSchedule.size}`);
+            alert(`✅ Dados atualizados!\nAba 1 (This Week): ${scheduleData.length} aulas\nAba 2 (Next Week): ${nextWeekData.length} aulas\nTurmas: ${allGroupsFromSchedule.size}`);
         } catch (err) {
             console.error(err);
             alert('❌ Erro ao atualizar dados.');
@@ -2077,7 +2076,7 @@
         if (groups.length === 0) {
             container.innerHTML = `
                 <h2 style="color: var(--primary); text-align: center; margin-bottom: 30px;">📚 Lesson Plans por Turma</h2>
-                <p style="text-align:center; color: var(--text-sec);">Nenhuma turma encontrada na coluna C do Schedule.</p>
+                <p style="text-align:center; color: var(--text-sec);">Nenhuma turma encontrada no Schedule.</p>
             `;
             return;
         }
