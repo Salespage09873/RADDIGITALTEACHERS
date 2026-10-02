@@ -1049,11 +1049,10 @@
     // ============================================
     const SCHEDULE_THIS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
     const SCHEDULE_NEXT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz-bXwql9tWFhbu7vU4QV2Mh2X-wS8Dg104Y31VzdsPCdQM08rUPGSBphEfeL94kbgCnJOJorYwFjO/pub?output=csv';
-    const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlWLLO76YOXic0n11ttKL-UKoNGTT3VKEogt3pvHONM4Hnb3upvgYj_h8DOC57xmAobUXSIznc7V6x/pub?output=csv';
+    // ✅ NOVA URL: lista de alunos com apenas Coluna A (turma) e Coluna B (aluno)
+    const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRJ50UB29UDqy1PTkOJrUI81d4kZtzB0Qyfo1wPs2rbm9uftJdlcH88h-sfDrxW2o7Fi_5LZVSI4jul/pub?output=csv';
     const FETCH_TIMEOUT_MS = 10000;
 
-    // ✅ Lista atualizada: removidos MYCAEL, TOSCA, SARA, LIVIA, IAGO
-    // ✅ Adicionados: CARLOS, BARBARA (sem acento), MAT
     const VALID_TEACHERS = [
         { name: 'BARBARA', color: '#0d6efd' },
         { name: 'CARLA', color: '#0d6efd' },
@@ -1185,6 +1184,7 @@
             try {
                 const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
                 parseStudentsCSV(text);
+                console.log(`👥 Turmas com alunos: ${Object.keys(studentsData).length}`);
             } catch (e) {
                 console.warn('Falha nos alunos:', e);
                 carregarAlunosFallback();
@@ -1301,7 +1301,7 @@
                 renderGroupLessonPlans();
             }
 
-            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length} aulas\nNext Week: ${nextWeekData.length} aulas`);
+            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length} aulas\nNext Week: ${nextWeekData.length} aulas\nTurmas com alunos: ${Object.keys(studentsData).length}`);
         } catch (err) {
             console.error(err);
             alert('❌ Erro ao atualizar dados.');
@@ -1388,6 +1388,7 @@
 
     // ============================================
     // PARSER DOS ALUNOS
+    // Lê SOMENTE colunas A (turma) e B (aluno)
     // ============================================
     function parseStudentsCSV(text) {
         if (!text) return;
@@ -1402,12 +1403,14 @@
                 parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
             } catch(e) { continue; }
 
+            // ✅ Lê só colunas A (índice 0) e B (índice 1)
             if(parts.length >= 2) {
                 const group = parts[0].replace(/"/g, '').trim();
                 const student = parts[1].replace(/"/g, '').trim();
                 
                 if(group && student) {
-                    const key = normalizeGroupKey(group);
+                    // Usa chave normalizada agressiva pra agrupar variações
+                    const key = normalizeGroupKeyAgressive(group);
                     if(!rawGroups[key]) rawGroups[key] = { display: group, students: [] };
                     if(!rawGroups[key].students.includes(student)) {
                         rawGroups[key].students.push(student);
@@ -1421,6 +1424,8 @@
             const { display, students } = rawGroups[key];
             studentsData[display] = students;
         });
+
+        console.log(`👥 ${Object.keys(studentsData).length} turmas com alunos:`, Object.keys(studentsData));
     }
 
     function cleanText(str) {
@@ -1431,16 +1436,82 @@
         if (!str) return null;
         const upperStr = str.toUpperCase();
         for(const t of VALID_TEACHERS) {
-            // Usa word boundary pra evitar matches parciais (ex: MAT dentro de MATHEUS)
             const regex = new RegExp(`\\b${t.name}\\b`, 'i');
             if(regex.test(upperStr)) return t.name;
         }
         return null;
     }
 
+    // Normalização simples (para chaves do scheduleData)
     function normalizeGroupKey(str) {
         if (!str) return '';
         return str.toUpperCase().replace(/\s+/g, ' ').trim();
+    }
+
+    // ✅ Normalização AGRESSIVA (para casar turma do Schedule com turma da Lista de Alunos)
+    // Remove acentos, prefixos "TURMA", sufixos "(VIP)", pontuação extra
+    function normalizeGroupKeyAgressive(str) {
+        if (!str) return '';
+        return str
+            .toUpperCase()
+            // Remove acentos: BÁRBARA → BARBARA
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            // Remove sufixos tipo "(VIP)", "[VIP]"
+            .replace(/[\(\[].*?[\)\]]/g, '')
+            // Remove tudo que não for letra, número ou espaço
+            .replace(/[^A-Z0-9 ]+/g, ' ')
+            // Normaliza espaços
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    // ============================================
+    // BUSCA DE ALUNOS POR TURMA (com tolerância)
+    // ============================================
+    function findStudentsForGroup(groupName) {
+        if (!groupName) return [];
+        
+        const targetKey = normalizeGroupKeyAgressive(groupName);
+        const keys = Object.keys(studentsData);
+
+        // 1️⃣ Match exato normalizado
+        let match = keys.find(k => normalizeGroupKeyAgressive(k) === targetKey);
+        
+        // 2️⃣ Match por inclusão (uma string contém a outra)
+        if (!match) {
+            match = keys.find(k => {
+                const kNorm = normalizeGroupKeyAgressive(k);
+                return kNorm.includes(targetKey) || targetKey.includes(kNorm);
+            });
+        }
+
+        // 3️⃣ Match por "Gx" (se ambos têm G1, G2...)
+        if (!match) {
+            const targetGx = targetKey.match(/\bG\s*0?(\d{1,2})\b/);
+            if (targetGx) {
+                const gxNum = targetGx[1];
+                match = keys.find(k => {
+                    const kGx = normalizeGroupKeyAgressive(k).match(/\bG\s*0?(\d{1,2})\b/);
+                    return kGx && kGx[1] === gxNum;
+                });
+            }
+        }
+
+        // 4️⃣ Match por palavras-chave em comum (último recurso)
+        if (!match) {
+            const targetWords = targetKey.split(' ').filter(w => w.length > 3);
+            if (targetWords.length > 0) {
+                match = keys.find(k => {
+                    const kNorm = normalizeGroupKeyAgressive(k);
+                    return targetWords.every(w => kNorm.includes(w));
+                });
+            }
+        }
+        
+        if (match && studentsData[match]) {
+            return studentsData[match];
+        }
+        return [];
     }
 
     // ============================================
@@ -1976,27 +2047,17 @@
         }
     }
 
+    // ✅ Usa findStudentsForGroup (com tolerância) em vez de match exato
     function renderAttendanceCheckboxes(groupRaw, presentList) {
         const container = document.getElementById('attendance-container');
         if (!container) return;
         container.innerHTML = '';
         
-        const targetKey = normalizeGroupKey(groupRaw);
-        let students = [];
-        const keys = Object.keys(studentsData);
-        let match = keys.find(k => normalizeGroupKey(k) === targetKey);
+        let students = findStudentsForGroup(groupRaw);
         
-        if (!match) {
-            match = keys.find(k => {
-                const kNorm = normalizeGroupKey(k);
-                return kNorm.includes(targetKey) || targetKey.includes(kNorm);
-            });
-        }
-        
-        if (match && studentsData[match]) {
-            students = studentsData[match];
-        } else {
-            students = ["Aluno 1", "Aluno 2", "Aluno 3"];
+        if (students.length === 0) {
+            container.innerHTML = '<p style="color: var(--text-sec); font-size: 0.9rem;">Nenhum aluno encontrado para esta turma na planilha de alunos.</p>';
+            return;
         }
         
         students = [...new Set(students)].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
@@ -2248,6 +2309,7 @@
         });
     }
 
+    // ✅ Usa findStudentsForGroup (com tolerância)
     function loadAttendanceTable() {
         const group = document.getElementById('att-group-select').value;
         const monthVal = document.getElementById('att-month-select').value;
@@ -2258,9 +2320,9 @@
             return;
         }
 
-        const students = studentsData[group] || [];
+        const students = findStudentsForGroup(group);
         if(students.length === 0) {
-            container.innerHTML = '<p style="color: var(--text-sec);">Nenhum aluno encontrado.</p>';
+            container.innerHTML = '<p style="color: var(--text-sec);">Nenhum aluno encontrado para esta turma.</p>';
             return;
         }
 
@@ -2291,7 +2353,7 @@
     // ============================================
     if (document.readyState === 'interactive' || document.readyState === 'complete') {
         setTimeout(() => {
-            window.dispatchEvent(new Event('DOMContentLoaded'));
+            window.dispatchEvent(new DOMContentLoaded());
         }, 0);
     }
 
