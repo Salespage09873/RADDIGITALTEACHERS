@@ -1251,55 +1251,105 @@
         return str.toUpperCase().replace(/\s+/g, ' ').trim();
     }
 
+    /**
+     * Normalização agressiva:
+     * - Remove acentos
+     * - MANTÉM o conteúdo dos parênteses (não apaga!)
+     * - Remove símbolos especiais (~, etc)
+     * - Normaliza espaços
+     * 
+     * Ex: "~Split Timbó (Mufasa)" → "SPLIT TIMBO MUFASA"
+     * Ex: "(Connect) Get it"      → "CONNECT GET IT"
+     */
     function normalizeGroupKeyAgressive(str) {
         if (!str) return '';
         return str
             .toUpperCase()
             .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-            .replace(/[\(\[].*?[\)\]]/g, '')
+            // Remove parênteses mas MANTÉM o conteúdo dentro
+            .replace(/[\(\)\[\]]/g, ' ')
+            // Remove outros símbolos especiais
+            .replace(/[~\-_/\\|:;,.!?@#$%^&*+=<>"']/g, ' ')
             .replace(/[^A-Z0-9 ]+/g, ' ')
             .replace(/\s+/g, ' ')
             .trim();
     }
 
-    /**
-     * Busca alunos por turma com tolerância + DESEMPATE por book.
-     * 
-     * Problema: existem várias turmas com o mesmo prefixo (ex: "CONNECT"),
-     * mas com sufixos diferentes ("(Connect) Kids" vs "(Connect) Get it").
-     * 
-     * Solução: usar o book do Schedule como palavra-chave extra.
-     * Ex: Schedule "CONNECT" + book "GET IT" → casa "(Connect) Get it"
-     */
+    // ============================================
+    // BUSCA DE ALUNOS POR TURMA (com tolerância + regras especiais)
+    // ============================================
     function findStudentsForGroup(groupName, bookHint) {
         if (!groupName) return [];
         
         const targetKey = normalizeGroupKeyAgressive(groupName);
-        const bookHintKey = bookHint ? normalizeGroupKeyAgressive(bookHint) : '';
+        const bookKey = bookHint ? normalizeGroupKeyAgressive(bookHint) : '';
+        const bookUpper = (bookHint || '').toUpperCase();
+        const groupUpper = (groupName || '').toUpperCase();
         const keys = Object.keys(studentsData);
 
-        // Helper: pontuação de quão bem uma chave casa
+        // ============================================
+        // 🔧 REGRA ESPECIAL 1: turmas "CONNECT"
+        // Se o nome da turma do Schedule for CONNECT:
+        //   - Book tem "KIDS"   → (Connect) Kids
+        //   - Qualquer outro    → (Connect) Get it
+        // ============================================
+        if (groupUpper.includes('CONNECT')) {
+            const wantKids = bookUpper.includes('KIDS') || targetKey.includes('KIDS');
+            const suffix = wantKids ? 'KIDS' : 'GET IT';
+            
+            const match = keys.find(k => {
+                const kNorm = normalizeGroupKeyAgressive(k);
+                return kNorm.includes('CONNECT') && kNorm.includes(suffix);
+            });
+
+            if (match && studentsData[match]) {
+                console.log(`🎯 CONNECT + book "${bookHint||'—'}" → "${match}"`);
+                return studentsData[match];
+            }
+
+            console.log(`⚠️ CONNECT: não achei "${suffix}" na lista de alunos.`);
+        }
+
+        // ============================================
+        // 🔧 REGRA ESPECIAL 2: turmas "MUFASA" / "SPLIT TIMBÓ"
+        // A lista de alunos tem "~Split Timbó (Mufasa)"
+        // O Schedule pode ter "MUFASA" ou "SPLIT TIMBO"
+        // ============================================
+        if (groupUpper.includes('MUFASA') 
+            || groupUpper.includes('SPLIT') 
+            || targetKey.includes('MUFASA') 
+            || targetKey.includes('SPLIT')) {
+            
+            const match = keys.find(k => {
+                const kNorm = normalizeGroupKeyAgressive(k);
+                return kNorm.includes('MUFASA') || kNorm.includes('SPLIT');
+            });
+
+            if (match && studentsData[match]) {
+                console.log(`🎯 MUFASA/SPLIT → "${match}"`);
+                return studentsData[match];
+            }
+
+            console.log(`⚠️ MUFASA: não achei "MUFASA" ou "SPLIT" na lista de alunos.`);
+        }
+
+        // ============================================
+        // BUSCA GENÉRICA (resto das turmas)
+        // ============================================
         function score(k) {
             const kNorm = normalizeGroupKeyAgressive(k);
             let s = 0;
 
-            // Match exato
             if (kNorm === targetKey) s += 1000;
-            // Inclusão direta (target contido na chave, ou vice-versa)
             else if (kNorm.includes(targetKey)) s += 500 + targetKey.length;
             else if (targetKey.includes(kNorm)) s += 500 + kNorm.length;
 
-            // Bônus por book: se o book hint está contido na chave
-            if (bookHintKey && kNorm.includes(bookHintKey)) {
-                s += 2000; // Book é o critério mais forte
-            }
+            if (bookKey && kNorm.includes(bookKey)) s += 2000;
 
-            // Bônus por Gx matching
             const targetGx = targetKey.match(/\bG\s*0?(\d{1,2})\b/);
             const keyGx = kNorm.match(/\bG\s*0?(\d{1,2})\b/);
             if (targetGx && keyGx && targetGx[1] === keyGx[1]) s += 300;
 
-            // Bônus por palavras em comum (>3 letras)
             const targetWords = targetKey.split(' ').filter(w => w.length > 3);
             const kWords = kNorm.split(' ');
             const commonWords = targetWords.filter(w => kWords.includes(w));
@@ -1308,15 +1358,11 @@
             return s;
         }
 
-        // Pega a chave com maior score
         let bestKey = null;
         let bestScore = 0;
         keys.forEach(k => {
             const s = score(k);
-            if (s > bestScore) {
-                bestScore = s;
-                bestKey = k;
-            }
+            if (s > bestScore) { bestScore = s; bestKey = k; }
         });
 
         if (bestKey && bestScore > 0 && studentsData[bestKey]) {
@@ -2133,7 +2179,6 @@
             return;
         }
 
-        // Busca book pra desempatar
         const info = allGroupsFromSchedule.get(normalizeGroupKey(group));
         const bookHint = info ? info.book : '';
 
