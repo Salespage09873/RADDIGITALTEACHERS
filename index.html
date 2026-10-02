@@ -61,10 +61,7 @@
             margin-bottom: 10px;
         }
 
-        h2, h3 { 
-            font-weight: 600; 
-            letter-spacing: 0.5px; 
-        }
+        h2, h3 { font-weight: 600; letter-spacing: 0.5px; }
 
         .header-buttons {
             display: flex;
@@ -95,31 +92,11 @@
             transform: translateY(-1px);
         }
 
-        button.active {
-            background: var(--primary);
-            color: #fff;
-            border-color: var(--primary);
-        }
-
-        button.btn-danger {
-            border-color: var(--danger);
-            color: var(--danger);
-        }
-
-        button.btn-danger:hover {
-            background: var(--danger);
-            color: #fff;
-        }
-
-        button.btn-success {
-            border-color: var(--success);
-            color: var(--success);
-        }
-
-        button.btn-success:hover {
-            background: var(--success);
-            color: #fff;
-        }
+        button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        button.btn-danger { border-color: var(--danger); color: var(--danger); }
+        button.btn-danger:hover { background: var(--danger); color: #fff; }
+        button.btn-success { border-color: var(--success); color: var(--success); }
+        button.btn-success:hover { background: var(--success); color: #fff; }
 
         .teachers-grid {
             display: grid;
@@ -212,24 +189,15 @@
             box-shadow: var(--shadow);
         }
 
-        .class-card:hover {
-            border-color: var(--primary);
-            box-shadow: var(--shadow-hover);
-        }
+        .class-card:hover { border-color: var(--primary); box-shadow: var(--shadow-hover); }
 
         .class-card.rad-saved {
             border-color: var(--success);
             background: var(--success-light);
             opacity: 0.85;
         }
-
-        .class-card.rad-saved:hover {
-            opacity: 1;
-        }
-
-        .class-card.next-week-card {
-            border-left: 5px solid var(--warning);
-        }
+        .class-card.rad-saved:hover { opacity: 1; }
+        .class-card.next-week-card { border-left: 5px solid var(--warning); }
 
         .class-time {
             font-size: 1.3rem;
@@ -241,11 +209,7 @@
             padding-bottom: 8px;
         }
 
-        .class-info {
-            font-size: 0.95rem;
-            color: var(--text-sec);
-            margin-bottom: 5px;
-        }
+        .class-info { font-size: 0.95rem; color: var(--text-sec); margin-bottom: 5px; }
 
         .badge {
             display: inline-block;
@@ -291,12 +255,7 @@
             color: #fff;
             background: var(--success);
         }
-
-        .action-btn.saved:hover {
-            background: #157347;
-            border-color: #157347;
-            color: #fff;
-        }
+        .action-btn.saved:hover { background: #157347; border-color: #157347; color: #fff; }
 
         .status-indicator {
             position: absolute;
@@ -359,10 +318,7 @@
             padding-bottom: 15px;
         }
 
-        .modal-header h3 {
-            color: var(--primary);
-            font-size: 1.2rem;
-        }
+        .modal-header h3 { color: var(--primary); font-size: 1.2rem; }
 
         .close-modal {
             background: none;
@@ -375,12 +331,7 @@
             box-shadow: none;
             font-weight: 300;
         }
-
-        .close-modal:hover {
-            color: var(--text-main);
-            background: none;
-            transform: none;
-        }
+        .close-modal:hover { color: var(--text-main); background: none; transform: none; }
 
         .modal-saved-badge {
             background: var(--success-light);
@@ -414,11 +365,7 @@
             box-shadow: 0 0 0 3px var(--primary-dim);
         }
 
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-            font-family: inherit;
-        }
+        textarea { resize: vertical; min-height: 80px; font-family: inherit; }
 
         label {
             font-weight: 600;
@@ -441,12 +388,7 @@
             transition: all 0.2s ease;
             cursor: pointer;
         }
-
-        .checkbox-group:hover {
-            border-color: var(--primary);
-            background: var(--primary-light);
-        }
-
+        .checkbox-group:hover { border-color: var(--primary); background: var(--primary-light); }
         .checkbox-group input {
             width: auto;
             margin-right: 12px;
@@ -455,7 +397,6 @@
             transform: scale(1.1);
             cursor: pointer;
         }
-
         .checkbox-group label {
             flex: 1;
             cursor: pointer;
@@ -465,16 +406,8 @@
             font-weight: 400;
             margin-bottom: 0;
         }
-
-        .checkbox-group.checked {
-            background: var(--success-light);
-            border-color: var(--success);
-        }
-
-        .checkbox-group.checked label {
-            color: var(--success);
-            font-weight: 600;
-        }
+        .checkbox-group.checked { background: var(--success-light); border-color: var(--success); }
+        .checkbox-group.checked label { color: var(--success); font-weight: 600; }
 
         .checkbox-group .done-badge {
             display: inline-block;
@@ -487,7 +420,6 @@
             font-weight: 700;
             letter-spacing: 0.5px;
         }
-
         .checkbox-group .next-badge {
             display: inline-block;
             background: var(--warning);
@@ -509,22 +441,17 @@
             border-radius: 6px;
             overflow: hidden;
         }
-
         .attendance-table th, .attendance-table td {
             border: 1px solid var(--border-color);
             padding: 10px 12px;
             text-align: center;
         }
-
         .attendance-table th {
             background: var(--primary-light);
             color: var(--primary);
             font-weight: 700;
         }
-
-        .attendance-table tr:hover {
-            background: var(--card-bg);
-        }
+        .attendance-table tr:hover { background: var(--card-bg); }
 
         #loading-screen {
             position: fixed;
@@ -545,7 +472,6 @@
             animation: spin 0.8s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
         #loading-screen p {
             margin-top: 20px;
             color: var(--primary);
@@ -553,7 +479,6 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-
         #loading-msg {
             font-size: 0.75rem !important;
             color: var(--text-sec) !important;
@@ -569,15 +494,8 @@
             padding: 12px;
             margin-bottom: 15px;
         }
-
-        .observations-box textarea {
-            margin-bottom: 0;
-            border: 1px solid var(--border-color);
-        }
-
-        .observations-box textarea:focus {
-            border-color: var(--primary);
-        }
+        .observations-box textarea { margin-bottom: 0; border: 1px solid var(--border-color); }
+        .observations-box textarea:focus { border-color: var(--primary); }
 
         .group-lesson-grid {
             display: grid;
@@ -596,32 +514,20 @@
             box-shadow: var(--shadow);
             text-align: center;
         }
-
         .group-card:hover {
             border-color: var(--primary);
             transform: translateY(-3px);
             box-shadow: var(--shadow-hover);
             background: var(--primary-light);
         }
-
         .group-card h3 {
             color: var(--primary);
             font-size: 1.2rem;
             margin-bottom: 10px;
             word-break: break-word;
         }
-
-        .group-card .book-info {
-            font-size: 0.9rem;
-            color: var(--text-sec);
-            margin-bottom: 8px;
-        }
-
-        .group-card .progress {
-            font-size: 0.9rem;
-            color: var(--text-sec);
-        }
-
+        .group-card .book-info { font-size: 0.9rem; color: var(--text-sec); margin-bottom: 8px; }
+        .group-card .progress { font-size: 0.9rem; color: var(--text-sec); }
         .group-card .progress-bar {
             width: 100%;
             height: 8px;
@@ -630,7 +536,6 @@
             margin-top: 10px;
             overflow: hidden;
         }
-
         .group-card .progress-bar .fill {
             height: 100%;
             background: var(--success);
@@ -649,12 +554,7 @@
             transition: all 0.2s ease;
             cursor: pointer;
         }
-
-        .lesson-item:hover {
-            border-color: var(--primary);
-            background: var(--primary-light);
-        }
-
+        .lesson-item:hover { border-color: var(--primary); background: var(--primary-light); }
         .lesson-item input[type="checkbox"] {
             width: auto;
             margin-right: 15px;
@@ -663,34 +563,12 @@
             transform: scale(1.2);
             cursor: pointer;
         }
+        .lesson-item .lesson-label { flex: 1; font-size: 0.95rem; cursor: pointer; }
+        .lesson-item .lesson-date { font-size: 0.8rem; color: var(--text-sec); margin-left: 10px; }
+        .lesson-item .lesson-checked { color: var(--success); font-weight: 600; }
 
-        .lesson-item .lesson-label {
-            flex: 1;
-            font-size: 0.95rem;
-            cursor: pointer;
-        }
-
-        .lesson-item .lesson-date {
-            font-size: 0.8rem;
-            color: var(--text-sec);
-            margin-left: 10px;
-        }
-
-        .lesson-item .lesson-checked {
-            color: var(--success);
-            font-weight: 600;
-        }
-
-        .lesson-item.revision {
-            background: #fff3cd;
-            border-color: var(--warning);
-        }
-
-        .lesson-item.revision:hover {
-            background: #ffe69c;
-            border-color: var(--warning);
-        }
-
+        .lesson-item.revision { background: #fff3cd; border-color: var(--warning); }
+        .lesson-item.revision:hover { background: #ffe69c; border-color: var(--warning); }
         .lesson-item .revision-badge {
             background: var(--warning);
             color: #000;
@@ -700,17 +578,8 @@
             font-weight: 700;
             margin-left: 10px;
         }
-
-        .lesson-item.test {
-            background: #f8d7da;
-            border-color: var(--danger);
-        }
-
-        .lesson-item.test:hover {
-            background: #f5c6cb;
-            border-color: var(--danger);
-        }
-
+        .lesson-item.test { background: #f8d7da; border-color: var(--danger); }
+        .lesson-item.test:hover { background: #f5c6cb; border-color: var(--danger); }
         .lesson-item .test-badge {
             background: var(--danger);
             color: #fff;
@@ -720,23 +589,13 @@
             font-weight: 700;
             margin-left: 10px;
         }
-
-        .lesson-item.checked {
-            background: var(--success-light);
-            border-color: var(--success);
-        }
-
-        .lesson-item.checked .lesson-label {
-            color: var(--success);
-            font-weight: 600;
-        }
-
+        .lesson-item.checked { background: var(--success-light); border-color: var(--success); }
+        .lesson-item.checked .lesson-label { color: var(--success); font-weight: 600; }
         .lesson-item.next {
             border: 3px solid var(--warning);
             background: #fff8e1;
             box-shadow: 0 0 0 3px rgba(255,193,7,0.25);
         }
-
         .lesson-item .next-label-badge {
             background: var(--warning);
             color: #000;
@@ -748,12 +607,7 @@
             text-transform: uppercase;
         }
 
-        .group-lessons-container {
-            max-height: 500px;
-            overflow-y: auto;
-            padding: 5px;
-        }
-
+        .group-lessons-container { max-height: 500px; overflow-y: auto; padding: 5px; }
         .group-header {
             display: flex;
             justify-content: space-between;
@@ -764,12 +618,7 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-
-        .group-header h2 {
-            color: var(--primary);
-            word-break: break-word;
-        }
-
+        .group-header h2 { color: var(--primary); word-break: break-word; }
         .group-header .book-badge {
             background: var(--primary-light);
             color: var(--primary);
@@ -779,15 +628,8 @@
             font-size: 0.9rem;
         }
 
-        .refresh-btn {
-            border-color: var(--success) !important;
-            color: var(--success) !important;
-        }
-
-        .refresh-btn:hover {
-            background: var(--success) !important;
-            color: #fff !important;
-        }
+        .refresh-btn { border-color: var(--success) !important; color: var(--success) !important; }
+        .refresh-btn:hover { background: var(--success) !important; color: #fff !important; }
 
         .chain-info {
             font-size: 0.8rem;
@@ -819,10 +661,7 @@
             font-size: 0.9rem;
             color: var(--text-main);
         }
-
-        .next-lesson-box strong {
-            color: var(--primary);
-        }
+        .next-lesson-box strong { color: var(--primary); }
 
         @media (max-width: 600px) {
             .teachers-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
@@ -838,20 +677,10 @@
             .group-header { flex-direction: column; align-items: stretch; text-align: center; }
         }
 
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--card-bg);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #0b5ed7;
-        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--card-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #0b5ed7; }
     </style>
 </head>
 <body>
@@ -880,9 +709,7 @@
         </div>
 
         <div id="selection-screen">
-            <div class="teachers-grid" id="teachers-grid">
-            </div>
-            
+            <div class="teachers-grid" id="teachers-grid"></div>
             <div style="text-align: center; margin-top: 40px;">
                 <button onclick="openAttendanceList()" style="border-color: var(--success); color: var(--success);">
                     📋 Lista de Presença Geral
@@ -896,13 +723,9 @@
                     ← Voltar
                 </button>
                 <h2 id="current-teacher-name" style="color: var(--primary); text-align: center;"></h2>
-                
-                <div class="week-selector" id="week-selector">
-                </div>
+                <div class="week-selector" id="week-selector"></div>
             </div>
-
-            <div id="schedule-content">
-            </div>
+            <div id="schedule-content"></div>
         </div>
 
         <div id="lesson-plan-screen" class="hidden">
@@ -911,9 +734,7 @@
                     ← Voltar
                 </button>
             </div>
-            
-            <div id="lesson-plan-content">
-            </div>
+            <div id="lesson-plan-content"></div>
         </div>
     </div>
 
@@ -923,13 +744,8 @@
                 <h3>RAD - Registro de Aula</h3>
                 <button class="close-modal" onclick="closeModal('rad-modal')">✕</button>
             </div>
-            
-            <div id="rad-saved-badge" class="modal-saved-badge hidden">
-                ✅ RAD já salvo anteriormente
-            </div>
-            
+            <div id="rad-saved-badge" class="modal-saved-badge hidden">✅ RAD já salvo anteriormente</div>
             <div id="rad-class-info" style="margin-bottom: 15px; padding: 12px; background: var(--card-bg); border-radius: 6px; border-left: 4px solid var(--primary);"></div>
-
             <div id="rad-next-lesson" class="next-lesson-box hidden"></div>
 
             <label>Status da Aula:</label>
@@ -942,17 +758,14 @@
 
             <div id="rad-fields" class="hidden">
                 <hr style="border: 0; border-top: 2px solid var(--border-color); margin: 20px 0;">
-                
                 <label>Lesson Plan Realizada:</label>
                 <div class="chain-info" style="text-align:left; margin-bottom:6px;">
                     💡 Ao marcar uma aula, todas as anteriores são marcadas automaticamente.
                 </div>
-                <div id="lesson-plan-container" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px;">
-                </div>
+                <div id="lesson-plan-container" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px;"></div>
 
                 <label>Lista de Presença:</label>
-                <div id="attendance-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px;">
-                </div>
+                <div id="attendance-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px;"></div>
 
                 <div class="observations-box">
                     <label style="color: var(--primary);">📝 Observações:</label>
@@ -975,10 +788,7 @@
                 <h3 id="lesson-detail-title">📖 Lesson Plan - Turma</h3>
                 <button class="close-modal" onclick="closeModal('lesson-detail-modal')">✕</button>
             </div>
-            
-            <div id="lesson-detail-content">
-            </div>
-            
+            <div id="lesson-detail-content"></div>
             <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
                 <button onclick="saveLessonProgress()" class="btn-success" style="flex: 1; background: var(--success); color: #fff; border-color: var(--success);">
                     💾 SALVAR PROGRESSO
@@ -997,16 +807,13 @@
                 <h3>Controle de Presença por Turma</h3>
                 <button class="close-modal" onclick="closeModal('attendance-modal')">✕</button>
             </div>
-            
             <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 15px;">
                 <select id="att-group-select" onchange="loadAttendanceTable()" style="flex: 1; min-width: 150px;">
                     <option value="">Selecione a Turma...</option>
                 </select>
                 <input type="month" id="att-month-select" onchange="loadAttendanceTable()" style="flex: 0 1 auto; width: auto;">
             </div>
-
-            <div id="attendance-table-container" style="overflow-x: auto; margin-top: 20px;">
-            </div>
+            <div id="attendance-table-container" style="overflow-x: auto; margin-top: 20px;"></div>
         </div>
     </div>
 
@@ -1049,7 +856,6 @@
     // ============================================
     const SCHEDULE_THIS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
     const SCHEDULE_NEXT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz-bXwql9tWFhbu7vU4QV2Mh2X-wS8Dg104Y31VzdsPCdQM08rUPGSBphEfeL94kbgCnJOJorYwFjO/pub?output=csv';
-    // ✅ URL NOVA dos alunos
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRJ50UB29UDqy1PTkOJrUI81d4kZtzB0Qyfo1wPs2rbm9uftJdlcH88h-sfDrxW2o7Fi_5LZVSI4jul/pub?gid=335122343&single=true&output=csv';
     const FETCH_TIMEOUT_MS = 10000;
 
@@ -1403,7 +1209,6 @@
                 parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
             } catch(e) { continue; }
 
-            // ✅ Lê só colunas A (índice 0) e B (índice 1)
             if(parts.length >= 2) {
                 const group = parts[0].replace(/"/g, '').trim();
                 const student = parts[1].replace(/"/g, '').trim();
@@ -1457,52 +1262,69 @@
             .trim();
     }
 
-    // ============================================
-    // BUSCA DE ALUNOS POR TURMA (com tolerância)
-    // ============================================
-    function findStudentsForGroup(groupName) {
+    /**
+     * Busca alunos por turma com tolerância + DESEMPATE por book.
+     * 
+     * Problema: existem várias turmas com o mesmo prefixo (ex: "CONNECT"),
+     * mas com sufixos diferentes ("(Connect) Kids" vs "(Connect) Get it").
+     * 
+     * Solução: usar o book do Schedule como palavra-chave extra.
+     * Ex: Schedule "CONNECT" + book "GET IT" → casa "(Connect) Get it"
+     */
+    function findStudentsForGroup(groupName, bookHint) {
         if (!groupName) return [];
         
         const targetKey = normalizeGroupKeyAgressive(groupName);
+        const bookHintKey = bookHint ? normalizeGroupKeyAgressive(bookHint) : '';
         const keys = Object.keys(studentsData);
 
-        // 1️⃣ Match exato normalizado
-        let match = keys.find(k => normalizeGroupKeyAgressive(k) === targetKey);
-        
-        // 2️⃣ Match por inclusão
-        if (!match) {
-            match = keys.find(k => {
-                const kNorm = normalizeGroupKeyAgressive(k);
-                return kNorm.includes(targetKey) || targetKey.includes(kNorm);
-            });
-        }
+        // Helper: pontuação de quão bem uma chave casa
+        function score(k) {
+            const kNorm = normalizeGroupKeyAgressive(k);
+            let s = 0;
 
-        // 3️⃣ Match por "Gx"
-        if (!match) {
+            // Match exato
+            if (kNorm === targetKey) s += 1000;
+            // Inclusão direta (target contido na chave, ou vice-versa)
+            else if (kNorm.includes(targetKey)) s += 500 + targetKey.length;
+            else if (targetKey.includes(kNorm)) s += 500 + kNorm.length;
+
+            // Bônus por book: se o book hint está contido na chave
+            if (bookHintKey && kNorm.includes(bookHintKey)) {
+                s += 2000; // Book é o critério mais forte
+            }
+
+            // Bônus por Gx matching
             const targetGx = targetKey.match(/\bG\s*0?(\d{1,2})\b/);
-            if (targetGx) {
-                const gxNum = targetGx[1];
-                match = keys.find(k => {
-                    const kGx = normalizeGroupKeyAgressive(k).match(/\bG\s*0?(\d{1,2})\b/);
-                    return kGx && kGx[1] === gxNum;
-                });
-            }
+            const keyGx = kNorm.match(/\bG\s*0?(\d{1,2})\b/);
+            if (targetGx && keyGx && targetGx[1] === keyGx[1]) s += 300;
+
+            // Bônus por palavras em comum (>3 letras)
+            const targetWords = targetKey.split(' ').filter(w => w.length > 3);
+            const kWords = kNorm.split(' ');
+            const commonWords = targetWords.filter(w => kWords.includes(w));
+            s += commonWords.length * 100;
+
+            return s;
         }
 
-        // 4️⃣ Match por palavras-chave em comum
-        if (!match) {
-            const targetWords = targetKey.split(' ').filter(w => w.length > 3);
-            if (targetWords.length > 0) {
-                match = keys.find(k => {
-                    const kNorm = normalizeGroupKeyAgressive(k);
-                    return targetWords.every(w => kNorm.includes(w));
-                });
+        // Pega a chave com maior score
+        let bestKey = null;
+        let bestScore = 0;
+        keys.forEach(k => {
+            const s = score(k);
+            if (s > bestScore) {
+                bestScore = s;
+                bestKey = k;
             }
+        });
+
+        if (bestKey && bestScore > 0 && studentsData[bestKey]) {
+            console.log(`🔍 Busca "${groupName}" (book "${bookHint||'—'}") → "${bestKey}" (score ${bestScore})`);
+            return studentsData[bestKey];
         }
-        
-        if (match && studentsData[match]) {
-            return studentsData[match];
-        }
+
+        console.log(`❌ Nenhuma turma encontrada para "${groupName}" (book "${bookHint||'—'}")`);
         return [];
     }
 
@@ -1948,14 +1770,14 @@
                 document.getElementById('rad-observations').value = data.observations || '';
                 toggleRadFields();
                 renderLessonPlanCheckboxes(group);
-                renderAttendanceCheckboxes(group, data.attendance || []);
+                renderAttendanceCheckboxes(group, book, data.attendance || []);
             } catch(e) {
                 renderLessonPlanCheckboxes(group);
-                renderAttendanceCheckboxes(group, []);
+                renderAttendanceCheckboxes(group, book, []);
             }
         } else {
             renderLessonPlanCheckboxes(group);
-            renderAttendanceCheckboxes(group, []);
+            renderAttendanceCheckboxes(group, book, []);
         }
 
         modal.classList.remove('hidden');
@@ -2039,12 +1861,13 @@
         }
     }
 
-    function renderAttendanceCheckboxes(groupRaw, presentList) {
+    // ✅ Recebe o book como parâmetro pra desempatar turmas com mesmo nome
+    function renderAttendanceCheckboxes(groupRaw, bookHint, presentList) {
         const container = document.getElementById('attendance-container');
         if (!container) return;
         container.innerHTML = '';
         
-        let students = findStudentsForGroup(groupRaw);
+        let students = findStudentsForGroup(groupRaw, bookHint);
         
         if (students.length === 0) {
             container.innerHTML = '<p style="color: var(--text-sec); font-size: 0.9rem;">Nenhum aluno encontrado para esta turma na planilha de alunos.</p>';
@@ -2310,7 +2133,11 @@
             return;
         }
 
-        const students = findStudentsForGroup(group);
+        // Busca book pra desempatar
+        const info = allGroupsFromSchedule.get(normalizeGroupKey(group));
+        const bookHint = info ? info.book : '';
+
+        const students = findStudentsForGroup(group, bookHint);
         if(students.length === 0) {
             container.innerHTML = '<p style="color: var(--text-sec);">Nenhum aluno encontrado para esta turma.</p>';
             return;
