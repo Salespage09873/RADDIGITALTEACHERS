@@ -1832,10 +1832,6 @@
         return { teacher, day, time, group };
     }
 
-    /**
-     * Converte um ID de lesson (ex: "lesson_5") no nome real da aula.
-     * Usa o book da turma pra pegar a lista correta de lessons.
-     */
     function getLessonLabelFromId(group, lessonId) {
         if (!group || !lessonId) return lessonId || '—';
 
@@ -1934,13 +1930,13 @@
                 ? new Date(rad.dateSaved).toLocaleString('pt-BR')
                 : '—';
 
-            // ✅ Aulas com nome real
+            // ✅ Cada RAD mostra apenas a lesson que foi dada
             const lessonsHtml = rad.lessons.length > 0
                 ? rad.lessons.map(lessonId => {
                     const label = getLessonLabelFromId(rad.group, lessonId);
-                    return `<span class="badge" style="background: var(--primary); margin: 2px;">📘 ${label}</span>`;
+                    return `<span class="badge" style="background: var(--primary); margin: 2px; font-size:0.85rem; padding:6px 12px;">📘 ${label}</span>`;
                 }).join('')
-                : '<em style="color: var(--text-sec);">Nenhuma aula marcada</em>';
+                : '<em style="color: var(--text-sec);">Nenhuma aula registrada</em>';
 
             const attendanceHtml = rad.attendance.length > 0
                 ? rad.attendance.map(a => `<span class="badge" style="background: var(--success); margin: 2px;">✓ ${a}</span>`).join('')
@@ -1970,7 +1966,7 @@
                         </div>
 
                         <div style="margin-bottom: 10px;">
-                            <label style="margin-bottom:4px;">📚 Aulas dadas:</label>
+                            <label style="margin-bottom:4px;">📚 Lesson dada:</label>
                             <div>${lessonsHtml}</div>
                         </div>
 
@@ -2341,6 +2337,10 @@
         });
     }
 
+    /**
+     * ✅ Salva apenas a ÚLTIMA lesson marcada como concluída (a que foi dada hoje).
+     * Isso evita mostrar todas as lessons acumuladas no histórico.
+     */
     function saveRad() {
         const status = document.getElementById('rad-status').value;
         if(!status) { alert('Selecione o status da aula!'); return; }
@@ -2348,9 +2348,20 @@
         const attendanceChecked = Array.from(document.querySelectorAll('.att-check:checked')).map(cb => cb.value);
         const observations = document.getElementById('rad-observations').value.trim();
 
-        const lessonsDone = getProgressForGroup(currentRadClass.group)
-            .filter(p => p.completed)
-            .map(p => p.lesson);
+        // Pega a ÚLTIMA lesson marcada como concluída (a do dia)
+        const lessons = getGroupLessons(currentRadClass.group);
+        const progress = getProgressForGroup(currentRadClass.group);
+        
+        let lessonOfDay = null;
+        for (let i = lessons.length - 1; i >= 0; i--) {
+            const p = progress.find(x => x.lesson === lessons[i].id);
+            if (p && p.completed) {
+                lessonOfDay = lessons[i];
+                break;
+            }
+        }
+
+        const lessonsDone = lessonOfDay ? [lessonOfDay.id] : [];
 
         const data = {
             status,
@@ -2363,7 +2374,7 @@
         localStorage.setItem(getRadKey(currentRadClass), JSON.stringify(data));
         closeModal('rad-modal');
         renderSchedule();
-        alert('✅ RAD Salvo com Sucesso! O progresso já está sincronizado com o Lesson Plan por Turma.');
+        alert('✅ RAD Salvo com Sucesso!');
     }
 
     function clearRad() {
