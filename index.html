@@ -1817,24 +1817,6 @@
     // ============================================
     // HISTÓRICO DE AULAS
     // ============================================
-    /**
-     * Extrai as informações do RAD a partir da chave do localStorage.
-     * Formato: rad_<TEACHER>_<DAY>_<TIME>_<GROUP>
-     *
-     * Como o GROUP pode conter underscores, e o DAY/TIME/TEACHER são previsíveis,
-     * usa-se os seguintes passos:
-     *   1. Separa em partes por "_"
-     *   2. teacher = partes[0]
-     *   3. day = partes[1]
-     *   4. time = partes[2]
-     *   5. group = partes[3..].join("_")
-     *
-     * Isso funciona porque:
-     *   - Nome do teacher nunca tem "_"
-     *   - Nome do dia nunca tem "_"
-     *   - Horário nunca tem "_"
-     *   - Tudo depois do horário é o nome do group (com _ preservado)
-     */
     function parseRadKey(key) {
         if (!key || !key.startsWith('rad_')) return null;
         const rest = key.substring(4);
@@ -1848,6 +1830,25 @@
         const group = parts.slice(3).join('_');
 
         return { teacher, day, time, group };
+    }
+
+    /**
+     * Converte um ID de lesson (ex: "lesson_5") no nome real da aula.
+     * Usa o book da turma pra pegar a lista correta de lessons.
+     */
+    function getLessonLabelFromId(group, lessonId) {
+        if (!group || !lessonId) return lessonId || '—';
+
+        try {
+            const lessons = getGroupLessons(group);
+            const lesson = lessons.find(l => l.id === lessonId);
+            if (lesson && lesson.label) return lesson.label;
+        } catch(e) {
+            console.warn('Erro ao buscar label da lesson:', e);
+        }
+
+        const numMatch = lessonId.match(/\d+/);
+        return numMatch ? `Aula ${numMatch[0]}` : lessonId;
     }
 
     function renderHistory() {
@@ -1933,8 +1934,12 @@
                 ? new Date(rad.dateSaved).toLocaleString('pt-BR')
                 : '—';
 
+            // ✅ Aulas com nome real
             const lessonsHtml = rad.lessons.length > 0
-                ? rad.lessons.map(l => `<span class="badge" style="background: var(--primary); margin: 2px;">${l.replace('lesson_', 'Aula ')}</span>`).join('')
+                ? rad.lessons.map(lessonId => {
+                    const label = getLessonLabelFromId(rad.group, lessonId);
+                    return `<span class="badge" style="background: var(--primary); margin: 2px;">📘 ${label}</span>`;
+                }).join('')
                 : '<em style="color: var(--text-sec);">Nenhuma aula marcada</em>';
 
             const attendanceHtml = rad.attendance.length > 0
@@ -1955,6 +1960,9 @@
                         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
                             <div style="background: var(--card-bg); padding:6px 12px; border-radius:4px; font-size:0.9rem;">
                                 <strong>Turma:</strong> ${groupDisplay}
+                            </div>
+                            <div style="background: var(--card-bg); padding:6px 12px; border-radius:4px; font-size:0.9rem;">
+                                <strong>Book:</strong> ${getBookForGroup(rad.group) || '—'}
                             </div>
                             <div style="background: var(--card-bg); padding:6px 12px; border-radius:4px; font-size:0.9rem;">
                                 <strong>Salvo em:</strong> ${dateFormatted}
