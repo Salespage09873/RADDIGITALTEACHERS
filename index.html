@@ -191,12 +191,15 @@
 
         .class-card:hover { border-color: var(--primary); box-shadow: var(--shadow-hover); }
 
+        /* ✅ Card preenchido: opaco + check verde grande */
         .class-card.rad-saved {
             border-color: var(--success);
             background: var(--success-light);
-            opacity: 0.85;
+            opacity: 0.55;
         }
-        .class-card.rad-saved:hover { opacity: 1; }
+        .class-card.rad-saved:hover {
+            opacity: 1;
+        }
         .class-card.next-week-card { border-left: 5px solid var(--warning); }
 
         .class-time {
@@ -269,13 +272,14 @@
         .status-noshow { background: var(--danger); }
         .status-cancel { background: var(--warning); }
 
+        /* ✅ Check verde no canto do card preenchido */
         .rad-saved-check {
             position: absolute;
             top: 10px;
             right: 10px;
             font-size: 1.2rem;
-            color: var(--success);
-            background: var(--bg-color);
+            color: #fff;
+            background: var(--success);
             border-radius: 50%;
             width: 28px;
             height: 28px;
@@ -284,6 +288,16 @@
             justify-content: center;
             border: 2px solid var(--success);
             box-shadow: 0 0 10px rgba(25, 135, 84, 0.3);
+            z-index: 2;
+        }
+
+        /* ✅ Aumenta o check quando o card está preenchido */
+        .class-card.rad-saved .rad-saved-check {
+            width: 44px;
+            height: 44px;
+            font-size: 1.7rem;
+            border-width: 3px;
+            box-shadow: 0 0 16px rgba(25, 135, 84, 0.55);
         }
 
         .modal-overlay {
@@ -698,6 +712,7 @@
         <div class="header-buttons">
             <button onclick="showSelection()" class="active" id="btn-schedule">📅 Cronograma</button>
             <button onclick="showLessonPlans()" id="btn-lessons">📚 Lesson Plans por Turma</button>
+            <button onclick="showHistory()" id="btn-history">📊 Histórico de Aulas</button>
             <button onclick="refreshData()" class="refresh-btn">🔄 Atualizar Dados</button>
         </div>
     </header>
@@ -735,6 +750,32 @@
                 </button>
             </div>
             <div id="lesson-plan-content"></div>
+        </div>
+
+        <!-- ✅ NOVA TELA: HISTÓRICO DE AULAS -->
+        <div id="history-screen" class="hidden">
+            <div style="margin-bottom: 20px;">
+                <button onclick="showSelection()" style="border-color: var(--text-sec); color: var(--text-sec);">
+                    ← Voltar
+                </button>
+            </div>
+            <h2 style="color: var(--primary); text-align: center; margin-bottom: 20px;">📊 Histórico de Aulas</h2>
+
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center;">
+                <select id="hist-filter-teacher" onchange="renderHistory()" style="max-width: 200px; margin-bottom: 0;">
+                    <option value="">Todos os professores</option>
+                </select>
+                <select id="hist-filter-status" onchange="renderHistory()" style="max-width: 200px; margin-bottom: 0;">
+                    <option value="">Todos os status</option>
+                    <option value="realizada">✅ Realizada</option>
+                    <option value="noshow">❌ No Show</option>
+                    <option value="cancelada">⚠️ Cancelada</option>
+                </select>
+                <input type="text" id="hist-filter-group" oninput="renderHistory()" placeholder="Filtrar por turma..." style="max-width: 220px; margin-bottom: 0;">
+                <button onclick="clearHistoryFilters()" style="margin: 0;">🧹 Limpar filtros</button>
+            </div>
+
+            <div id="history-content"></div>
         </div>
     </div>
 
@@ -1182,6 +1223,9 @@
             if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) {
                 renderGroupLessonPlans();
             }
+            if (!document.getElementById('history-screen').classList.contains('hidden')) {
+                renderHistory();
+            }
 
             alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length} aulas\nNext Week: ${nextWeekData.length} aulas\nKids: ${Object.keys(KIDS_BOOK_STRUCTURE).length} lesson plans`);
         } catch (err) {
@@ -1420,15 +1464,8 @@
     }
 
     // ============================================
-    // MATCH DE BOOK KIDS (inteligente)
+    // MATCH DE BOOK KIDS
     // ============================================
-    /**
-     * Tenta achar o book kids correto a partir de um texto (nome da turma OU coluna B).
-     * Estratégias em ordem:
-     *   1. Igualdade exata (após normalização)
-     *   2. Prefixo AW/WF + segunda palavra em comum
-     *   3. Contém / é contido
-     */
     function findKidsBook(text) {
         if (!text) return null;
         const norm = normalizeGroupKeyAgressive(text);
@@ -1452,7 +1489,6 @@
                 if (!bNorm.startsWith(prefix + ' ')) continue;
                 
                 const bWords = bNorm.split(' ').filter(w => w.length > 1 && w !== prefix);
-                // Se alguma palavra significativa casa, considera match
                 const common = words.filter(w => bWords.includes(w));
                 if (common.length > 0) return b;
             }
@@ -1472,12 +1508,6 @@
 
     // ============================================
     // MAPEAMENTO TURMA → BOOK
-    // Prioridade:
-    //   1. Book kids pela COLUNA B
-    //   2. Book kids pelo NOME DA TURMA
-    //   3. Gx no nome da turma
-    //   4. "Book X" na coluna B
-    //   5. Fallback → Book 1
     // ============================================
     function buildGroupBookMap() {
         groupBookMap = {};
@@ -1486,7 +1516,6 @@
             const group = info.display;
             if (groupBookMap[group]) return;
 
-            // 1️⃣ Book kids pela coluna B
             if (info.book) {
                 const kids = findKidsBook(info.book);
                 if (kids) {
@@ -1496,7 +1525,6 @@
                 }
             }
 
-            // 2️⃣ Book kids pelo nome da turma
             const kidsFromGroup = findKidsBook(group);
             if (kidsFromGroup) {
                 groupBookMap[group] = kidsFromGroup;
@@ -1504,14 +1532,12 @@
                 return;
             }
 
-            // 3️⃣ Gx no nome
             const bookFromName = getBookFromGroupName(group);
             if (bookFromName) {
                 groupBookMap[group] = bookFromName;
                 return;
             }
 
-            // 4️⃣ "Book X" da coluna B
             if (info.book) {
                 const bookKey = info.book.toUpperCase().trim();
                 const bookNames = Object.keys(BOOK_STRUCTURE);
@@ -1531,7 +1557,6 @@
                 }
             }
 
-            // 5️⃣ Fallback
             groupBookMap[group] = 'Book 1';
         });
 
@@ -1555,7 +1580,6 @@
         const normKey = normalizeGroupKey(group);
         const info = allGroupsFromSchedule.get(normKey);
 
-        // 1️⃣ Book kids pela coluna B
         if (info && info.book) {
             const kids = findKidsBook(info.book);
             if (kids) {
@@ -1564,21 +1588,18 @@
             }
         }
 
-        // 2️⃣ Book kids pelo nome da turma
         const kidsFromGroup = findKidsBook(group);
         if (kidsFromGroup) {
             groupBookMap[group] = kidsFromGroup;
             return kidsFromGroup;
         }
 
-        // 3️⃣ Gx
         const bookFromName = getBookFromGroupName(group);
         if (bookFromName) {
             groupBookMap[group] = bookFromName;
             return bookFromName;
         }
 
-        // 4️⃣ "Book X" da coluna B
         if (info && info.book) {
             const bookKey = info.book.toUpperCase().trim();
             const bookNames = Object.keys(BOOK_STRUCTURE);
@@ -1739,8 +1760,10 @@
         document.getElementById('selection-screen').classList.remove('hidden');
         document.getElementById('schedule-screen').classList.add('hidden');
         document.getElementById('lesson-plan-screen').classList.add('hidden');
+        document.getElementById('history-screen').classList.add('hidden');
         document.getElementById('btn-schedule').classList.add('active');
         document.getElementById('btn-lessons').classList.remove('active');
+        document.getElementById('btn-history').classList.remove('active');
         currentTeacher = null;
     }
 
@@ -1748,17 +1771,189 @@
         document.getElementById('selection-screen').classList.add('hidden');
         document.getElementById('schedule-screen').classList.remove('hidden');
         document.getElementById('lesson-plan-screen').classList.add('hidden');
+        document.getElementById('history-screen').classList.add('hidden');
         document.getElementById('btn-schedule').classList.add('active');
         document.getElementById('btn-lessons').classList.remove('active');
+        document.getElementById('btn-history').classList.remove('active');
     }
 
     function showLessonPlans() {
         document.getElementById('selection-screen').classList.add('hidden');
         document.getElementById('schedule-screen').classList.add('hidden');
         document.getElementById('lesson-plan-screen').classList.remove('hidden');
+        document.getElementById('history-screen').classList.add('hidden');
         document.getElementById('btn-schedule').classList.remove('active');
         document.getElementById('btn-lessons').classList.add('active');
+        document.getElementById('btn-history').classList.remove('active');
         renderGroupLessonPlans();
+    }
+
+    function showHistory() {
+        document.getElementById('selection-screen').classList.add('hidden');
+        document.getElementById('schedule-screen').classList.add('hidden');
+        document.getElementById('lesson-plan-screen').classList.add('hidden');
+        document.getElementById('history-screen').classList.remove('hidden');
+        document.getElementById('btn-schedule').classList.remove('active');
+        document.getElementById('btn-lessons').classList.remove('active');
+        document.getElementById('btn-history').classList.add('active');
+        currentTeacher = null;
+        populateHistoryTeacherFilter();
+        renderHistory();
+    }
+
+    function clearHistoryFilters() {
+        document.getElementById('hist-filter-teacher').value = '';
+        document.getElementById('hist-filter-status').value = '';
+        document.getElementById('hist-filter-group').value = '';
+        renderHistory();
+    }
+
+    function populateHistoryTeacherFilter() {
+        const select = document.getElementById('hist-filter-teacher');
+        if (!select) return;
+        select.innerHTML = '<option value="">Todos os professores</option>';
+        VALID_TEACHERS
+            .sort((a,b) => a.name.localeCompare(b.name))
+            .forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.name;
+                opt.textContent = t.name;
+                select.appendChild(opt);
+            });
+    }
+
+    // ============================================
+    // HISTÓRICO DE AULAS
+    // ============================================
+    function renderHistory() {
+        const container = document.getElementById('history-content');
+        if (!container) return;
+
+        const filterTeacher = document.getElementById('hist-filter-teacher').value.toUpperCase();
+        const filterStatus = document.getElementById('hist-filter-status').value;
+        const filterGroup = normalizeGroupKey(document.getElementById('hist-filter-group').value);
+
+        const rads = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (!key || !key.startsWith('rad_')) continue;
+
+            const rest = key.substring(4);
+            const parts = rest.split('_');
+            if (parts.length < 4) continue;
+            const teacher = parts[0];
+            const day = parts[1];
+            const time = parts[2];
+            const group = parts.slice(3).join('_');
+
+            try {
+                const data = JSON.parse(localStorage.getItem(key));
+                if (!data || !data.status) continue;
+
+                if (filterTeacher && teacher !== filterTeacher) continue;
+                if (filterStatus && data.status !== filterStatus) continue;
+                if (filterGroup && !normalizeGroupKey(group).includes(filterGroup)) continue;
+
+                rads.push({
+                    key, teacher, day, time, group,
+                    status: data.status,
+                    lessons: data.lessons || [],
+                    attendance: data.attendance || [],
+                    observations: data.observations || '',
+                    dateSaved: data.dateSaved || ''
+                });
+            } catch(e) { continue; }
+        }
+
+        rads.sort((a, b) => {
+            const da = a.dateSaved ? new Date(a.dateSaved).getTime() : 0;
+            const db = b.dateSaved ? new Date(b.dateSaved).getTime() : 0;
+            return db - da;
+        });
+
+        if (rads.length === 0) {
+            container.innerHTML = `
+                <p style="text-align:center; color: var(--text-sec); margin-top: 40px; font-size: 1.1rem;">
+                    Nenhum RAD registrado ainda.<br>
+                    <span style="font-size:0.9rem;">Quando um professor preencher e salvar um RAD, ele aparecerá aqui.</span>
+                </p>
+            `;
+            return;
+        }
+
+        const statusLabel = {
+            'realizada': { text: '✅ Realizada', color: 'var(--success)' },
+            'noshow':    { text: '❌ No Show',   color: 'var(--danger)' },
+            'cancelada': { text: '⚠️ Cancelada', color: 'var(--warning)' }
+        };
+
+        let html = `<p style="text-align:center; color: var(--text-sec); margin-bottom: 15px; font-size: 0.9rem;">
+            Total: ${rads.length} RAD${rads.length > 1 ? 's' : ''} registrado${rads.length > 1 ? 's' : ''}
+        </p>`;
+
+        rads.forEach(rad => {
+            const st = statusLabel[rad.status] || { text: rad.status, color: 'var(--text-sec)' };
+            const dateFormatted = rad.dateSaved 
+                ? new Date(rad.dateSaved).toLocaleString('pt-BR')
+                : '—';
+
+            const lessonsHtml = rad.lessons.length > 0
+                ? rad.lessons.map(l => `<span class="badge" style="background: var(--primary); margin: 2px;">${l.replace('lesson_', 'Aula ')}</span>`).join('')
+                : '<em style="color: var(--text-sec);">Nenhuma aula marcada</em>';
+
+            const attendanceHtml = rad.attendance.length > 0
+                ? rad.attendance.map(a => `<span class="badge" style="background: var(--success); margin: 2px;">✓ ${a}</span>`).join('')
+                : '<em style="color: var(--text-sec);">Nenhum aluno marcado</em>';
+
+            html += `
+                <div class="day-section" style="margin-bottom: 18px;">
+                    <div class="day-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                        <span>${rad.teacher} — ${rad.day} ${rad.time}</span>
+                        <span style="font-weight:600; color:${st.color}; font-size:0.9rem;">${st.text}</span>
+                    </div>
+                    <div style="padding: 16px 20px;">
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
+                            <div style="background: var(--card-bg); padding:6px 12px; border-radius:4px; font-size:0.9rem;">
+                                <strong>Turma:</strong> ${rad.group}
+                            </div>
+                            <div style="background: var(--card-bg); padding:6px 12px; border-radius:4px; font-size:0.9rem;">
+                                <strong>Salvo em:</strong> ${dateFormatted}
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 10px;">
+                            <label style="margin-bottom:4px;">📚 Aulas dadas:</label>
+                            <div>${lessonsHtml}</div>
+                        </div>
+
+                        <div style="margin-bottom: 10px;">
+                            <label style="margin-bottom:4px;">👥 Alunos presentes:</label>
+                            <div>${attendanceHtml}</div>
+                        </div>
+
+                        ${rad.observations ? `
+                            <div>
+                                <label style="margin-bottom:4px;">📝 Observações:</label>
+                                <div style="background: var(--card-bg); padding:10px 14px; border-radius:6px; border-left:3px solid var(--primary); font-size:0.9rem; white-space: pre-wrap;">${rad.observations.replace(/</g, '&lt;')}</div>
+                            </div>
+                        ` : ''}
+
+                        <button class="btn-danger" style="margin-top:14px; font-size:0.8rem; padding:6px 12px;"
+                                onclick="deleteRadFromHistory('${rad.key}')">
+                            🗑️ Apagar registro
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    function deleteRadFromHistory(key) {
+        if (!confirm('Tem certeza que deseja apagar este registro de aula? O progresso das aulas NÃO será afetado.')) return;
+        localStorage.removeItem(key);
+        renderHistory();
     }
 
     // ============================================
@@ -1869,7 +2064,7 @@
                     if(status === 'noshow') statusBadge = '<div class="status-indicator status-noshow" title="No Show"></div>';
                     if(status === 'cancelada') statusBadge = '<div class="status-indicator status-cancel" title="Cancelada"></div>';
 
-                    let savedBadge = isSaved ? `<div class="rad-saved-check" title="RAD salvo">✅</div>` : '';
+                    let savedBadge = isSaved ? `<div class="rad-saved-check" title="RAD salvo">✓</div>` : '';
 
                     const lessons = getGroupLessons(cls.group);
                     const progress = getProgressForGroup(cls.group);
