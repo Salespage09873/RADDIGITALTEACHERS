@@ -191,15 +191,12 @@
 
         .class-card:hover { border-color: var(--primary); box-shadow: var(--shadow-hover); }
 
-        /* ✅ Card preenchido: opaco + check verde grande */
         .class-card.rad-saved {
             border-color: var(--success);
             background: var(--success-light);
             opacity: 0.55;
         }
-        .class-card.rad-saved:hover {
-            opacity: 1;
-        }
+        .class-card.rad-saved:hover { opacity: 1; }
         .class-card.next-week-card { border-left: 5px solid var(--warning); }
 
         .class-time {
@@ -272,7 +269,6 @@
         .status-noshow { background: var(--danger); }
         .status-cancel { background: var(--warning); }
 
-        /* ✅ Check verde no canto do card preenchido */
         .rad-saved-check {
             position: absolute;
             top: 10px;
@@ -291,7 +287,6 @@
             z-index: 2;
         }
 
-        /* ✅ Aumenta o check quando o card está preenchido */
         .class-card.rad-saved .rad-saved-check {
             width: 44px;
             height: 44px;
@@ -752,7 +747,6 @@
             <div id="lesson-plan-content"></div>
         </div>
 
-        <!-- ✅ NOVA TELA: HISTÓRICO DE AULAS -->
         <div id="history-screen" class="hidden">
             <div style="margin-bottom: 20px;">
                 <button onclick="showSelection()" style="border-color: var(--text-sec); color: var(--text-sec);">
@@ -916,6 +910,9 @@
     };
 
     const FETCH_TIMEOUT_MS = 10000;
+
+    // ✅ Senha para apagar registros do histórico
+    const COORD_PASSWORD = 'coordenacaoml';
 
     const VALID_TEACHERS = [
         { name: 'BARBARA', color: '#0d6efd' },
@@ -1473,12 +1470,10 @@
 
         const books = Object.keys(KIDS_BOOK_GIDS);
 
-        // 1️⃣ Igualdade exata
         for (const b of books) {
             if (normalizeGroupKeyAgressive(b) === norm) return b;
         }
 
-        // 2️⃣ Prefixo AW/WF + segunda palavra em comum
         const prefixMatch = norm.match(/^(AW|WF)\b/);
         if (prefixMatch) {
             const prefix = prefixMatch[1];
@@ -1494,7 +1489,6 @@
             }
         }
 
-        // 3️⃣ Contém / é contido (só se o texto tiver 2+ palavras)
         const words = norm.split(' ').filter(w => w.length > 1);
         if (words.length >= 2) {
             for (const b of books) {
@@ -1825,6 +1819,44 @@
     // ============================================
     // HISTÓRICO DE AULAS
     // ============================================
+    /**
+     * Extrai as informações do RAD a partir da chave do localStorage.
+     * Chave: rad_<TEACHER>_<DAY>_<TIME>_<GROUP>
+     * Como o nome do GROUP pode conter "_", usamos uma estratégia:
+     *   - Procuramos qual teacher da lista é o prefixo
+     *   - Depois o dia (Segunda|Terça|Quarta|Quinta|Sexta)
+     *   - Depois o horário (formato HH:MM)
+     *   - O resto é o GROUP
+     */
+    function parseRadKey(key) {
+        if (!key || !key.startsWith('rad_')) return null;
+        const rest = key.substring(4);
+
+        // Tenta cada teacher conhecido
+        for (const t of VALID_TEACHERS) {
+            const prefix = t.name + '_';
+            if (!rest.startsWith(prefix)) continue;
+            const afterTeacher = rest.substring(prefix.length);
+
+            // Tenta cada dia
+            const days = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
+            for (const day of days) {
+                const dayPrefix = day + '_';
+                if (!afterTeacher.startsWith(dayPrefix)) continue;
+                const afterDay = afterTeacher.substring(dayPrefix.length);
+
+                // Horário: formato HH:MM
+                const timeMatch = afterDay.match(/^(\d{2}:\d{2})_/);
+                if (!timeMatch) continue;
+                const time = timeMatch[1];
+                const group = afterDay.substring(timeMatch[0].length);
+
+                return { teacher: t.name, day, time, group };
+            }
+        }
+        return null;
+    }
+
     function renderHistory() {
         const container = document.getElementById('history-content');
         if (!container) return;
@@ -1838,24 +1870,23 @@
             const key = localStorage.key(i);
             if (!key || !key.startsWith('rad_')) continue;
 
-            const rest = key.substring(4);
-            const parts = rest.split('_');
-            if (parts.length < 4) continue;
-            const teacher = parts[0];
-            const day = parts[1];
-            const time = parts[2];
-            const group = parts.slice(3).join('_');
+            const parsed = parseRadKey(key);
+            if (!parsed) continue;
 
             try {
                 const data = JSON.parse(localStorage.getItem(key));
                 if (!data || !data.status) continue;
 
-                if (filterTeacher && teacher !== filterTeacher) continue;
+                if (filterTeacher && parsed.teacher !== filterTeacher) continue;
                 if (filterStatus && data.status !== filterStatus) continue;
-                if (filterGroup && !normalizeGroupKey(group).includes(filterGroup)) continue;
+                if (filterGroup && !normalizeGroupKey(parsed.group).includes(filterGroup)) continue;
 
                 rads.push({
-                    key, teacher, day, time, group,
+                    key,
+                    teacher: parsed.teacher,
+                    day: parsed.day,
+                    time: parsed.time,
+                    group: parsed.group,
                     status: data.status,
                     lessons: data.lessons || [],
                     attendance: data.attendance || [],
@@ -1905,6 +1936,11 @@
                 ? rad.attendance.map(a => `<span class="badge" style="background: var(--success); margin: 2px;">✓ ${a}</span>`).join('')
                 : '<em style="color: var(--text-sec);">Nenhum aluno marcado</em>';
 
+            // ✅ Se o group vier vazio por algum motivo, mostra um fallback
+            const groupDisplay = rad.group && rad.group.trim() !== '' 
+                ? rad.group 
+                : '<em style="color: var(--text-sec);">—</em>';
+
             html += `
                 <div class="day-section" style="margin-bottom: 18px;">
                     <div class="day-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
@@ -1914,7 +1950,7 @@
                     <div style="padding: 16px 20px;">
                         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
                             <div style="background: var(--card-bg); padding:6px 12px; border-radius:4px; font-size:0.9rem;">
-                                <strong>Turma:</strong> ${rad.group}
+                                <strong>Turma:</strong> ${groupDisplay}
                             </div>
                             <div style="background: var(--card-bg); padding:6px 12px; border-radius:4px; font-size:0.9rem;">
                                 <strong>Salvo em:</strong> ${dateFormatted}
@@ -1939,7 +1975,7 @@
                         ` : ''}
 
                         <button class="btn-danger" style="margin-top:14px; font-size:0.8rem; padding:6px 12px;"
-                                onclick="deleteRadFromHistory('${rad.key}')">
+                                onclick="deleteRadFromHistory('${rad.key.replace(/'/g, "\\'")}')">
                             🗑️ Apagar registro
                         </button>
                     </div>
@@ -1950,10 +1986,21 @@
         container.innerHTML = html;
     }
 
+    // ✅ Agora pede senha antes de apagar
     function deleteRadFromHistory(key) {
-        if (!confirm('Tem certeza que deseja apagar este registro de aula? O progresso das aulas NÃO será afetado.')) return;
+        const senha = prompt('🔒 Para apagar este registro, digite a senha da coordenação:');
+        if (senha === null) return; // cancelou
+        
+        if (senha !== COORD_PASSWORD) {
+            alert('❌ Senha incorreta. O registro NÃO foi apagado.');
+            return;
+        }
+
+        if (!confirm('✅ Senha correta. Confirma apagar este registro? O progresso das aulas NÃO será afetado.')) return;
+        
         localStorage.removeItem(key);
         renderHistory();
+        alert('🗑️ Registro apagado com sucesso.');
     }
 
     // ============================================
