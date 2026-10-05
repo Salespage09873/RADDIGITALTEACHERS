@@ -910,8 +910,6 @@
     };
 
     const FETCH_TIMEOUT_MS = 10000;
-
-    // ✅ Senha para apagar registros do histórico
     const COORD_PASSWORD = 'coordenacaoml';
 
     const VALID_TEACHERS = [
@@ -1821,57 +1819,59 @@
     // ============================================
     /**
      * Extrai as informações do RAD a partir da chave do localStorage.
-     * Chave: rad_<TEACHER>_<DAY>_<TIME>_<GROUP>
-     * Como o nome do GROUP pode conter "_", usamos uma estratégia:
-     *   - Procuramos qual teacher da lista é o prefixo
-     *   - Depois o dia (Segunda|Terça|Quarta|Quinta|Sexta)
-     *   - Depois o horário (formato HH:MM)
-     *   - O resto é o GROUP
+     * Formato: rad_<TEACHER>_<DAY>_<TIME>_<GROUP>
+     *
+     * Como o GROUP pode conter underscores, e o DAY/TIME/TEACHER são previsíveis,
+     * usa-se os seguintes passos:
+     *   1. Separa em partes por "_"
+     *   2. teacher = partes[0]
+     *   3. day = partes[1]
+     *   4. time = partes[2]
+     *   5. group = partes[3..].join("_")
+     *
+     * Isso funciona porque:
+     *   - Nome do teacher nunca tem "_"
+     *   - Nome do dia nunca tem "_"
+     *   - Horário nunca tem "_"
+     *   - Tudo depois do horário é o nome do group (com _ preservado)
      */
     function parseRadKey(key) {
         if (!key || !key.startsWith('rad_')) return null;
         const rest = key.substring(4);
+        const parts = rest.split('_');
 
-        // Tenta cada teacher conhecido
-        for (const t of VALID_TEACHERS) {
-            const prefix = t.name + '_';
-            if (!rest.startsWith(prefix)) continue;
-            const afterTeacher = rest.substring(prefix.length);
+        if (parts.length < 4) return null;
 
-            // Tenta cada dia
-            const days = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
-            for (const day of days) {
-                const dayPrefix = day + '_';
-                if (!afterTeacher.startsWith(dayPrefix)) continue;
-                const afterDay = afterTeacher.substring(dayPrefix.length);
+        const teacher = parts[0];
+        const day = parts[1];
+        const time = parts[2];
+        const group = parts.slice(3).join('_');
 
-                // Horário: formato HH:MM
-                const timeMatch = afterDay.match(/^(\d{2}:\d{2})_/);
-                if (!timeMatch) continue;
-                const time = timeMatch[1];
-                const group = afterDay.substring(timeMatch[0].length);
-
-                return { teacher: t.name, day, time, group };
-            }
-        }
-        return null;
+        return { teacher, day, time, group };
     }
 
     function renderHistory() {
         const container = document.getElementById('history-content');
         if (!container) return;
 
-        const filterTeacher = document.getElementById('hist-filter-teacher').value.toUpperCase();
+        const filterTeacher = (document.getElementById('hist-filter-teacher').value || '').toUpperCase();
         const filterStatus = document.getElementById('hist-filter-status').value;
         const filterGroup = normalizeGroupKey(document.getElementById('hist-filter-group').value);
 
         const rads = [];
+        const debugKeys = [];
+
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             if (!key || !key.startsWith('rad_')) continue;
 
+            debugKeys.push(key);
+
             const parsed = parseRadKey(key);
-            if (!parsed) continue;
+            if (!parsed) {
+                console.warn('⚠️ Não consegui parsear a chave:', key);
+                continue;
+            }
 
             try {
                 const data = JSON.parse(localStorage.getItem(key));
@@ -1893,8 +1893,13 @@
                     observations: data.observations || '',
                     dateSaved: data.dateSaved || ''
                 });
-            } catch(e) { continue; }
+            } catch(e) {
+                console.warn('⚠️ Erro ao parsear JSON da chave:', key, e);
+            }
         }
+
+        console.log('🔎 Chaves rad_ encontradas:', debugKeys);
+        console.log('✅ RADs prontos pra renderizar:', rads.length);
 
         rads.sort((a, b) => {
             const da = a.dateSaved ? new Date(a.dateSaved).getTime() : 0;
@@ -1936,7 +1941,6 @@
                 ? rad.attendance.map(a => `<span class="badge" style="background: var(--success); margin: 2px;">✓ ${a}</span>`).join('')
                 : '<em style="color: var(--text-sec);">Nenhum aluno marcado</em>';
 
-            // ✅ Se o group vier vazio por algum motivo, mostra um fallback
             const groupDisplay = rad.group && rad.group.trim() !== '' 
                 ? rad.group 
                 : '<em style="color: var(--text-sec);">—</em>';
@@ -1986,11 +1990,10 @@
         container.innerHTML = html;
     }
 
-    // ✅ Agora pede senha antes de apagar
     function deleteRadFromHistory(key) {
         const senha = prompt('🔒 Para apagar este registro, digite a senha da coordenação:');
-        if (senha === null) return; // cancelou
-        
+        if (senha === null) return;
+
         if (senha !== COORD_PASSWORD) {
             alert('❌ Senha incorreta. O registro NÃO foi apagado.');
             return;
