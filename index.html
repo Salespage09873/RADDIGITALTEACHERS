@@ -873,9 +873,9 @@
 
 <script>
     // ============================================
-    // CONFIGURAÇÃO
+    // ✅ CONFIGURAÇÃO — URL NOVA DO APPS SCRIPT
     // ============================================
-    const API_URL = 'https://script.google.com/macros/s/AKfycby1tSfU8eIdYch8EAWgejTy_6WlEfvl3lhhc9JebX5nyrPN4k4arwdWKIUhtWvJsarC/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbww5CS28qPsSYEOEaMpOZQ-JBNaDFZHWErEKaRShfyIrfpfzlLBzV_zHgTIk7cLMgiR/exec';
     const PENDING_QUEUE_KEY = 'radPendingQueue';
 
     let remoteRads = [];
@@ -1019,7 +1019,7 @@
     }
 
     // ============================================
-    // FETCH COM TIMEOUT (para CSV das planilhas)
+    // FETCH COM TIMEOUT
     // ============================================
     function fetchWithTimeout(url, timeoutMs, opts = {}) {
         return new Promise((resolve, reject) => {
@@ -1056,7 +1056,6 @@
                 reject(new Error('Timeout ao carregar (JSONP)'));
             }, timeoutMs);
 
-            // Função global que o Apps Script chama
             window[callbackName] = function(data) {
                 clearTimeout(timer);
                 cleanup();
@@ -1131,7 +1130,7 @@
     }
 
     // ============================================
-    // ENVIO PARA O SERVIDOR — COM FALLBACK
+    // ENVIO PARA O SERVIDOR
     // ============================================
     async function sendRadToServer(radData) {
         showSyncStatus('Salvando no servidor...', 'default');
@@ -1167,7 +1166,7 @@
             console.warn('Tentativa 1 (JSON) falhou:', e.message);
         }
 
-        // Tentativa 2: form-urlencoded sem CORS
+        // Tentativa 2: form-urlencoded no-cors
         try {
             const params = new URLSearchParams();
             params.append('payload', JSON.stringify(radData));
@@ -1184,7 +1183,7 @@
             console.warn('Tentativa 2 (form) falhou:', e.message);
         }
 
-        // Tentativa 3: text/plain sem CORS
+        // Tentativa 3: text/plain no-cors
         try {
             await fetch(API_URL, {
                 method: 'POST',
@@ -1202,7 +1201,7 @@
     }
 
     // ============================================
-    // ✅ CARREGA OS RADs DO SERVIDOR (JSONP)
+    // CARREGA OS RADs DO SERVIDOR (JSONP)
     // ============================================
     async function loadHistoryFromServer() {
         const container = document.getElementById('history-content');
@@ -1299,7 +1298,6 @@
         try {
             showLoadingMsg('Carregando...');
 
-            // Tarefas paralelas (não travar se uma falhar)
             const tasks = [
                 (async () => {
                     try { await loadKidsLessonPlans(); } 
