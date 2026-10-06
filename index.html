@@ -876,8 +876,6 @@
     // CONFIGURAÇÃO
     // ============================================
     const API_URL = 'https://script.google.com/macros/s/AKfycby1tSfU8eIdYch8EAWgejTy_6WlEfvl3lhhc9JebX5nyrPN4k4arwdWKIUhtWvJsarC/exec';
-
-    // Fila de RADs pendentes (se falhar o envio, tenta depois)
     const PENDING_QUEUE_KEY = 'radPendingQueue';
 
     let remoteRads = [];
@@ -935,7 +933,7 @@
         'WF FRIENDSHIP':    '1798862018'
     };
 
-    const FETCH_TIMEOUT_MS = 15000;
+    const FETCH_TIMEOUT_MS = 8000;
 
     const VALID_TEACHERS = [
         { name: 'BARBARA', color: '#0d6efd' },
@@ -1004,6 +1002,28 @@
     let currentRadClass = null;
 
     // ============================================
+    // LOADING SCREEN HELPERS
+    // ============================================
+    function hideLoadingScreen() {
+        const ls = document.getElementById('loading-screen');
+        if (ls) ls.classList.add('hidden');
+    }
+
+    function showLoadingMsg(msg) {
+        const el = document.getElementById('loading-msg');
+        if (el) el.textContent = msg;
+    }
+
+    function showErrorBanner(msg) {
+        const banner = document.getElementById('error-banner');
+        const msgEl = document.getElementById('error-banner-msg');
+        if (banner && msgEl) {
+            msgEl.textContent = msg;
+            banner.classList.remove('hidden');
+        }
+    }
+
+    // ============================================
     // FETCH COM TIMEOUT
     // ============================================
     function fetchWithTimeout(url, timeoutMs, opts = {}) {
@@ -1011,7 +1031,7 @@
             const controller = new AbortController();
             const timer = setTimeout(() => {
                 controller.abort();
-                reject(new Error('Timeout: ' + url));
+                reject(new Error('Timeout após ' + timeoutMs + 'ms'));
             }, timeoutMs);
 
             fetch(url, { ...opts, signal: controller.signal })
@@ -1075,16 +1095,8 @@
     // ============================================
     // ENVIO PARA O SERVIDOR — COM FALLBACK
     // ============================================
-    /**
-     * Tenta enviar de 3 formas diferentes:
-     *   1. POST JSON normal
-     *   2. POST form-urlencoded com no-cors
-     *   3. POST text/plain com no-cors
-     * Se tudo falhar, adiciona na fila.
-     */
     async function sendRadToServer(radData) {
         showSyncStatus('Salvando no servidor...', 'default');
-
         const ok = await reallySendToServer(radData);
         
         if (ok) {
@@ -1098,7 +1110,7 @@
     }
 
     async function reallySendToServer(radData) {
-        // ---------- Tentativa 1: POST JSON normal ----------
+        // Tentativa 1: POST JSON normal
         try {
             const res = await fetch(API_URL, {
                 method: 'POST',
@@ -1117,7 +1129,7 @@
             console.warn('Tentativa 1 (JSON) falhou:', e.message);
         }
 
-        // ---------- Tentativa 2: form-urlencoded sem CORS ----------
+        // Tentativa 2: form-urlencoded sem CORS
         try {
             const params = new URLSearchParams();
             params.append('payload', JSON.stringify(radData));
@@ -1134,7 +1146,7 @@
             console.warn('Tentativa 2 (form) falhou:', e.message);
         }
 
-        // ---------- Tentativa 3: text/plain sem CORS ----------
+        // Tentativa 3: text/plain sem CORS
         try {
             await fetch(API_URL, {
                 method: 'POST',
@@ -1148,7 +1160,6 @@
             console.warn('Tentativa 3 (text) falhou:', e.message);
         }
 
-        // Todas falharam
         return false;
     }
 
@@ -1164,7 +1175,7 @@
         showSyncStatus('Carregando histórico...', 'default');
         
         try {
-            const text = await fetchWithTimeout(API_URL, FETCH_TIMEOUT_MS);
+            const text = await fetchWithTimeout(API_URL, 8000);
             const data = JSON.parse(text);
             
             if (data.ok && Array.isArray(data.rads)) {
@@ -1173,18 +1184,17 @@
                 showSyncStatus(`${remoteRads.length} RADs carregados`, 'success');
             } else {
                 remoteRads = [];
-                console.warn('Resposta inesperada:', data);
             }
         } catch (e) {
-            console.error('Erro ao carregar histórico:', e);
+            console.error('Erro ao carregar histórico:', e.message);
             remoteRads = [];
-            showSyncStatus('Falha ao carregar histórico', 'error');
+            showSyncStatus('Servidor indisponível', 'error');
             
             if (container) {
                 container.innerHTML = `
                     <div class="error-banner">
                         ⚠️ Não foi possível carregar o histórico do servidor.<br>
-                        <small>Verifique a URL do Apps Script e tente novamente.</small>
+                        <small>Erro: ${e.message}</small>
                     </div>
                 `;
             }
@@ -1241,29 +1251,67 @@
     }
 
     // ============================================
-    // INICIALIZAÇÃO
+    // INICIALIZAÇÃO — NÃO TRAVA
     // ============================================
     window.addEventListener('DOMContentLoaded', async () => {
+        // ✅ Safety timer curto — sempre esconde a loading screen
         const safetyTimer = setTimeout(() => {
-            console.warn('⚠️ Safety timeout');
+            console.warn('⚠️ Safety timeout: forçando remoção da loading screen');
             hideLoadingScreen();
-        }, 25000);
+        }, 8000);
+
+        const forceHide = () => {
+            clearTimeout(safetyTimer);
+            hideLoadingScreen();
+        };
 
         try {
-            showLoadingMsg('Baixando lesson plans kids...');
-            try { await loadKidsLessonPlans(); } catch (e) { console.warn(e); }
+            showLoadingMsg('Carregando...');
 
-            showLoadingMsg('Baixando cronograma (This Week)...');
-            try {
-                const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
-                scheduleData = parseScheduleCSV(text);
-            } catch (e) { console.warn(e); }
+            // ⚡ Carrega tudo em paralelo — nunca rejeita
+            const tasks = [
+                (async () => {
+                    try { await loadKidsLessonPlans(); } 
+                    catch(e) { console.warn('Kids falhou:', e.message); }
+                })(),
 
-            showLoadingMsg('Baixando cronograma (Next Week)...');
-            try {
-                const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS);
-                nextWeekData = parseScheduleCSV(text, { skipGroupRegistration: true });
-            } catch (e) { console.warn(e); }
+                (async () => {
+                    try {
+                        const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
+                        scheduleData = parseScheduleCSV(text);
+                        console.log(`📋 This Week: ${scheduleData.length}`);
+                    } catch(e) { console.warn('This Week falhou:', e.message); }
+                })(),
+
+                (async () => {
+                    try {
+                        const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS);
+                        nextWeekData = parseScheduleCSV(text, { skipGroupRegistration: true });
+                        console.log(`📋 Next Week: ${nextWeekData.length}`);
+                    } catch(e) { console.warn('Next Week falhou:', e.message); }
+                })(),
+
+                (async () => {
+                    try {
+                        const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
+                        parseStudentsCSV(text);
+                    } catch(e) { console.warn('Alunos falhou:', e.message); }
+                })(),
+
+                (async () => {
+                    try {
+                        const text = await fetchWithTimeout(API_URL, FETCH_TIMEOUT_MS);
+                        const data = JSON.parse(text);
+                        if (data.ok && Array.isArray(data.rads)) {
+                            remoteRads = data.rads;
+                            console.log(`✅ ${remoteRads.length} RADs do servidor`);
+                        }
+                    } catch(e) { console.warn('RADs do servidor falhou:', e.message); }
+                })()
+            ];
+
+            // Espera TODAS terminarem (com sucesso ou falha)
+            await Promise.allSettled(tasks);
 
             if (scheduleData.length === 0 && nextWeekData.length === 0) {
                 carregarScheduleFallback();
@@ -1275,13 +1323,10 @@
                 'Next Week': nextWeekData
             };
 
-            showLoadingMsg('Baixando lista de alunos...');
-            try {
-                const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
-                parseStudentsCSV(text);
-            } catch (e) { console.warn(e); carregarAlunosFallback(); }
+            if (Object.keys(studentsData).length === 0) {
+                carregarAlunosFallback();
+            }
 
-            showLoadingMsg('Processando dados...');
             try { buildGroupBookMap(); } catch(e) { console.warn(e); }
             try { renderTeachers(); } catch(e) { console.warn(e); }
             try { populateGroupSelect(); } catch(e) { console.warn(e); }
@@ -1292,28 +1337,15 @@
             } catch(e) { console.warn(e); }
             try { loadLessonProgress(); } catch(e) { console.warn(e); }
 
-            showLoadingMsg('Buscando RADs do servidor...');
-            try {
-                const text = await fetchWithTimeout(API_URL, FETCH_TIMEOUT_MS);
-                const data = JSON.parse(text);
-                if (data.ok && Array.isArray(data.rads)) {
-                    remoteRads = data.rads;
-                    console.log(`✅ ${remoteRads.length} RADs do servidor`);
-                }
-            } catch (e) { console.warn('Falha ao buscar RADs:', e.message); }
+            try { await tryFlushPendingQueue(); } catch(e) { console.warn(e); }
 
-            // Tenta enviar pendentes
-            try { await tryFlushPendingQueue(); } catch(e) {}
-
-            console.log(`✅ Total de turmas: ${allGroupsFromSchedule.size}`);
-            console.log(`✅ Total de RADs: ${remoteRads.length}`);
+            console.log(`✅ Inicialização completa. Turmas: ${allGroupsFromSchedule.size}, RADs: ${remoteRads.length}`);
 
         } catch (err) {
             console.error('❌ Erro na inicialização:', err);
             showErrorBanner('Erro ao carregar dados.');
         } finally {
-            clearTimeout(safetyTimer);
-            hideLoadingScreen();
+            forceHide();
         }
     });
 
@@ -1346,32 +1378,41 @@
         if (ls) ls.classList.remove('hidden');
 
         try {
-            try { await loadKidsLessonPlans(); } catch(e) {}
-            try {
-                const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
-                scheduleData = parseScheduleCSV(text);
-            } catch(e) {}
-            try {
-                const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS);
-                nextWeekData = parseScheduleCSV(text, { skipGroupRegistration: true });
-            } catch(e) {}
+            const tasks = [
+                (async () => { try { await loadKidsLessonPlans(); } catch(e) {} })(),
+                (async () => {
+                    try {
+                        const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
+                        scheduleData = parseScheduleCSV(text);
+                    } catch(e) {}
+                })(),
+                (async () => {
+                    try {
+                        const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS);
+                        nextWeekData = parseScheduleCSV(text, { skipGroupRegistration: true });
+                    } catch(e) {}
+                })(),
+                (async () => {
+                    try {
+                        const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
+                        parseStudentsCSV(text);
+                    } catch(e) {}
+                })(),
+                (async () => {
+                    try {
+                        const text = await fetchWithTimeout(API_URL, FETCH_TIMEOUT_MS);
+                        const data = JSON.parse(text);
+                        if (data.ok && Array.isArray(data.rads)) {
+                            remoteRads = data.rads;
+                        }
+                    } catch(e) {}
+                })()
+            ];
+
+            await Promise.allSettled(tasks);
 
             allWeeks = { 'This Week': scheduleData, 'Next Week': nextWeekData };
 
-            try {
-                const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
-                parseStudentsCSV(text);
-            } catch(e) {}
-
-            try {
-                const text = await fetchWithTimeout(API_URL, FETCH_TIMEOUT_MS);
-                const data = JSON.parse(text);
-                if (data.ok && Array.isArray(data.rads)) {
-                    remoteRads = data.rads;
-                }
-            } catch(e) {}
-
-            // Tenta enviar pendentes
             try { await tryFlushPendingQueue(); } catch(e) {}
 
             buildGroupBookMap();
@@ -2331,10 +2372,8 @@
             dateSaved: new Date().toISOString()
         };
 
-        // Salva localmente
         localStorage.setItem(getRadKey(currentRadClass), JSON.stringify(data));
 
-        // Envia pro servidor
         await sendRadToServer(data);
 
         closeModal('rad-modal');
