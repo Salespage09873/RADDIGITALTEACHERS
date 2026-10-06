@@ -873,7 +873,7 @@
 
 <script>
     // ============================================
-    // ✅ CONFIGURAÇÃO — URL DO APPS SCRIPT (NOVA)
+    // ✅ CONFIGURAÇÃO — URL DO APPS SCRIPT
     // ============================================
     const API_URL = 'https://script.google.com/macros/s/AKfycbyka0_cGN6B68Inu2zYr950TdeHTGTL5fT4rfYvFwtIQw9jm2_sfsszE9C06oBovMWg/exec';
     const PENDING_QUEUE_KEY = 'radPendingQueue';
@@ -1362,7 +1362,6 @@
                     } catch(e) { console.warn('RADs do servidor falhou:', e.message); }
                 })(),
 
-                // ✅ Carrega o progresso global das lessons
                 (async () => {
                     try {
                         await loadGlobalProgress();
@@ -2608,11 +2607,16 @@
         if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule();
     }
 
+    // ✅ RESET — agora avisa o servidor para apagar TUDO dessa turma
     function resetLessonProgress() {
         if(!currentGroup) return;
         if(confirm(`Resetar progresso da turma ${currentGroup}?`)) {
             currentLessonProgress[currentGroup] = [];
             persistLessonProgress();
+
+            // ✅ Avisa o servidor para apagar TODAS as lessons dessa turma
+            sendProgressToServer(currentGroup, {});
+
             if(currentGroup) openGroupDetail(currentGroup);
             renderGroupLessonPlans();
             if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule();
