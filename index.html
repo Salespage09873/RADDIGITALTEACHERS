@@ -873,9 +873,9 @@
 
 <script>
     // ============================================
-    // ✅ CONFIGURAÇÃO — URL NOVA DO APPS SCRIPT
+    // ✅ CONFIGURAÇÃO — URL DO APPS SCRIPT (NOVA)
     // ============================================
-    const API_URL = 'https://script.google.com/macros/s/AKfycbww5CS28qPsSYEOEaMpOZQ-JBNaDFZHWErEKaRShfyIrfpfzlLBzV_zHgTIk7cLMgiR/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyka0_cGN6B68Inu2zYr950TdeHTGTL5fT4rfYvFwtIQw9jm2_sfsszE9C06oBovMWg/exec';
     const PENDING_QUEUE_KEY = 'radPendingQueue';
 
     let remoteRads = [];
@@ -1044,46 +1044,73 @@
     }
 
     // ============================================
-    // ✅ JSONP — contorna CORS do Apps Script
+    // ✅ FETCH (substitui JSONP)
     // ============================================
-    function jsonpRequest(url) {
-        return new Promise((resolve, reject) => {
-            const callbackName = 'jsonpCallback_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
-            const timeoutMs = 10000;
+    async function jsonpRequest(url) {
+        try {
+            const resp = await fetch(url + (url.includes('?') ? '&' : '?') + '_=' + Date.now());
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const data = await resp.json();
+            if (data && data.ok && Array.isArray(data.rads)) return data.rads;
+            if (data && data.ok && data.progress) return data.progress;
+            if (data && data.ok) return [];
+            throw new Error(data && data.error ? data.error : 'Resposta inválida');
+        } catch (err) {
+            console.error('Falha fetch:', err.message);
+            throw err;
+        }
+    }
 
-            const timer = setTimeout(() => {
-                cleanup();
-                reject(new Error('Timeout ao carregar (JSONP)'));
-            }, timeoutMs);
-
-            window[callbackName] = function(data) {
-                clearTimeout(timer);
-                cleanup();
-                
-                if (data && data.ok && Array.isArray(data.rads)) {
-                    resolve(data.rads);
-                } else if (data && data.ok) {
-                    resolve([]);
-                } else {
-                    reject(new Error(data && data.error ? data.error : 'Resposta inválida'));
-                }
+    // ============================================
+    // ✅ ENVIO DE PROGRESSO AO SERVIDOR (GLOBAL)
+    // ============================================
+    async function sendProgressToServer(group, lessonsMap) {
+        try {
+            const payload = {
+                action: 'progress',
+                group: group,
+                lessons: lessonsMap
             };
-
-            const script = document.createElement('script');
-            script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + callbackName + '&_=' + Date.now();
-            script.onerror = () => {
-                clearTimeout(timer);
-                cleanup();
-                reject(new Error('Falha ao carregar script JSONP'));
-            };
-
-            function cleanup() {
-                try { delete window[callbackName]; } catch(e) { window[callbackName] = undefined; }
-                if (script.parentNode) script.parentNode.removeChild(script);
+            const resp = await fetch(API_URL + '?action=progress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+            const data = await resp.json();
+            if (data && data.ok) {
+                console.log('✅ Progresso enviado ao servidor:', group);
+                return true;
             }
+            console.warn('❌ Resposta:', data);
+        } catch (e) {
+            console.warn('❌ Falha ao enviar progresso:', e.message);
+        }
+        return false;
+    }
 
-            document.body.appendChild(script);
-        });
+    // ============================================
+    // ✅ CARREGAR PROGRESSO GLOBAL DO SERVIDOR
+    // ============================================
+    async function loadGlobalProgress() {
+        try {
+            const resp = await fetch(API_URL + '?action=progress&_=' + Date.now());
+            const data = await resp.json();
+            if (data && data.ok && data.progress) {
+                Object.keys(data.progress).forEach(group => {
+                    const obj = data.progress[group];
+                    const arr = Object.keys(obj).map(lid => ({
+                        lesson: lid,
+                        completed: obj[lid].completed,
+                        date: obj[lid].date || ''
+                    }));
+                    currentLessonProgress[group] = arr;
+                });
+                persistLessonProgress();
+                console.log('✅ Progresso do servidor:', Object.keys(data.progress).length, 'turmas');
+            }
+        } catch (e) {
+            console.warn('Progresso do servidor falhou:', e.message);
+        }
     }
 
     // ============================================
@@ -1201,7 +1228,7 @@
     }
 
     // ============================================
-    // CARREGA OS RADs DO SERVIDOR (JSONP)
+    // CARREGA OS RADs DO SERVIDOR
     // ============================================
     async function loadHistoryFromServer() {
         const container = document.getElementById('history-content');
@@ -1333,6 +1360,13 @@
                         remoteRads = rads || [];
                         console.log(`✅ ${remoteRads.length} RADs do servidor`);
                     } catch(e) { console.warn('RADs do servidor falhou:', e.message); }
+                })(),
+
+                // ✅ Carrega o progresso global das lessons
+                (async () => {
+                    try {
+                        await loadGlobalProgress();
+                    } catch(e) { console.warn('Progresso do servidor falhou:', e.message); }
                 })()
             ];
 
@@ -1428,6 +1462,9 @@
                         const rads = await jsonpRequest(API_URL);
                         remoteRads = rads || [];
                     } catch(e) {}
+                })(),
+                (async () => {
+                    try { await loadGlobalProgress(); } catch(e) {}
                 })()
             ];
 
@@ -1827,6 +1864,13 @@
         try { if (currentGroup) openGroupDetail(currentGroup); } catch(e) {}
         try { if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) renderGroupLessonPlans(); } catch(e) {}
         try { if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule(); } catch(e) {}
+
+        // ✅ Envia o progresso ao servidor (todos veem)
+        const lessonsMap = {};
+        (currentLessonProgress[group] || []).forEach(p => {
+            lessonsMap[p.lesson] = { completed: p.completed, date: p.date || '' };
+        });
+        sendProgressToServer(group, lessonsMap);
     }
 
     function getRadKey(cls) {
@@ -2415,6 +2459,13 @@
     // ============================================
     function saveLessonProgress() {
         persistLessonProgress();
+        if (currentGroup) {
+            const lessonsMap = {};
+            (currentLessonProgress[currentGroup] || []).forEach(p => {
+                lessonsMap[p.lesson] = { completed: p.completed, date: p.date || '' };
+            });
+            sendProgressToServer(currentGroup, lessonsMap);
+        }
         renderGroupLessonPlans();
         if (currentGroup) openGroupDetail(currentGroup);
     }
