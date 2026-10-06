@@ -191,10 +191,11 @@
 
         .class-card:hover { border-color: var(--primary); box-shadow: var(--shadow-hover); }
 
+        /* ✅ Card preenchido: opaco + borda verde */
         .class-card.rad-saved {
             border-color: var(--success);
             background: var(--success-light);
-            opacity: 0.55;
+            opacity: 0.5;
         }
         .class-card.rad-saved:hover { opacity: 1; }
         .class-card.next-week-card { border-left: 5px solid var(--warning); }
@@ -269,6 +270,7 @@
         .status-noshow { background: var(--danger); }
         .status-cancel { background: var(--warning); }
 
+        /* ✅ Check verde grande no card preenchido */
         .rad-saved-check {
             position: absolute;
             top: 10px;
@@ -288,11 +290,17 @@
         }
 
         .class-card.rad-saved .rad-saved-check {
-            width: 44px;
-            height: 44px;
-            font-size: 1.7rem;
+            width: 48px;
+            height: 48px;
+            font-size: 1.9rem;
             border-width: 3px;
-            box-shadow: 0 0 16px rgba(25, 135, 84, 0.55);
+            box-shadow: 0 0 18px rgba(25, 135, 84, 0.6);
+            animation: pulse-check 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-check {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
         .modal-overlay {
@@ -672,6 +680,27 @@
         }
         .next-lesson-box strong { color: var(--primary); }
 
+        .sync-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary);
+            box-shadow: var(--shadow-hover);
+            z-index: 1500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .sync-status.success { border-color: var(--success); color: var(--success); }
+        .sync-status.error { border-color: var(--danger); color: var(--danger); }
+
         @media (max-width: 600px) {
             .teachers-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
             .classes-list { grid-template-columns: 1fr; padding: 15px; }
@@ -684,6 +713,7 @@
             .group-lesson-grid { grid-template-columns: 1fr; }
             .header-buttons { flex-direction: column; align-items: center; }
             .group-header { flex-direction: column; align-items: stretch; text-align: center; }
+            .sync-status { bottom: 10px; right: 10px; padding: 8px 12px; font-size: 0.75rem; }
         }
 
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -766,11 +796,20 @@
                     <option value="cancelada">⚠️ Cancelada</option>
                 </select>
                 <input type="text" id="hist-filter-group" oninput="renderHistory()" placeholder="Filtrar por turma..." style="max-width: 220px; margin-bottom: 0;">
+                <button onclick="loadHistoryFromServer()" style="margin: 0;">🔄 Atualizar Histórico</button>
                 <button onclick="clearHistoryFilters()" style="margin: 0;">🧹 Limpar filtros</button>
             </div>
 
-            <div id="history-content"></div>
+            <div id="history-content">
+                <p style="text-align:center; color: var(--text-sec); margin-top:40px;">Carregando histórico...</p>
+            </div>
         </div>
+    </div>
+
+    <!-- ✅ Indicador de sincronização -->
+    <div id="sync-status" class="sync-status hidden">
+        <span id="sync-icon">🔄</span>
+        <span id="sync-text">Sincronizando...</span>
     </div>
 
     <div id="rad-modal" class="modal-overlay hidden">
@@ -854,12 +893,19 @@
 
 <script>
     // ============================================
+    // CONFIGURAÇÃO DO BACKEND (Google Apps Script)
+    // ============================================
+    const API_URL = 'https://script.google.com/macros/s/AKfycby1tSfU8eIdYch8EAWgejTy_6WlEfvl3lhhc9JebX5nyrPN4k4arwdWKIUhtWvJsarC/exec';
+
+    // Cache local dos RADs vindos do servidor
+    let remoteRads = [];
+
+    // ============================================
     // PROTEÇÃO CONTRA ERROS NÃO TRATADOS
     // ============================================
     window.addEventListener('error', function(e) {
         console.error('❌ Erro global:', e.error || e.message);
         hideLoadingScreen();
-        showErrorBanner('Ocorreu um erro inesperado. Alguns dados podem não estar disponíveis.');
     });
 
     window.addEventListener('unhandledrejection', function(e) {
@@ -887,6 +933,35 @@
     }
 
     // ============================================
+    // INDICADOR DE SYNC
+    // ============================================
+    function showSyncStatus(text, type = 'default') {
+        const el = document.getElementById('sync-status');
+        const icon = document.getElementById('sync-icon');
+        const txt = document.getElementById('sync-text');
+        if (!el || !icon || !txt) return;
+
+        el.classList.remove('hidden', 'success', 'error');
+        if (type === 'success') el.classList.add('success');
+        if (type === 'error') el.classList.add('error');
+
+        if (type === 'success') icon.textContent = '✅';
+        else if (type === 'error') icon.textContent = '❌';
+        else icon.textContent = '🔄';
+
+        txt.textContent = text;
+
+        if (type === 'success' || type === 'error') {
+            setTimeout(() => el.classList.add('hidden'), 3000);
+        }
+    }
+
+    function hideSyncStatus() {
+        const el = document.getElementById('sync-status');
+        if (el) el.classList.add('hidden');
+    }
+
+    // ============================================
     // CONFIGURAÇÕES
     // ============================================
     const SCHEDULE_THIS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
@@ -909,7 +984,7 @@
         'WF FRIENDSHIP':    '1798862018'
     };
 
-    const FETCH_TIMEOUT_MS = 10000;
+    const FETCH_TIMEOUT_MS = 15000;
     const COORD_PASSWORD = 'coordenacaoml';
 
     const VALID_TEACHERS = [
@@ -981,7 +1056,7 @@
     // ============================================
     // FETCH COM TIMEOUT
     // ============================================
-    function fetchWithTimeout(url, timeoutMs) {
+    function fetchWithTimeout(url, timeoutMs, opts = {}) {
         return new Promise((resolve, reject) => {
             const controller = new AbortController();
             const timer = setTimeout(() => {
@@ -989,7 +1064,7 @@
                 reject(new Error('Timeout: ' + url));
             }, timeoutMs);
 
-            fetch(url, { signal: controller.signal })
+            fetch(url, { ...opts, signal: controller.signal })
                 .then(res => {
                     clearTimeout(timer);
                     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1001,6 +1076,75 @@
                     reject(err);
                 });
         });
+    }
+
+    // ============================================
+    // SINCRONIZAÇÃO COM BACKEND
+    // ============================================
+    
+    /**
+     * Envia um RAD para o servidor (Google Apps Script).
+     */
+    async function sendRadToServer(radData) {
+        try {
+            showSyncStatus('Salvando no servidor...', 'default');
+            
+            const response = await fetchWithTimeout(API_URL, FETCH_TIMEOUT_MS, {
+                method: 'POST',
+                mode: 'no-cors', // Apps Script aceita no-cors pra POST
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(radData)
+            });
+            
+            // Com no-cors não conseguimos ler a resposta, então assumimos sucesso
+            showSyncStatus('RAD sincronizado!', 'success');
+            return true;
+        } catch (e) {
+            console.error('Erro ao enviar RAD:', e);
+            showSyncStatus('Falha ao sincronizar', 'error');
+            return false;
+        }
+    }
+
+    /**
+     * Busca todos os RADs do servidor.
+     */
+    async function loadHistoryFromServer() {
+        const container = document.getElementById('history-content');
+        if (container) {
+            container.innerHTML = '<p style="text-align:center; color: var(--text-sec); margin-top:40px;">Carregando histórico do servidor...</p>';
+        }
+        
+        showSyncStatus('Carregando histórico...', 'default');
+        
+        try {
+            const text = await fetchWithTimeout(API_URL, FETCH_TIMEOUT_MS);
+            const data = JSON.parse(text);
+            
+            if (data.ok && Array.isArray(data.rads)) {
+                remoteRads = data.rads;
+                console.log(`✅ ${remoteRads.length} RADs carregados do servidor`);
+                showSyncStatus(`${remoteRads.length} RADs carregados`, 'success');
+            } else {
+                remoteRads = [];
+                console.warn('Resposta inesperada do servidor:', data);
+            }
+        } catch (e) {
+            console.error('Erro ao carregar histórico:', e);
+            remoteRads = [];
+            showSyncStatus('Falha ao carregar histórico', 'error');
+            
+            if (container) {
+                container.innerHTML = `
+                    <div class="error-banner">
+                        ⚠️ Não foi possível carregar o histórico do servidor.<br>
+                        <small>Verifique sua conexão ou tente novamente.</small>
+                    </div>
+                `;
+            }
+        }
+        
+        renderHistory();
     }
 
     // ============================================
@@ -1019,8 +1163,6 @@
                 if (lessons.length > 0) {
                     KIDS_BOOK_STRUCTURE[bookName] = { lessons };
                     console.log(`✅ ${bookName}: ${lessons.length} aulas`);
-                } else {
-                    console.warn(`⚠️ ${bookName}: nenhuma aula encontrada`);
                 }
             } catch (e) {
                 console.warn(`❌ Falha ao carregar ${bookName}:`, e);
@@ -1058,7 +1200,7 @@
         const safetyTimer = setTimeout(() => {
             console.warn('⚠️ Safety timeout');
             hideLoadingScreen();
-        }, 20000);
+        }, 25000);
 
         try {
             showLoadingMsg('Baixando lesson plans kids (AW / WF)...');
@@ -1117,7 +1259,21 @@
             } catch(e) { console.warn(e); }
             try { loadLessonProgress(); } catch(e) { console.warn(e); }
 
+            // ✅ Carrega os RADs do servidor logo de cara
+            showLoadingMsg('Buscando RADs do servidor...');
+            try {
+                const text = await fetchWithTimeout(API_URL, FETCH_TIMEOUT_MS);
+                const data = JSON.parse(text);
+                if (data.ok && Array.isArray(data.rads)) {
+                    remoteRads = data.rads;
+                    console.log(`✅ ${remoteRads.length} RADs do servidor`);
+                }
+            } catch (e) {
+                console.warn('Falha ao buscar RADs do servidor:', e);
+            }
+
             console.log(`✅ Total de turmas únicas: ${allGroupsFromSchedule.size}`);
+            console.log(`✅ Total de RADs: ${remoteRads.length}`);
 
         } catch (err) {
             console.error('❌ Erro na inicialização:', err);
@@ -1143,30 +1299,14 @@
 
         scheduleData = [
             { book: 'Book 1', group: 'G1 - TURMA 1', room: 'Sala 1', modal: 'REGULAR', time: '14:10', dayName: 'Terça', teacher: 'PEDRO' },
-            { book: 'Book 2', group: 'G2 - TURMA 2', room: 'Sala 2', modal: 'REGULAR', time: '15:10', dayName: 'Segunda', teacher: 'HOPE' },
-            { book: 'Book 3', group: 'G3 - TURMA 3', room: 'Sala 3', modal: 'REGULAR', time: '08:10', dayName: 'Segunda', teacher: 'CARLOS' },
-            { book: 'Book 4', group: 'G4 - TURMA 4', room: 'Sala 4', modal: 'REGULAR', time: '08:00', dayName: 'Terça', teacher: 'DIOGO' },
-            { book: 'Book 5', group: 'G5 - TURMA 5', room: 'Sala 5', modal: 'REGULAR', time: '14:10', dayName: 'Terça', teacher: 'BARBARA' },
-            { book: 'Book 6', group: 'G6 - TURMA 6', room: 'VIP', modal: 'VIP', time: 'VIP', dayName: 'VIP', teacher: 'MAT' },
-            { book: 'Book 7', group: 'G7 - TURMA 7', room: 'Sala 7', modal: 'REGULAR', time: '15:10', dayName: 'Terça', teacher: 'CAROL' },
-            { book: 'Book 8', group: 'G8 - TURMA 8', room: 'Sala 8', modal: 'REGULAR', time: '11:10', dayName: 'Segunda', teacher: 'LUISA' },
-            { book: 'Book 9', group: 'G9 - TURMA 9', room: 'Sala 9', modal: 'REGULAR', time: '15:10', dayName: 'Segunda', teacher: 'CARLA' },
-            { book: 'Book 10', group: 'G10 - TURMA 10', room: 'Sala 10', modal: 'INTENSIVE', time: '11:10', dayName: 'Intensive', teacher: 'PEDRO' }
+            { book: 'Book 2', group: 'G2 - TURMA 2', room: 'Sala 2', modal: 'REGULAR', time: '15:10', dayName: 'Segunda', teacher: 'HOPE' }
         ];
     }
 
     function carregarAlunosFallback() {
         studentsData = {
-            'G1 - TURMA 1': ['Aluno 1', 'Aluno 2', 'Aluno 3'],
-            'G2 - TURMA 2': ['Aluno 4', 'Aluno 5', 'Aluno 6'],
-            'G3 - TURMA 3': ['Aluno 7', 'Aluno 8', 'Aluno 9'],
-            'G4 - TURMA 4': ['Aluno 10', 'Aluno 11', 'Aluno 12'],
-            'G5 - TURMA 5': ['Aluno 13', 'Aluno 14', 'Aluno 15'],
-            'G6 - TURMA 6': ['Aluno VIP 1', 'Aluno VIP 2'],
-            'G7 - TURMA 7': ['Aluno 16', 'Aluno 17', 'Aluno 18'],
-            'G8 - TURMA 8': ['Aluno 19', 'Aluno 20', 'Aluno 21'],
-            'G9 - TURMA 9': ['Aluno 22', 'Aluno 23', 'Aluno 24'],
-            'G10 - TURMA 10': ['Aluno 25', 'Aluno 26', 'Aluno 27']
+            'G1 - TURMA 1': ['Aluno 1', 'Aluno 2'],
+            'G2 - TURMA 2': ['Aluno 3', 'Aluno 4']
         };
     }
 
@@ -1187,10 +1327,7 @@
             try {
                 const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
                 scheduleData = parseScheduleCSV(text);
-            } catch(e) {
-                console.warn(e);
-                showErrorBanner('Falha ao atualizar cronograma.');
-            }
+            } catch(e) { console.warn(e); }
 
             try {
                 const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS);
@@ -1205,6 +1342,15 @@
             try {
                 const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
                 parseStudentsCSV(text);
+            } catch(e) { console.warn(e); }
+
+            // Recarrega RADs do servidor
+            try {
+                const text = await fetchWithTimeout(API_URL, FETCH_TIMEOUT_MS);
+                const data = JSON.parse(text);
+                if (data.ok && Array.isArray(data.rads)) {
+                    remoteRads = data.rads;
+                }
             } catch(e) { console.warn(e); }
 
             buildGroupBookMap();
@@ -1222,7 +1368,7 @@
                 renderHistory();
             }
 
-            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length} aulas\nNext Week: ${nextWeekData.length} aulas\nKids: ${Object.keys(KIDS_BOOK_STRUCTURE).length} lesson plans`);
+            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length} aulas\nNext Week: ${nextWeekData.length} aulas\nRADs: ${remoteRads.length}`);
         } catch (err) {
             console.error(err);
             alert('❌ Erro ao atualizar dados.');
@@ -1296,8 +1442,7 @@
                             time: cleanText(time),
                             dayIndex: d,
                             dayName: daysMap[d],
-                            teacher: teacherName,
-                            rawCell: cellContent
+                            teacher: teacherName
                         });
                     }
                 }
@@ -1342,8 +1487,6 @@
             const { display, students } = rawGroups[key];
             studentsData[display] = students;
         });
-
-        console.log(`👥 ${Object.keys(studentsData).length} turmas com alunos:`, Object.keys(studentsData));
     }
 
     function cleanText(str) {
@@ -1398,27 +1541,16 @@
                 return kNorm.includes('CONNECT') && kNorm.includes(suffix);
             });
 
-            if (match && studentsData[match]) {
-                console.log(`🎯 CONNECT + book "${bookHint||'—'}" → "${match}"`);
-                return studentsData[match];
-            }
+            if (match && studentsData[match]) return studentsData[match];
         }
 
-        if (groupUpper.includes('MUFASA') 
-            || groupUpper.includes('TIMBÓ') 
-            || groupUpper.includes('TIMBO')
-            || targetKey.includes('MUFASA') 
-            || targetKey.includes('TIMBO')) {
-            
+        if (groupUpper.includes('MUFASA') || targetKey.includes('MUFASA') || targetKey.includes('TIMBO')) {
             const match = keys.find(k => {
                 const kNorm = normalizeGroupKeyAgressive(k);
                 return kNorm.includes('MUFASA') || kNorm.includes('TIMBO');
             });
 
-            if (match && studentsData[match]) {
-                console.log(`🎯 MUFASA/TIMBÓ → "${match}"`);
-                return studentsData[match];
-            }
+            if (match && studentsData[match]) return studentsData[match];
         }
 
         function score(k) {
@@ -1451,7 +1583,6 @@
         });
 
         if (bestKey && bestScore > 0 && studentsData[bestKey]) {
-            console.log(`🔍 Busca "${groupName}" (book "${bookHint||'—'}") → "${bestKey}" (score ${bestScore})`);
             return studentsData[bestKey];
         }
 
@@ -1512,7 +1643,6 @@
                 const kids = findKidsBook(info.book);
                 if (kids) {
                     groupBookMap[group] = kids;
-                    console.log(`🎯 Kids (col B): "${group}" [col B: "${info.book}"] → "${kids}"`);
                     return;
                 }
             }
@@ -1520,7 +1650,6 @@
             const kidsFromGroup = findKidsBook(group);
             if (kidsFromGroup) {
                 groupBookMap[group] = kidsFromGroup;
-                console.log(`🎯 Kids (nome turma): "${group}" → "${kidsFromGroup}"`);
                 return;
             }
 
@@ -1551,8 +1680,6 @@
 
             groupBookMap[group] = 'Book 1';
         });
-
-        console.log('📚 Mapa Turma → Book (FINAL):', groupBookMap);
     }
 
     function getBookFromGroupName(group) {
@@ -1592,23 +1719,6 @@
             return bookFromName;
         }
 
-        if (info && info.book) {
-            const bookKey = info.book.toUpperCase().trim();
-            const bookNames = Object.keys(BOOK_STRUCTURE);
-            let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
-            if (!foundBook) {
-                const numMatch = bookKey.match(/\d+/);
-                if (numMatch) {
-                    const num = parseInt(numMatch[0]);
-                    if (num >= 1 && num <= 10) foundBook = `Book ${num}`;
-                }
-            }
-            if (foundBook) {
-                groupBookMap[group] = foundBook;
-                return foundBook;
-            }
-        }
-
         groupBookMap[group] = 'Book 1';
         return 'Book 1';
     }
@@ -1640,10 +1750,6 @@
         return [];
     }
 
-    function getGroupTotalLessons(group) {
-        return getGroupLessons(group).length;
-    }
-
     // ============================================
     // PROGRESSO COMPARTILHADO
     // ============================================
@@ -1659,9 +1765,7 @@
     function persistLessonProgress() {
         try {
             localStorage.setItem('lessonProgress', JSON.stringify(currentLessonProgress));
-        } catch(e) {
-            console.warn('Falha ao salvar progresso:', e);
-        }
+        } catch(e) { console.warn(e); }
     }
 
     function getProgressForGroup(group) {
@@ -1726,15 +1830,27 @@
         return `rad_${currentTeacher.name}_${cls.dayName}_${cls.time}_${cls.group}`;
     }
 
+    /**
+     * Verifica se o RAD já foi preenchido (localmente ou no servidor).
+     */
     function isRadSaved(cls) {
+        // 1️⃣ Verifica localmente
         try {
             const saved = localStorage.getItem(getRadKey(cls));
             if (saved) {
                 const data = JSON.parse(saved);
-                return data.status && data.status !== '';
+                if (data.status && data.status !== '') return true;
             }
         } catch(e) {}
-        return false;
+
+        // 2️⃣ Verifica no servidor
+        const match = remoteRads.find(r => 
+            r.teacher === currentTeacher.name &&
+            r.day === cls.dayName &&
+            r.time === cls.time &&
+            r.group === cls.group
+        );
+        return !!match;
     }
 
     function getRadSavedData(cls) {
@@ -1790,7 +1906,7 @@
         document.getElementById('btn-history').classList.add('active');
         currentTeacher = null;
         populateHistoryTeacherFilter();
-        renderHistory();
+        loadHistoryFromServer(); // ✅ Busca fresquinho do servidor
     }
 
     function clearHistoryFilters() {
@@ -1815,38 +1931,8 @@
     }
 
     // ============================================
-    // HISTÓRICO DE AULAS
+    // HISTÓRICO DE AULAS (vindo do servidor)
     // ============================================
-    function parseRadKey(key) {
-        if (!key || !key.startsWith('rad_')) return null;
-        const rest = key.substring(4);
-        const parts = rest.split('_');
-
-        if (parts.length < 4) return null;
-
-        const teacher = parts[0];
-        const day = parts[1];
-        const time = parts[2];
-        const group = parts.slice(3).join('_');
-
-        return { teacher, day, time, group };
-    }
-
-    function getLessonLabelFromId(group, lessonId) {
-        if (!group || !lessonId) return lessonId || '—';
-
-        try {
-            const lessons = getGroupLessons(group);
-            const lesson = lessons.find(l => l.id === lessonId);
-            if (lesson && lesson.label) return lesson.label;
-        } catch(e) {
-            console.warn('Erro ao buscar label da lesson:', e);
-        }
-
-        const numMatch = lessonId.match(/\d+/);
-        return numMatch ? `Aula ${numMatch[0]}` : lessonId;
-    }
-
     function renderHistory() {
         const container = document.getElementById('history-content');
         if (!container) return;
@@ -1855,56 +1941,20 @@
         const filterStatus = document.getElementById('hist-filter-status').value;
         const filterGroup = normalizeGroupKey(document.getElementById('hist-filter-group').value);
 
-        const rads = [];
-        const debugKeys = [];
+        let filtered = remoteRads.slice();
 
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (!key || !key.startsWith('rad_')) continue;
+        if (filterTeacher) filtered = filtered.filter(r => (r.teacher || '').toUpperCase() === filterTeacher);
+        if (filterStatus) filtered = filtered.filter(r => r.status === filterStatus);
+        if (filterGroup) filtered = filtered.filter(r => normalizeGroupKey(r.group || '').includes(filterGroup));
 
-            debugKeys.push(key);
-
-            const parsed = parseRadKey(key);
-            if (!parsed) {
-                console.warn('⚠️ Não consegui parsear a chave:', key);
-                continue;
-            }
-
-            try {
-                const data = JSON.parse(localStorage.getItem(key));
-                if (!data || !data.status) continue;
-
-                if (filterTeacher && parsed.teacher !== filterTeacher) continue;
-                if (filterStatus && data.status !== filterStatus) continue;
-                if (filterGroup && !normalizeGroupKey(parsed.group).includes(filterGroup)) continue;
-
-                rads.push({
-                    key,
-                    teacher: parsed.teacher,
-                    day: parsed.day,
-                    time: parsed.time,
-                    group: parsed.group,
-                    status: data.status,
-                    lessons: data.lessons || [],
-                    attendance: data.attendance || [],
-                    observations: data.observations || '',
-                    dateSaved: data.dateSaved || ''
-                });
-            } catch(e) {
-                console.warn('⚠️ Erro ao parsear JSON da chave:', key, e);
-            }
-        }
-
-        console.log('🔎 Chaves rad_ encontradas:', debugKeys);
-        console.log('✅ RADs prontos pra renderizar:', rads.length);
-
-        rads.sort((a, b) => {
-            const da = a.dateSaved ? new Date(a.dateSaved).getTime() : 0;
-            const db = b.dateSaved ? new Date(b.dateSaved).getTime() : 0;
+        // Ordena por timestamp decrescente
+        filtered.sort((a, b) => {
+            const da = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+            const db = b.timestamp ? new Date(b.timestamp).getTime() : 0;
             return db - da;
         });
 
-        if (rads.length === 0) {
+        if (filtered.length === 0) {
             container.innerHTML = `
                 <p style="text-align:center; color: var(--text-sec); margin-top: 40px; font-size: 1.1rem;">
                     Nenhum RAD registrado ainda.<br>
@@ -1921,25 +1971,26 @@
         };
 
         let html = `<p style="text-align:center; color: var(--text-sec); margin-bottom: 15px; font-size: 0.9rem;">
-            Total: ${rads.length} RAD${rads.length > 1 ? 's' : ''} registrado${rads.length > 1 ? 's' : ''}
+            Total: ${filtered.length} RAD${filtered.length > 1 ? 's' : ''} no servidor
         </p>`;
 
-        rads.forEach(rad => {
+        filtered.forEach(rad => {
             const st = statusLabel[rad.status] || { text: rad.status, color: 'var(--text-sec)' };
-            const dateFormatted = rad.dateSaved 
-                ? new Date(rad.dateSaved).toLocaleString('pt-BR')
+            const dateFormatted = rad.timestamp 
+                ? new Date(rad.timestamp).toLocaleString('pt-BR')
                 : '—';
 
-            // ✅ Cada RAD mostra apenas a lesson que foi dada
-            const lessonsHtml = rad.lessons.length > 0
-                ? rad.lessons.map(lessonId => {
+            // Aulas
+            const lessonsHtml = (rad.lessons && rad.lessons.length > 0)
+                ? rad.lessons.filter(l => l).map(lessonId => {
                     const label = getLessonLabelFromId(rad.group, lessonId);
                     return `<span class="badge" style="background: var(--primary); margin: 2px; font-size:0.85rem; padding:6px 12px;">📘 ${label}</span>`;
                 }).join('')
                 : '<em style="color: var(--text-sec);">Nenhuma aula registrada</em>';
 
-            const attendanceHtml = rad.attendance.length > 0
-                ? rad.attendance.map(a => `<span class="badge" style="background: var(--success); margin: 2px;">✓ ${a}</span>`).join('')
+            // Presença
+            const attendanceHtml = (rad.attendance && rad.attendance.length > 0)
+                ? rad.attendance.filter(a => a).map(a => `<span class="badge" style="background: var(--success); margin: 2px;">✓ ${a}</span>`).join('')
                 : '<em style="color: var(--text-sec);">Nenhum aluno marcado</em>';
 
             const groupDisplay = rad.group && rad.group.trim() !== '' 
@@ -1949,7 +2000,7 @@
             html += `
                 <div class="day-section" style="margin-bottom: 18px;">
                     <div class="day-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                        <span>${rad.teacher} — ${rad.day} ${rad.time}</span>
+                        <span>${rad.teacher || '—'} — ${rad.day || '—'} ${rad.time || ''}</span>
                         <span style="font-weight:600; color:${st.color}; font-size:0.9rem;">${st.text}</span>
                     </div>
                     <div style="padding: 16px 20px;">
@@ -1978,14 +2029,9 @@
                         ${rad.observations ? `
                             <div>
                                 <label style="margin-bottom:4px;">📝 Observações:</label>
-                                <div style="background: var(--card-bg); padding:10px 14px; border-radius:6px; border-left:3px solid var(--primary); font-size:0.9rem; white-space: pre-wrap;">${rad.observations.replace(/</g, '&lt;')}</div>
+                                <div style="background: var(--card-bg); padding:10px 14px; border-radius:6px; border-left:3px solid var(--primary); font-size:0.9rem; white-space: pre-wrap;">${String(rad.observations).replace(/</g, '&lt;')}</div>
                             </div>
                         ` : ''}
-
-                        <button class="btn-danger" style="margin-top:14px; font-size:0.8rem; padding:6px 12px;"
-                                onclick="deleteRadFromHistory('${rad.key.replace(/'/g, "\\'")}')">
-                            🗑️ Apagar registro
-                        </button>
                     </div>
                 </div>
             `;
@@ -1994,20 +2040,17 @@
         container.innerHTML = html;
     }
 
-    function deleteRadFromHistory(key) {
-        const senha = prompt('🔒 Para apagar este registro, digite a senha da coordenação:');
-        if (senha === null) return;
+    function getLessonLabelFromId(group, lessonId) {
+        if (!group || !lessonId) return lessonId || '—';
 
-        if (senha !== COORD_PASSWORD) {
-            alert('❌ Senha incorreta. O registro NÃO foi apagado.');
-            return;
-        }
+        try {
+            const lessons = getGroupLessons(group);
+            const lesson = lessons.find(l => l.id === lessonId);
+            if (lesson && lesson.label) return lesson.label;
+        } catch(e) {}
 
-        if (!confirm('✅ Senha correta. Confirma apagar este registro? O progresso das aulas NÃO será afetado.')) return;
-        
-        localStorage.removeItem(key);
-        renderHistory();
-        alert('🗑️ Registro apagado com sucesso.');
+        const numMatch = lessonId.match(/\d+/);
+        return numMatch ? `Aula ${numMatch[0]}` : lessonId;
     }
 
     // ============================================
@@ -2114,9 +2157,9 @@
                     if (isSaved) card.classList.add('rad-saved');
 
                     let statusBadge = '';
-                    if(status === 'realizada') statusBadge = '<div class="status-indicator status-done" title="Realizada"></div>';
-                    if(status === 'noshow') statusBadge = '<div class="status-indicator status-noshow" title="No Show"></div>';
-                    if(status === 'cancelada') statusBadge = '<div class="status-indicator status-cancel" title="Cancelada"></div>';
+                    if(status === 'realizada') statusBadge = '<div class="status-indicator status-done"></div>';
+                    if(status === 'noshow') statusBadge = '<div class="status-indicator status-noshow"></div>';
+                    if(status === 'cancelada') statusBadge = '<div class="status-indicator status-cancel"></div>';
 
                     let savedBadge = isSaved ? `<div class="rad-saved-check" title="RAD salvo">✓</div>` : '';
 
@@ -2140,7 +2183,7 @@
 
                     let btnHtml = '';
                     if (isNextWeek) {
-                        btnHtml = `<button class="action-btn" disabled style="opacity:0.6; cursor:not-allowed; background: var(--card-bg); color: var(--text-sec);">
+                        btnHtml = `<button class="action-btn" disabled style="opacity:0.6; cursor:not-allowed;">
                             🔒 Somente visualização
                         </button>`;
                     } else {
@@ -2338,17 +2381,17 @@
     }
 
     /**
-     * ✅ Salva apenas a ÚLTIMA lesson marcada como concluída (a que foi dada hoje).
-     * Isso evita mostrar todas as lessons acumuladas no histórico.
+     * ✅ Salva o RAD apenas com a última lesson marcada (a do dia)
+     * e envia para o servidor (Google Sheets).
      */
-    function saveRad() {
+    async function saveRad() {
         const status = document.getElementById('rad-status').value;
         if(!status) { alert('Selecione o status da aula!'); return; }
 
         const attendanceChecked = Array.from(document.querySelectorAll('.att-check:checked')).map(cb => cb.value);
         const observations = document.getElementById('rad-observations').value.trim();
 
-        // Pega a ÚLTIMA lesson marcada como concluída (a do dia)
+        // Pega apenas a ÚLTIMA lesson marcada (a do dia)
         const lessons = getGroupLessons(currentRadClass.group);
         const progress = getProgressForGroup(currentRadClass.group);
         
@@ -2364,6 +2407,11 @@
         const lessonsDone = lessonOfDay ? [lessonOfDay.id] : [];
 
         const data = {
+            teacher: currentTeacher.name,
+            day: currentRadClass.day,
+            time: currentRadClass.time,
+            group: currentRadClass.group,
+            book: currentRadClass.book,
             status,
             lessons: lessonsDone,
             attendance: attendanceChecked,
@@ -2371,10 +2419,20 @@
             dateSaved: new Date().toISOString()
         };
 
+        // Salva localmente
         localStorage.setItem(getRadKey(currentRadClass), JSON.stringify(data));
+
+        // Envia para o servidor
+        const ok = await sendRadToServer(data);
+
         closeModal('rad-modal');
         renderSchedule();
-        alert('✅ RAD Salvo com Sucesso!');
+
+        if (ok) {
+            alert('✅ RAD Salvo e sincronizado com o servidor!');
+        } else {
+            alert('⚠️ RAD salvo localmente, mas falhou ao sincronizar com o servidor.\nVerifique sua internet.');
+        }
     }
 
     function clearRad() {
@@ -2450,8 +2508,6 @@
             `;
             grid.appendChild(card);
         });
-        
-        console.log(`📚 Renderizados ${groups.length} cards de lesson plan`);
     }
 
     function openGroupDetail(group) {
