@@ -488,7 +488,7 @@
     }
 
     // ============================================
-    // ✅ FETCH (substitui JSONP)
+    // FETCH (substitui JSONP)
     // ============================================
     async function jsonpRequest(url) {
         try {
@@ -506,7 +506,7 @@
     }
 
     // ============================================
-    // ✅ ENVIO DE PROGRESSO AO SERVIDOR (GLOBAL)
+    // ENVIO DE PROGRESSO AO SERVIDOR
     // ============================================
     async function sendProgressToServer(group, lessonsMap) {
         try {
@@ -549,15 +549,13 @@
     }
 
     // ============================================
-    // ✅ CARREGAR PROGRESSO GLOBAL DO SERVIDOR
-    // SUBSTITUI tudo (servidor é a fonte da verdade)
+    // CARREGAR PROGRESSO GLOBAL DO SERVIDOR
     // ============================================
     async function loadGlobalProgress() {
         try {
             const resp = await fetch(API_URL + '?action=progress&_=' + Date.now());
             const data = await resp.json();
             if (data && data.ok && data.progress) {
-                // ✅ SUBSTITUI tudo (não mescla) — o servidor é a fonte da verdade
                 const novo = {};
                 Object.keys(data.progress).forEach(group => {
                     const obj = data.progress[group];
@@ -768,7 +766,7 @@
     }
 
     // ============================================
-    // ✅ INICIALIZAÇÃO OTIMIZADA
+    // INICIALIZAÇÃO
     // ============================================
     window.addEventListener('DOMContentLoaded', async () => {
         const safetyTimer = setTimeout(() => {
@@ -784,7 +782,6 @@
         try {
             showLoadingMsg('Carregando...');
 
-            // ✅ 1) Renderiza o que é local IMEDIATAMENTE (0ms)
             loadLessonProgress();
             renderTeachers();
             populateGroupSelect();
@@ -796,7 +793,6 @@
 
             forceHide();
 
-            // ✅ 2) Carrega o resto em background
             const tasks = [
                 (async () => {
                     try { await loadKidsLessonPlans(); } 
@@ -1010,12 +1006,11 @@
 
             if (!skipGroupRegistration) {
                 const normKey = normalizeGroupKey(groupClean);
-                if (!allGroupsFromSchedule.has(normKey)) {
-                    allGroupsFromSchedule.set(normKey, {
-                        display: groupClean, book: bookClean,
-                        room: cleanText(room), modal: cleanText(modal), time: cleanText(time)
-                    });
-                }
+                // ✅ Atualiza mesmo se já existir (permite trocar book)
+                allGroupsFromSchedule.set(normKey, {
+                    display: groupClean, book: bookClean,
+                    room: cleanText(room), modal: cleanText(modal), time: cleanText(time)
+                });
             }
 
             if(!time) continue;
@@ -1195,38 +1190,35 @@
     }
 
     // ============================================
-    // MAPEAMENTO TURMA → BOOK
+    // ✅ MAPEAMENTO TURMA → BOOK (schedule manda)
     // ============================================
     function buildGroupBookMap() {
-        groupBookMap = {};
+        // ✅ NÃO zera o map — só atualiza com o que vier do schedule
         allGroupsFromSchedule.forEach((info) => {
             const group = info.display;
-            if (groupBookMap[group]) return;
+            if (!info.book) return;
 
-            if (info.book) {
-                const kids = findKidsBook(info.book);
-                if (kids) { groupBookMap[group] = kids; return; }
+            // Kids (AW/WF)
+            const kids = findKidsBook(info.book);
+            if (kids) {
+                groupBookMap[group] = kids;
+                return;
             }
-            const kidsFromGroup = findKidsBook(group);
-            if (kidsFromGroup) { groupBookMap[group] = kidsFromGroup; return; }
 
-            const bookFromName = getBookFromGroupName(group);
-            if (bookFromName) { groupBookMap[group] = bookFromName; return; }
-
-            if (info.book) {
-                const bookKey = info.book.toUpperCase().trim();
-                const bookNames = Object.keys(BOOK_STRUCTURE);
-                let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
-                if (!foundBook) {
-                    const numMatch = bookKey.match(/\d+/);
-                    if (numMatch) {
-                        const num = parseInt(numMatch[0]);
-                        if (num >= 1 && num <= 10) foundBook = `Book ${num}`;
-                    }
+            // Book regular
+            const bookKey = info.book.toUpperCase().trim();
+            const bookNames = Object.keys(BOOK_STRUCTURE);
+            let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
+            if (!foundBook) {
+                const numMatch = bookKey.match(/\d+/);
+                if (numMatch) {
+                    const num = parseInt(numMatch[0]);
+                    if (num >= 1 && num <= 10) foundBook = `Book ${num}`;
                 }
-                if (foundBook) { groupBookMap[group] = foundBook; return; }
             }
-            groupBookMap[group] = 'Book 1';
+            if (foundBook) {
+                groupBookMap[group] = foundBook;
+            }
         });
     }
 
@@ -1239,17 +1231,39 @@
         return null;
     }
 
+    // ============================================
+    // ✅ BOOK VEM DO SCHEDULE (fonte da verdade)
+    // ============================================
     function getBookForGroup(group) {
         if (!group) return 'Book 1';
-        if (groupBookMap[group]) return groupBookMap[group];
 
+        // ✅ SEMPRE consulta o schedule primeiro
         const normKey = normalizeGroupKey(group);
         const info = allGroupsFromSchedule.get(normKey);
 
         if (info && info.book) {
             const kids = findKidsBook(info.book);
-            if (kids) { groupBookMap[group] = kids; return kids; }
+            if (kids) {
+                groupBookMap[group] = kids;
+                return kids;
+            }
+            const bookKey = info.book.toUpperCase().trim();
+            const bookNames = Object.keys(BOOK_STRUCTURE);
+            let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
+            if (!foundBook) {
+                const numMatch = bookKey.match(/\d+/);
+                if (numMatch) {
+                    const num = parseInt(numMatch[0]);
+                    if (num >= 1 && num <= 10) foundBook = `Book ${num}`;
+                }
+            }
+            if (foundBook) {
+                groupBookMap[group] = foundBook;
+                return foundBook;
+            }
         }
+
+        // Fallback: tenta pelo nome da turma
         const kidsFromGroup = findKidsBook(group);
         if (kidsFromGroup) { groupBookMap[group] = kidsFromGroup; return kidsFromGroup; }
 
@@ -1315,9 +1329,6 @@
         return -1;
     }
 
-    // ============================================
-    // ✅ APPLY CHAIN TOGGLE — com limpeza de false
-    // ============================================
     function applyChainToggle(group, clickedIndex, completed) {
         if (!currentLessonProgress[group]) currentLessonProgress[group] = [];
         const lessons = getGroupLessons(group);
@@ -1340,10 +1351,7 @@
             }
         }
 
-        // ✅ Remove lessons com completed=false do array local
         currentLessonProgress[group] = currentLessonProgress[group].filter(p => p.completed === true);
-
-        // ✅ Se ficou vazio, remove a chave do grupo
         if (currentLessonProgress[group].length === 0) {
             delete currentLessonProgress[group];
         }
@@ -1947,9 +1955,7 @@
     // ============================================
     // LESSON PLANS POR TURMA
     // ============================================
-    // ✅ SAVE LESSON PROGRESS — com limpeza de false
     function saveLessonProgress() {
-        // ✅ Limpa entries false do local antes de persistir
         if (currentGroup && currentLessonProgress[currentGroup]) {
             currentLessonProgress[currentGroup] = currentLessonProgress[currentGroup].filter(p => p.completed === true);
             if (currentLessonProgress[currentGroup].length === 0) {
@@ -2110,19 +2116,14 @@
         if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule();
     }
 
-    // ============================================
-    // ✅ RESET — limpa local + servidor, sem voltar
-    // ============================================
     function resetLessonProgress() {
         if(!currentGroup) return;
         if(!confirm(`Resetar progresso da turma ${currentGroup}?`)) return;
 
-        // ✅ 1) Limpa local
         currentLessonProgress[currentGroup] = [];
         delete currentLessonProgress[currentGroup];
         persistLessonProgress();
 
-        // ✅ 2) Envia {} pro servidor
         sendProgressToServer(currentGroup, {}).then(ok => {
             if (ok) {
                 console.log('✅ Reset confirmado pelo servidor:', currentGroup);
@@ -2131,7 +2132,6 @@
             }
         });
 
-        // ✅ 3) Re-renderiza
         if (currentGroup) openGroupDetail(currentGroup);
         renderGroupLessonPlans();
         if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule();
@@ -2202,9 +2202,6 @@
         document.getElementById(id).classList.add('hidden');
     }
 
-    // ============================================
-    // FALLBACK DOMCONTENTLOADED
-    // ============================================
     if (document.readyState === 'interactive' || document.readyState === 'complete') {
         setTimeout(() => {
             window.dispatchEvent(new Event('DOMContentLoaded'));
