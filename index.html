@@ -59,6 +59,7 @@
         .badge-modal { background: var(--primary); }
         .badge-saved { background: var(--success); }
         .badge-next-week { background: var(--warning); color: #000; }
+        .badge-inc { background: #6f42c1; color: #fff; }
         .action-btn { width: 100%; margin-top: 12px; padding: 10px; font-size: 0.85rem; border: 2px solid var(--border-color); color: var(--text-sec); background: var(--bg-color); border-radius: 6px; font-weight: 600; transition: all 0.3s ease; cursor: pointer; }
         .action-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: none; box-shadow: none; }
         .action-btn.saved { border-color: var(--success); color: #fff; background: var(--success); }
@@ -138,6 +139,109 @@
         .sync-status.success { border-color: var(--success); color: var(--success); }
         .sync-status.error { border-color: var(--danger); color: var(--danger); }
         .sync-status.warning { border-color: var(--warning); color: #856404; }
+
+        /* FECHAMENTO */
+        .fechamento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .fechamento-card {
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+        .fechamento-card h4 {
+            font-size: 0.85rem;
+            color: var(--text-sec);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        .fechamento-card .valor {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .fechamento-card.total {
+            border-color: var(--success);
+            background: var(--success-light);
+        }
+        .fechamento-card.total .valor {
+            color: var(--success);
+        }
+        .fechamento-card.inc {
+            border-color: #6f42c1;
+            background: #f3e8ff;
+        }
+        .fechamento-card.inc .valor {
+            color: #6f42c1;
+        }
+        .fechamento-card.noshow {
+            border-color: var(--warning);
+            background: #fff8e1;
+        }
+        .fechamento-card.noshow .valor {
+            color: #856404;
+        }
+        .fechamento-card.cancel {
+            border-color: var(--danger);
+            background: #f8d7da;
+        }
+        .fechamento-card.cancel .valor {
+            color: var(--danger);
+        }
+        .valores-config {
+            background: var(--card-bg);
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+        .valores-config label {
+            margin-bottom: 6px;
+        }
+        .valores-config input {
+            margin-bottom: 0;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .fechamento-lista {
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+        }
+        .fechamento-lista table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .fechamento-lista th, .fechamento-lista td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        .fechamento-lista th {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        .fechamento-lista tr:hover td {
+            background: var(--card-bg);
+        }
         @media (max-width: 600px) {
             .teachers-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
             .classes-list { grid-template-columns: 1fr; padding: 15px; }
@@ -145,6 +249,7 @@
             .modal-content { width: 95%; padding: 20px; }
             .header-buttons { flex-direction: column; align-items: center; }
             .sync-status { bottom: 10px; right: 10px; font-size: 0.75rem; }
+            .fechamento-card .valor { font-size: 1.5rem; }
         }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--card-bg); }
@@ -167,6 +272,7 @@
             <button onclick="showSelection()" class="active" id="btn-schedule">📅 Cronograma</button>
             <button onclick="showLessonPlans()" id="btn-lessons">📚 Lesson Plans por Turma</button>
             <button onclick="showHistory()" id="btn-history">📊 Histórico de Aulas</button>
+            <button onclick="showFechamento()" id="btn-fechamento">💰 Fechamento</button>
             <button onclick="refreshData()" class="refresh-btn">🔄 Atualizar Dados</button>
         </div>
     </header>
@@ -232,6 +338,43 @@
             <div id="history-content">
                 <p style="text-align:center; color: var(--text-sec); margin-top:40px;">Carregando histórico...</p>
             </div>
+        </div>
+
+        <div id="fechamento-screen" class="hidden">
+            <div style="margin-bottom: 20px;">
+                <button onclick="showSelection()" style="border-color: var(--text-sec); color: var(--text-sec);">
+                    ← Voltar
+                </button>
+            </div>
+            <h2 style="color: var(--primary); text-align: center; margin-bottom: 20px;">💰 Fechamento de Pagamento</h2>
+
+            <!-- Valores configuráveis -->
+            <div class="valores-config">
+                <div>
+                    <label>💵 Valor Aula Normal (R$)</label>
+                    <input type="number" id="valor-normal" value="50" min="0" step="0.01" oninput="renderFechamento()">
+                </div>
+                <div>
+                    <label>🏢 Valor Aula In Company (R$)</label>
+                    <input type="number" id="valor-inc" value="70" min="0" step="0.01" oninput="renderFechamento()">
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center;">
+                <select id="fech-teacher" onchange="renderFechamento()" style="max-width: 220px; margin-bottom: 0;">
+                    <option value="">Todos os professores</option>
+                </select>
+                <input type="month" id="fech-mes" onchange="renderFechamento()" style="max-width: 200px; margin-bottom: 0;">
+                <button onclick="limparFiltrosFechamento()" style="margin: 0;">🧹 Limpar</button>
+                <button onclick="loadHistoryFromServer()" style="margin: 0;">🔄 Atualizar</button>
+            </div>
+
+            <!-- Cards de resumo -->
+            <div id="fechamento-resumo" class="fechamento-grid"></div>
+
+            <!-- Lista detalhada -->
+            <div id="fechamento-lista-container" class="fechamento-lista"></div>
         </div>
     </div>
 
@@ -328,6 +471,7 @@
     const API_URL = 'https://script.google.com/macros/s/AKfycbyka0_cGN6B68Inu2zYr950TdeHTGTL5fT4rfYvFwtIQw9jm2_sfsszE9C06oBovMWg/exec';
     const PENDING_QUEUE_KEY = 'radPendingQueue';
     const SENHA_RESET = 'coordenacaoml';
+    const VALORES_KEY = 'fechamentoValores';
 
     let remoteRads = [];
 
@@ -434,6 +578,9 @@
     let currentLessonProgress = {};
     let groupBookMap = {};
     let currentRadClass = null;
+
+    // Mapa global: chave "TEACHER|DIA|TIME|GROUP" → modal (IN-C ou regular)
+    let modalPorAula = {};
 
     function hideLoadingScreen() {
         const ls = document.getElementById('loading-screen');
@@ -672,6 +819,10 @@
         }
         
         renderHistory();
+        // Re-renderiza fechamento se estiver aberto
+        if (!document.getElementById('fechamento-screen').classList.contains('hidden')) {
+            renderFechamento();
+        }
     }
 
     async function loadKidsLessonPlans() {
@@ -716,6 +867,29 @@
         return lessons;
     }
 
+    // ============================================
+    // ✅ CONSTRÓI MAPA modalPorAula: TEACHER|DIA|TIME|GROUP → MODAL
+    // ============================================
+    function buildModalMap() {
+        modalPorAula = {};
+        const allAulas = [...scheduleData, ...nextWeekData];
+        allAulas.forEach(cls => {
+            const key = `${cls.teacher}|${cls.dayName}|${cls.time}|${cls.group}`.toUpperCase();
+            modalPorAula[key] = (cls.modal || '').toUpperCase();
+        });
+        console.log(`🗺️ Mapa de modalidades: ${Object.keys(modalPorAula).length} entradas`);
+    }
+
+    function getModalDoRad(rad) {
+        const key = `${rad.teacher}|${rad.day}|${rad.time}|${rad.group}`.toUpperCase();
+        return modalPorAula[key] || '';
+    }
+
+    function isInCompany(rad) {
+        const modal = getModalDoRad(rad);
+        return modal.includes('IN-C') || modal.includes('IN COMPANY') || modal.includes('IN-COMPANY');
+    }
+
     window.addEventListener('DOMContentLoaded', async () => {
         const safetyTimer = setTimeout(() => {
             console.warn('⚠️ Safety timeout: forçando remoção da loading screen');
@@ -731,12 +905,15 @@
             showLoadingMsg('Carregando...');
 
             loadLessonProgress();
+            loadValoresSalvos();
             renderTeachers();
             populateGroupSelect();
             try {
                 const now = new Date();
                 const mi = document.getElementById('att-month-select');
                 if (mi) mi.value = now.toISOString().slice(0, 7);
+                const mf = document.getElementById('fech-mes');
+                if (mf) mf.value = now.toISOString().slice(0, 7);
             } catch(e) {}
 
             forceHide();
@@ -799,10 +976,12 @@
 
             await Promise.allSettled(tasks);
 
+            buildModalMap(); // ✅ Constrói mapa de modalidades
             buildGroupBookMap();
             renderTeachers();
             populateGroupSelect();
             renderGroupLessonPlans();
+            populateFechamentoTeacherFilter();
             if (currentTeacher && !document.getElementById('schedule-screen').classList.contains('hidden')) {
                 loadWeekData(currentWeekName);
             }
@@ -819,7 +998,7 @@
 
             try { await tryFlushPendingQueue(); } catch(e) { console.warn(e); }
 
-            console.log(`✅ Inicialização completa. Turmas: ${allGroupsFromSchedule.size}, RADs: ${remoteRads.length}`);
+            console.log(`✅ Inicialização completa. Turmas: ${allGroupsFromSchedule.size}, RADs: ${remoteRads.length}, Modalidades: ${Object.keys(modalPorAula).length}`);
 
         } catch (err) {
             console.error('❌ Erro na inicialização:', err);
@@ -888,9 +1067,11 @@
 
             try { await tryFlushPendingQueue(); } catch(e) {}
 
+            buildModalMap();
             buildGroupBookMap();
             loadLessonProgress();
             populateGroupSelect();
+            populateFechamentoTeacherFilter();
             renderTeachers();
 
             if (!document.getElementById('schedule-screen').classList.contains('hidden') && currentTeacher) {
@@ -902,9 +1083,12 @@
             if (!document.getElementById('history-screen').classList.contains('hidden')) {
                 renderHistory();
             }
+            if (!document.getElementById('fechamento-screen').classList.contains('hidden')) {
+                renderFechamento();
+            }
 
             const pendingCount = getPendingQueue().length;
-            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length}\nNext Week: ${nextWeekData.length}\nRADs servidor: ${remoteRads.length}\nPendentes: ${pendingCount}`);
+            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length}\nNext Week: ${nextWeekData.length}\nRADs servidor: ${remoteRads.length}\nModalidades: ${Object.keys(modalPorAula).length}\nPendentes: ${pendingCount}`);
         } catch (err) {
             console.error(err);
             alert('❌ Erro ao atualizar.');
@@ -1088,9 +1272,6 @@
         return [];
     }
 
-    // ============================================
-    // ✅ FIND KIDS BOOK
-    // ============================================
     function findKidsBook(text) {
         if (!text) return null;
         const norm = normalizeGroupKeyAgressive(text);
@@ -1098,12 +1279,10 @@
 
         const books = Object.keys(KIDS_BOOK_GIDS);
 
-        // 1️⃣ Match exato
         for (const b of books) {
             if (normalizeGroupKeyAgressive(b) === norm) return b;
         }
 
-        // 2️⃣ Procura AW ou WF em QUALQUER parte da string
         const prefixMatch = norm.match(/\b(AW|WF)\b/);
         if (prefixMatch) {
             const prefix = prefixMatch[1];
@@ -1112,7 +1291,6 @@
             const palavrasDepois = depois.split(' ').filter(w => w.length > 1);
 
             if (palavrasDepois.length > 0) {
-                // Match exato de todas as palavras
                 for (const b of books) {
                     const bNorm = normalizeGroupKeyAgressive(b);
                     if (!bNorm.startsWith(prefix + ' ')) continue;
@@ -1120,7 +1298,6 @@
                     const bate = palavrasDepois.every(w => bWords.includes(w));
                     if (bate) return b;
                 }
-                // Match parcial (alguma palavra)
                 for (const b of books) {
                     const bNorm = normalizeGroupKeyAgressive(b);
                     if (!bNorm.startsWith(prefix + ' ')) continue;
@@ -1131,10 +1308,8 @@
             }
         }
 
-        // 3️⃣ Se for só "AW" ou "WF", não retorna nada
         if (norm === 'AW' || norm === 'WF') return null;
 
-        // 4️⃣ Fallback genérico
         const words = norm.split(' ').filter(w => w.length > 1);
         if (words.length >= 2) {
             for (const b of books) {
@@ -1145,16 +1320,12 @@
         return null;
     }
 
-    // ============================================
-    // ✅ BUILD GROUP BOOK MAP
-    // ============================================
     function buildGroupBookMap() {
         allGroupsFromSchedule.forEach((info) => {
             const group = info.display;
             const bookStr = (info.book || '').trim();
             if (!bookStr) return;
 
-            // Tenta book + group juntos
             const combinado = (bookStr + ' ' + group).trim();
             let kids = findKidsBook(combinado);
             if (!kids) kids = findKidsBook(bookStr);
@@ -1164,7 +1335,6 @@
                 return;
             }
 
-            // Se for só AW/WF, procura a palavra-chave no GROUP
             if (bookStr.toUpperCase() === 'AW' || bookStr.toUpperCase() === 'WF') {
                 const prefix = bookStr.toUpperCase();
                 const groupNorm = normalizeGroupKeyAgressive(group);
@@ -1182,7 +1352,6 @@
                 }
             }
 
-            // Tenta Book N
             const bookKey = bookStr.toUpperCase().trim();
             const bookNames = Object.keys(BOOK_STRUCTURE);
             let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
@@ -1208,9 +1377,6 @@
         return null;
     }
 
-    // ============================================
-    // ✅ GET BOOK FOR GROUP
-    // ============================================
     function getBookForGroup(group) {
         if (!group) return 'Book 1';
 
@@ -1221,7 +1387,6 @@
             const bookStr = (info.book || '').trim();
             const groupStr = group;
 
-            // Tenta book + group juntos
             const combinado = (bookStr + ' ' + groupStr).trim();
             let kids = findKidsBook(combinado);
             if (!kids && bookStr) kids = findKidsBook(bookStr);
@@ -1231,7 +1396,6 @@
                 return kids;
             }
 
-            // Se for só AW/WF, procura a palavra-chave no GROUP
             if (bookStr.toUpperCase() === 'AW' || bookStr.toUpperCase() === 'WF') {
                 const prefix = bookStr.toUpperCase();
                 const groupNorm = normalizeGroupKeyAgressive(groupStr);
@@ -1249,7 +1413,6 @@
                 }
             }
 
-            // Tenta Book N
             if (bookStr) {
                 const bookKey = bookStr.toUpperCase().trim();
                 const bookNames = Object.keys(BOOK_STRUCTURE);
@@ -1268,7 +1431,6 @@
             }
         }
 
-        // Fallback final: tenta pelo nome do grupo
         const kidsFromGroup = findKidsBook(group);
         if (kidsFromGroup) { groupBookMap[group] = kidsFromGroup; return kidsFromGroup; }
 
@@ -1404,14 +1566,19 @@
         return null;
     }
 
+    // ============================================
+    // NAVEGAÇÃO
+    // ============================================
     function showSelection() {
         document.getElementById('selection-screen').classList.remove('hidden');
         document.getElementById('schedule-screen').classList.add('hidden');
         document.getElementById('lesson-plan-screen').classList.add('hidden');
         document.getElementById('history-screen').classList.add('hidden');
+        document.getElementById('fechamento-screen').classList.add('hidden');
         document.getElementById('btn-schedule').classList.add('active');
         document.getElementById('btn-lessons').classList.remove('active');
         document.getElementById('btn-history').classList.remove('active');
+        document.getElementById('btn-fechamento').classList.remove('active');
         currentTeacher = null;
     }
 
@@ -1420,9 +1587,11 @@
         document.getElementById('schedule-screen').classList.remove('hidden');
         document.getElementById('lesson-plan-screen').classList.add('hidden');
         document.getElementById('history-screen').classList.add('hidden');
+        document.getElementById('fechamento-screen').classList.add('hidden');
         document.getElementById('btn-schedule').classList.add('active');
         document.getElementById('btn-lessons').classList.remove('active');
         document.getElementById('btn-history').classList.remove('active');
+        document.getElementById('btn-fechamento').classList.remove('active');
     }
 
     function showLessonPlans() {
@@ -1430,9 +1599,11 @@
         document.getElementById('schedule-screen').classList.add('hidden');
         document.getElementById('lesson-plan-screen').classList.remove('hidden');
         document.getElementById('history-screen').classList.add('hidden');
+        document.getElementById('fechamento-screen').classList.add('hidden');
         document.getElementById('btn-schedule').classList.remove('active');
         document.getElementById('btn-lessons').classList.add('active');
         document.getElementById('btn-history').classList.remove('active');
+        document.getElementById('btn-fechamento').classList.remove('active');
         renderGroupLessonPlans();
     }
 
@@ -1441,14 +1612,225 @@
         document.getElementById('schedule-screen').classList.add('hidden');
         document.getElementById('lesson-plan-screen').classList.add('hidden');
         document.getElementById('history-screen').classList.remove('hidden');
+        document.getElementById('fechamento-screen').classList.add('hidden');
         document.getElementById('btn-schedule').classList.remove('active');
         document.getElementById('btn-lessons').classList.remove('active');
         document.getElementById('btn-history').classList.add('active');
+        document.getElementById('btn-fechamento').classList.remove('active');
         currentTeacher = null;
         populateHistoryTeacherFilter();
         loadHistoryFromServer();
     }
 
+    function showFechamento() {
+        document.getElementById('selection-screen').classList.add('hidden');
+        document.getElementById('schedule-screen').classList.add('hidden');
+        document.getElementById('lesson-plan-screen').classList.add('hidden');
+        document.getElementById('history-screen').classList.add('hidden');
+        document.getElementById('fechamento-screen').classList.remove('hidden');
+        document.getElementById('btn-schedule').classList.remove('active');
+        document.getElementById('btn-lessons').classList.remove('active');
+        document.getElementById('btn-history').classList.remove('active');
+        document.getElementById('btn-fechamento').classList.add('active');
+        currentTeacher = null;
+        populateFechamentoTeacherFilter();
+        // Se não tem dados ainda, carrega
+        if (remoteRads.length === 0) {
+            loadHistoryFromServer();
+        }
+        renderFechamento();
+    }
+
+    // ============================================
+    // FECHAMENTO
+    // ============================================
+    function loadValoresSalvos() {
+        try {
+            const saved = localStorage.getItem(VALORES_KEY);
+            if (saved) {
+                const v = JSON.parse(saved);
+                if (v.normal !== undefined) document.getElementById('valor-normal').value = v.normal;
+                if (v.inc !== undefined) document.getElementById('valor-inc').value = v.inc;
+            }
+        } catch(e) {}
+    }
+
+    function salvarValores() {
+        const normal = parseFloat(document.getElementById('valor-normal').value) || 0;
+        const inc = parseFloat(document.getElementById('valor-inc').value) || 0;
+        try {
+            localStorage.setItem(VALORES_KEY, JSON.stringify({ normal, inc }));
+        } catch(e) {}
+    }
+
+    function populateFechamentoTeacherFilter() {
+        const select = document.getElementById('fech-teacher');
+        if (!select) return;
+        select.innerHTML = '<option value="">Todos os professores</option>';
+        VALID_TEACHERS.sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.name;
+            opt.textContent = t.name;
+            select.appendChild(opt);
+        });
+    }
+
+    function limparFiltrosFechamento() {
+        document.getElementById('fech-teacher').value = '';
+        document.getElementById('fech-mes').value = '';
+        renderFechamento();
+    }
+
+    function renderFechamento() {
+        salvarValores();
+
+        const valorNormal = parseFloat(document.getElementById('valor-normal').value) || 0;
+        const valorInc = parseFloat(document.getElementById('valor-inc').value) || 0;
+
+        const filtroTeacher = (document.getElementById('fech-teacher').value || '').toUpperCase();
+        const filtroMes = document.getElementById('fech-mes').value; // formato YYYY-MM
+
+        // Filtra RADs
+        let filtered = remoteRads.slice();
+        if (filtroTeacher) {
+            filtered = filtered.filter(r => (r.teacher || '').toUpperCase() === filtroTeacher);
+        }
+        if (filtroMes) {
+            filtered = filtered.filter(r => {
+                if (!r.timestamp) return false;
+                const ts = String(r.timestamp);
+                // timestamp pode ser "dd/MM/yyyy HH:mm:ss" ou ISO
+                let ano, mes;
+                const match = ts.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+                if (match) {
+                    ano = match[3];
+                    mes = match[2];
+                } else {
+                    try {
+                        const d = new Date(ts);
+                        ano = String(d.getFullYear());
+                        mes = String(d.getMonth() + 1).padStart(2, '0');
+                    } catch(e) { return false; }
+                }
+                return `${ano}-${mes}` === filtroMes;
+            });
+        }
+
+        // Contadores
+        let normais = 0, inCompany = 0, noShow = 0, canceladas = 0;
+        const listaDetalhada = [];
+
+        filtered.forEach(rad => {
+            const status = (rad.status || '').toLowerCase();
+            const inc = isInCompany(rad);
+
+            if (status === 'realizada') {
+                if (inc) inCompany++;
+                else normais++;
+            } else if (status === 'noshow') {
+                noShow++;
+            } else if (status === 'cancelada') {
+                canceladas++;
+            }
+
+            listaDetalhada.push({
+                teacher: rad.teacher,
+                day: rad.day,
+                time: rad.time,
+                group: rad.group,
+                status: rad.status,
+                inc: inc,
+                modal: getModalDoRad(rad),
+                timestamp: rad.timestamp
+            });
+        });
+
+        // Cálculos de valor
+        const totalNormal = (normais + noShow) * valorNormal;
+        const totalInc = inCompany * valorInc;
+        const totalGeral = totalNormal + totalInc;
+
+        // Renderiza cards
+        const resumo = document.getElementById('fechamento-resumo');
+        resumo.innerHTML = `
+            <div class="fechamento-card">
+                <h4>✅ Aulas Normais</h4>
+                <div class="valor">${normais}</div>
+                <div style="color: var(--text-sec); font-size: 0.85rem; margin-top: 5px;">R$ ${valorNormal.toFixed(2)} cada</div>
+            </div>
+            <div class="fechamento-card inc">
+                <h4>🏢 In Company</h4>
+                <div class="valor">${inCompany}</div>
+                <div style="color: #6f42c1; font-size: 0.85rem; margin-top: 5px;">R$ ${valorInc.toFixed(2)} cada</div>
+            </div>
+            <div class="fechamento-card noshow">
+                <h4>❌ No Show</h4>
+                <div class="valor">${noShow}</div>
+                <div style="color: #856404; font-size: 0.85rem; margin-top: 5px;">R$ ${valorNormal.toFixed(2)} cada</div>
+            </div>
+            <div class="fechamento-card cancel">
+                <h4>⚠️ Canceladas</h4>
+                <div class="valor">${canceladas}</div>
+                <div style="color: var(--danger); font-size: 0.85rem; margin-top: 5px;">Não paga</div>
+            </div>
+            <div class="fechamento-card total">
+                <h4>💰 TOTAL A PAGAR</h4>
+                <div class="valor">R$ ${totalGeral.toFixed(2)}</div>
+                <div style="color: var(--success); font-size: 0.85rem; margin-top: 5px;">${normais + noShow + inCompany} aulas pagas</div>
+            </div>
+        `;
+
+        // Renderiza lista detalhada
+        const lista = document.getElementById('fechamento-lista-container');
+        if (listaDetalhada.length === 0) {
+            lista.innerHTML = `<p style="text-align:center; color: var(--text-sec); padding: 20px;">Nenhum RAD encontrado com esses filtros.</p>`;
+            return;
+        }
+
+        let html = `<h3>📋 Detalhamento (${listaDetalhada.length} aulas)</h3>`;
+        html += `<table><thead><tr>
+            <th>Data</th><th>Teacher</th><th>Dia</th><th>Horário</th><th>Turma</th><th>Modal</th><th>Status</th><th>Valor</th>
+        </tr></thead><tbody>`;
+
+        listaDetalhada.forEach(item => {
+            const statusLabel = {
+                'realizada': '✅ Realizada',
+                'noshow': '❌ No Show',
+                'cancelada': '⚠️ Cancelada'
+            }[item.status] || item.status;
+
+            let valor = 0;
+            if (item.status === 'realizada') {
+                valor = item.inc ? valorInc : valorNormal;
+            } else if (item.status === 'noshow') {
+                valor = valorNormal;
+            } else {
+                valor = 0;
+            }
+
+            const badge = item.inc
+                ? `<span class="badge badge-inc">IN-C</span>`
+                : `<span class="badge badge-modal">${item.modal || 'REGULAR'}</span>`;
+
+            html += `<tr>
+                <td>${item.timestamp || '—'}</td>
+                <td><strong>${item.teacher || '—'}</strong></td>
+                <td>${item.day || '—'}</td>
+                <td>${item.time || '—'}</td>
+                <td>${item.group || '—'}</td>
+                <td>${badge}</td>
+                <td>${statusLabel}</td>
+                <td style="font-weight: 600; color: ${valor > 0 ? 'var(--success)' : 'var(--text-sec)'};">R$ ${valor.toFixed(2)}</td>
+            </tr>`;
+        });
+
+        html += '</tbody></table>';
+        lista.innerHTML = html;
+    }
+
+    // ============================================
+    // HISTORY
+    // ============================================
     function clearHistoryFilters() {
         document.getElementById('hist-filter-teacher').value = '';
         document.getElementById('hist-filter-status').value = '';
@@ -1526,10 +1908,13 @@
 
             const groupDisplay = rad.group && rad.group.trim() !== '' ? rad.group : '—';
 
+            const inc = isInCompany(rad);
+            const incBadge = inc ? ' <span class="badge badge-inc">IN-C</span>' : '';
+
             html += `
                 <div class="day-section" style="margin-bottom: 18px;">
                     <div class="day-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                        <span>${rad.teacher || '—'} — ${rad.day || '—'} ${rad.time || ''}</span>
+                        <span>${rad.teacher || '—'} — ${rad.day || '—'} ${rad.time || ''}${incBadge}</span>
                         <span style="font-weight:600; color:${st.color}; font-size:0.9rem;">${st.text}</span>
                     </div>
                     <div style="padding: 16px 20px;">
@@ -1713,6 +2098,8 @@
 
                     const nextWeekBadge = isNextWeek ? '<span class="badge badge-next-week">📅 PRÓXIMA SEMANA</span>' : '';
 
+                    const incClass = (cls.modal || '').toUpperCase().includes('IN-C') ? ' <span class="badge badge-inc">IN-C</span>' : '';
+
                     card.innerHTML = `
                         ${statusBadge}
                         ${savedBadge}
@@ -1721,7 +2108,7 @@
                         <div class="class-info">
                             <span class="badge badge-book">${cls.book || 'N/A'}</span>
                             <span class="badge badge-room">Sala: ${cls.room || '-'}</span>
-                            <span class="badge badge-modal">${cls.modal || 'REGULAR'}</span>
+                            ${incClass || `<span class="badge badge-modal">${cls.modal || 'REGULAR'}</span>`}
                             ${progressText ? `<span class="badge" style="background: var(--success);">${progressText}</span>` : ''}
                             ${nextWeekBadge}
                             ${isSaved ? '<span class="badge badge-saved">✅ SALVO</span>' : ''}
