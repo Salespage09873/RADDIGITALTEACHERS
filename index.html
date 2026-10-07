@@ -372,7 +372,7 @@
         'WF FRIENDSHIP':    '1798862018'
     };
 
-    const FETCH_TIMEOUT_MS = 8000;
+    const FETCH_TIMEOUT_MS = 5000;
 
     const VALID_TEACHERS = [
         { name: 'BARBARA', color: '#0d6efd' },
@@ -434,7 +434,7 @@
     let currentTeacher = null;
     let currentWeekName = 'This Week';
     let currentWeekData = [];
-    let allWeeks = {};
+    let allWeeks = { 'This Week': [], 'Next Week': [] };
     let currentGroup = null;
     let currentLessonProgress = {};
     let groupBookMap = {};
@@ -507,11 +507,9 @@
 
     // ============================================
     // ✅ ENVIO DE PROGRESSO AO SERVIDOR (GLOBAL)
-    // Aceita tanto { lessonId: {completed, date} } quanto { lessonId: true }
     // ============================================
     async function sendProgressToServer(group, lessonsMap) {
         try {
-            // Normaliza: garante que cada lesson tenha {completed, date}
             const normalized = {};
             Object.keys(lessonsMap || {}).forEach(lid => {
                 const info = lessonsMap[lid];
@@ -552,23 +550,26 @@
 
     // ============================================
     // ✅ CARREGAR PROGRESSO GLOBAL DO SERVIDOR
+    // SUBSTITUI tudo (servidor é a fonte da verdade)
     // ============================================
     async function loadGlobalProgress() {
         try {
             const resp = await fetch(API_URL + '?action=progress&_=' + Date.now());
             const data = await resp.json();
             if (data && data.ok && data.progress) {
+                // ✅ SUBSTITUI tudo (não mescla) — o servidor é a fonte da verdade
+                const novo = {};
                 Object.keys(data.progress).forEach(group => {
                     const obj = data.progress[group];
-                    const arr = Object.keys(obj).map(lid => ({
+                    novo[group] = Object.keys(obj).map(lid => ({
                         lesson: lid,
-                        completed: obj[lid].completed,
+                        completed: obj[lid].completed === true,
                         date: obj[lid].date || ''
                     }));
-                    currentLessonProgress[group] = arr;
                 });
+                currentLessonProgress = novo;
                 persistLessonProgress();
-                console.log('✅ Progresso do servidor:', Object.keys(data.progress).length, 'turmas');
+                console.log('✅ Progresso do servidor (substituído):', Object.keys(novo).length, 'turmas');
             }
         } catch (e) {
             console.warn('Progresso do servidor falhou:', e.message);
@@ -736,7 +737,6 @@
                 const lessons = parseKidsLessonPlanCSV(text);
                 if (lessons.length > 0) {
                     KIDS_BOOK_STRUCTURE[bookName] = { lessons };
-                    console.log(`✅ ${bookName}: ${lessons.length} aulas`);
                 }
             } catch (e) {
                 console.warn(`❌ Falha ao carregar ${bookName}:`, e.message);
@@ -768,13 +768,13 @@
     }
 
     // ============================================
-    // INICIALIZAÇÃO
+    // ✅ INICIALIZAÇÃO OTIMIZADA
     // ============================================
     window.addEventListener('DOMContentLoaded', async () => {
         const safetyTimer = setTimeout(() => {
             console.warn('⚠️ Safety timeout: forçando remoção da loading screen');
             hideLoadingScreen();
-        }, 8000);
+        }, 3000);
 
         const forceHide = () => {
             clearTimeout(safetyTimer);
@@ -784,6 +784,19 @@
         try {
             showLoadingMsg('Carregando...');
 
+            // ✅ 1) Renderiza o que é local IMEDIATAMENTE (0ms)
+            loadLessonProgress();
+            renderTeachers();
+            populateGroupSelect();
+            try {
+                const now = new Date();
+                const mi = document.getElementById('att-month-select');
+                if (mi) mi.value = now.toISOString().slice(0, 7);
+            } catch(e) {}
+
+            forceHide();
+
+            // ✅ 2) Carrega o resto em background
             const tasks = [
                 (async () => {
                     try { await loadKidsLessonPlans(); } 
@@ -794,7 +807,12 @@
                     try {
                         const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
                         scheduleData = parseScheduleCSV(text);
+                        allWeeks['This Week'] = scheduleData;
                         console.log(`📋 This Week: ${scheduleData.length}`);
+
+                        if (currentTeacher && !document.getElementById('schedule-screen').classList.contains('hidden')) {
+                            loadWeekData(currentWeekName);
+                        }
                     } catch(e) { console.warn('This Week falhou:', e.message); }
                 })(),
 
@@ -802,6 +820,7 @@
                     try {
                         const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS);
                         nextWeekData = parseScheduleCSV(text, { skipGroupRegistration: true });
+                        allWeeks['Next Week'] = nextWeekData;
                         console.log(`📋 Next Week: ${nextWeekData.length}`);
                     } catch(e) { console.warn('Next Week falhou:', e.message); }
                 })(),
@@ -810,6 +829,7 @@
                     try {
                         const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
                         parseStudentsCSV(text);
+                        populateGroupSelect();
                     } catch(e) { console.warn('Alunos falhou:', e.message); }
                 })(),
 
@@ -824,35 +844,34 @@
                 (async () => {
                     try {
                         await loadGlobalProgress();
+                        renderGroupLessonPlans();
+                        if (!document.getElementById('schedule-screen').classList.contains('hidden')) {
+                            renderSchedule();
+                        }
+                        if (currentGroup) openGroupDetail(currentGroup);
                     } catch(e) { console.warn('Progresso do servidor falhou:', e.message); }
                 })()
             ];
 
             await Promise.allSettled(tasks);
 
-            if (scheduleData.length === 0 && nextWeekData.length === 0) {
-                carregarScheduleFallback();
-                showErrorBanner('Não foi possível carregar o cronograma. Exibindo dados de exemplo.');
+            buildGroupBookMap();
+            renderTeachers();
+            populateGroupSelect();
+            renderGroupLessonPlans();
+            if (currentTeacher && !document.getElementById('schedule-screen').classList.contains('hidden')) {
+                loadWeekData(currentWeekName);
             }
 
-            allWeeks = {
-                'This Week': scheduleData,
-                'Next Week': nextWeekData
-            };
+            if (scheduleData.length === 0 && nextWeekData.length === 0) {
+                carregarScheduleFallback();
+                allWeeks = { 'This Week': scheduleData, 'Next Week': nextWeekData };
+                showErrorBanner('Não foi possível carregar o cronograma. Exibindo dados de exemplo.');
+            }
 
             if (Object.keys(studentsData).length === 0) {
                 carregarAlunosFallback();
             }
-
-            try { buildGroupBookMap(); } catch(e) { console.warn(e); }
-            try { renderTeachers(); } catch(e) { console.warn(e); }
-            try { populateGroupSelect(); } catch(e) { console.warn(e); }
-            try {
-                const now = new Date();
-                const mi = document.getElementById('att-month-select');
-                if (mi) mi.value = now.toISOString().slice(0, 7);
-            } catch(e) { console.warn(e); }
-            try { loadLessonProgress(); } catch(e) { console.warn(e); }
 
             try { await tryFlushPendingQueue(); } catch(e) { console.warn(e); }
 
@@ -861,7 +880,6 @@
         } catch (err) {
             console.error('❌ Erro na inicialização:', err);
             showErrorBanner('Erro ao carregar dados.');
-        } finally {
             forceHide();
         }
     });
@@ -1298,10 +1316,7 @@
     }
 
     // ============================================
-    // ✅ APLICA TOGGLE (marca/desmarca em cadeia)
-    // Agora ENVIA o mapa ATUALIZADO pro servidor.
-    // Lessons que ficaram com completed=false NÃO vão no mapa,
-    // e o Apps Script as REMOVE da planilha.
+    // ✅ APPLY CHAIN TOGGLE — com limpeza de false
     // ============================================
     function applyChainToggle(group, clickedIndex, completed) {
         if (!currentLessonProgress[group]) currentLessonProgress[group] = [];
@@ -1324,13 +1339,21 @@
                 if (existing) { existing.completed = false; existing.date = ''; }
             }
         }
+
+        // ✅ Remove lessons com completed=false do array local
+        currentLessonProgress[group] = currentLessonProgress[group].filter(p => p.completed === true);
+
+        // ✅ Se ficou vazio, remove a chave do grupo
+        if (currentLessonProgress[group].length === 0) {
+            delete currentLessonProgress[group];
+        }
+
         persistLessonProgress();
+
         try { if (currentGroup) openGroupDetail(currentGroup); } catch(e) {}
         try { if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) renderGroupLessonPlans(); } catch(e) {}
         try { if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule(); } catch(e) {}
 
-        // ✅ Monta o mapa APENAS com lessons completed=true
-        // As false são omitidas → o Apps Script remove essas linhas
         const lessonsMap = {};
         (currentLessonProgress[group] || []).forEach(p => {
             if (p.completed === true) {
@@ -1924,10 +1947,19 @@
     // ============================================
     // LESSON PLANS POR TURMA
     // ============================================
+    // ✅ SAVE LESSON PROGRESS — com limpeza de false
     function saveLessonProgress() {
+        // ✅ Limpa entries false do local antes de persistir
+        if (currentGroup && currentLessonProgress[currentGroup]) {
+            currentLessonProgress[currentGroup] = currentLessonProgress[currentGroup].filter(p => p.completed === true);
+            if (currentLessonProgress[currentGroup].length === 0) {
+                delete currentLessonProgress[currentGroup];
+            }
+        }
+
         persistLessonProgress();
+
         if (currentGroup) {
-            // ✅ Envia APENAS as completed=true (as outras o Apps Script remove)
             const lessonsMap = {};
             (currentLessonProgress[currentGroup] || []).forEach(p => {
                 if (p.completed === true) {
@@ -2078,20 +2110,31 @@
         if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule();
     }
 
-    // ✅ RESET — envia {} pro servidor apagar TODAS as linhas dessa turma
+    // ============================================
+    // ✅ RESET — limpa local + servidor, sem voltar
+    // ============================================
     function resetLessonProgress() {
         if(!currentGroup) return;
-        if(confirm(`Resetar progresso da turma ${currentGroup}?`)) {
-            currentLessonProgress[currentGroup] = [];
-            persistLessonProgress();
+        if(!confirm(`Resetar progresso da turma ${currentGroup}?`)) return;
 
-            // ✅ Envia mapa VAZIO → Apps Script remove todas as linhas da turma
-            sendProgressToServer(currentGroup, {});
+        // ✅ 1) Limpa local
+        currentLessonProgress[currentGroup] = [];
+        delete currentLessonProgress[currentGroup];
+        persistLessonProgress();
 
-            if(currentGroup) openGroupDetail(currentGroup);
-            renderGroupLessonPlans();
-            if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule();
-        }
+        // ✅ 2) Envia {} pro servidor
+        sendProgressToServer(currentGroup, {}).then(ok => {
+            if (ok) {
+                console.log('✅ Reset confirmado pelo servidor:', currentGroup);
+            } else {
+                console.warn('⚠️ Reset pode não ter sincronizado');
+            }
+        });
+
+        // ✅ 3) Re-renderiza
+        if (currentGroup) openGroupDetail(currentGroup);
+        renderGroupLessonPlans();
+        if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule();
     }
 
     // ============================================
