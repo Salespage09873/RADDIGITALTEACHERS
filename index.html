@@ -271,7 +271,7 @@
                     <textarea id="rad-observations" placeholder="Digite aqui suas observações sobre a aula..." rows="3"></textarea>
                 </div>
 
-                <button onclick="saveRad()" class="btn-success" style="width: 100%; background: var(--success); color: #fff; border-color: var(--success);">
+                <button id="btn-salvar-rad" onclick="saveRad()" class="btn-success" style="width: 100%; background: var(--success); color: #fff; border-color: var(--success);">
                     💾 SALVAR RAD
                 </button>
                 <button onclick="clearRad()" class="btn-danger" style="width: 100%; margin-top: 8px; border-color: var(--danger); color: var(--danger);">
@@ -317,16 +317,13 @@
 
 <script>
     // ============================================
-    // ✅ CONFIGURAÇÃO — URL DO APPS SCRIPT
+    // CONFIGURAÇÃO
     // ============================================
     const API_URL = 'https://script.google.com/macros/s/AKfycbyka0_cGN6B68Inu2zYr950TdeHTGTL5fT4rfYvFwtIQw9jm2_sfsszE9C06oBovMWg/exec';
     const PENDING_QUEUE_KEY = 'radPendingQueue';
 
     let remoteRads = [];
 
-    // ============================================
-    // INDICADOR DE SYNC
-    // ============================================
     function showSyncStatus(text, type = 'default') {
         const el = document.getElementById('sync-status');
         const icon = document.getElementById('sync-icon');
@@ -350,9 +347,6 @@
         }
     }
 
-    // ============================================
-    // CONFIGURAÇÕES DE URL
-    // ============================================
     const SCHEDULE_THIS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
     const SCHEDULE_NEXT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz-bXwql9tWFhbu7vU4QV2Mh2X-wS8Dg104Y31VzdsPCdQM08rUPGSBphEfeL94kbgCnJOJorYwFjO/pub?output=csv';
     const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRJ50UB29UDqy1PTkOJrUI81d4kZtzB0Qyfo1wPs2rbm9uftJdlcH88h-sfDrxW2o7Fi_5LZVSI4jul/pub?gid=335122343&single=true&output=csv';
@@ -386,9 +380,6 @@
         { name: 'PEDRO', color: '#0d6efd' }
     ];
 
-    // ============================================
-    // ESTRUTURA DOS BOOKS
-    // ============================================
     const BOOK_STRUCTURE = {};
     (function buildBookStructure() {
         const baseLessons = [
@@ -424,9 +415,6 @@
 
     const KIDS_BOOK_STRUCTURE = {};
 
-    // ============================================
-    // ESTADO GLOBAL
-    // ============================================
     let scheduleData = [];
     let nextWeekData = [];
     let studentsData = {};
@@ -440,9 +428,6 @@
     let groupBookMap = {};
     let currentRadClass = null;
 
-    // ============================================
-    // LOADING SCREEN HELPERS
-    // ============================================
     function hideLoadingScreen() {
         const ls = document.getElementById('loading-screen');
         if (ls) ls.classList.add('hidden');
@@ -462,9 +447,6 @@
         }
     }
 
-    // ============================================
-    // FETCH COM TIMEOUT
-    // ============================================
     function fetchWithTimeout(url, timeoutMs, opts = {}) {
         return new Promise((resolve, reject) => {
             const controller = new AbortController();
@@ -487,9 +469,6 @@
         });
     }
 
-    // ============================================
-    // FETCH (substitui JSONP)
-    // ============================================
     async function jsonpRequest(url) {
         try {
             const resp = await fetch(url + (url.includes('?') ? '&' : '?') + '_=' + Date.now());
@@ -505,9 +484,6 @@
         }
     }
 
-    // ============================================
-    // ENVIO DE PROGRESSO AO SERVIDOR
-    // ============================================
     async function sendProgressToServer(group, lessonsMap) {
         try {
             const normalized = {};
@@ -525,11 +501,7 @@
                 }
             });
 
-            const payload = {
-                action: 'progress',
-                group: group,
-                lessons: normalized
-            };
+            const payload = { action: 'progress', group: group, lessons: normalized };
 
             const resp = await fetch(API_URL + '?action=progress', {
                 method: 'POST',
@@ -548,9 +520,6 @@
         return false;
     }
 
-    // ============================================
-    // CARREGAR PROGRESSO GLOBAL DO SERVIDOR
-    // ============================================
     async function loadGlobalProgress() {
         try {
             const resp = await fetch(API_URL + '?action=progress&_=' + Date.now());
@@ -574,9 +543,6 @@
         }
     }
 
-    // ============================================
-    // FILA DE ENVIO PENDENTE
-    // ============================================
     function getPendingQueue() {
         try {
             const s = localStorage.getItem(PENDING_QUEUE_KEY);
@@ -617,9 +583,6 @@
         }
     }
 
-    // ============================================
-    // ENVIO PARA O SERVIDOR
-    // ============================================
     async function sendRadToServer(radData) {
         showSyncStatus('Salvando no servidor...', 'default');
         const ok = await reallySendToServer(radData);
@@ -669,25 +632,9 @@
             console.warn('Tentativa 2 (form) falhou:', e.message);
         }
 
-        try {
-            await fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(radData)
-            });
-            console.log('✅ Enviado via text/plain (no-cors)');
-            return true;
-        } catch(e) {
-            console.warn('Tentativa 3 (text) falhou:', e.message);
-        }
-
         return false;
     }
 
-    // ============================================
-    // CARREGA OS RADs DO SERVIDOR
-    // ============================================
     async function loadHistoryFromServer() {
         const container = document.getElementById('history-content');
         if (container) {
@@ -720,9 +667,6 @@
         renderHistory();
     }
 
-    // ============================================
-    // CARREGA OS LESSON PLANS KIDS
-    // ============================================
     async function loadKidsLessonPlans() {
         const bookNames = Object.keys(KIDS_BOOK_GIDS);
         console.log(`📚 Carregando ${bookNames.length} lesson plans kids...`);
@@ -765,9 +709,6 @@
         return lessons;
     }
 
-    // ============================================
-    // INICIALIZAÇÃO
-    // ============================================
     window.addEventListener('DOMContentLoaded', async () => {
         const safetyTimer = setTimeout(() => {
             console.warn('⚠️ Safety timeout: forçando remoção da loading screen');
@@ -880,9 +821,6 @@
         }
     });
 
-    // ============================================
-    // FALLBACKS
-    // ============================================
     function carregarScheduleFallback() {
         const fallbackGroups = ['G1 - TURMA 1', 'G2 - TURMA 2'];
         fallbackGroups.forEach(g => {
@@ -899,9 +837,6 @@
         studentsData = { 'G1 - TURMA 1': ['Aluno 1'], 'G2 - TURMA 2': ['Aluno 2'] };
     }
 
-    // ============================================
-    // ATUALIZAR DADOS
-    // ============================================
     async function refreshData() {
         if(!confirm('Deseja recarregar os dados?')) return;
         
@@ -971,9 +906,6 @@
         }
     }
 
-    // ============================================
-    // PARSERS
-    // ============================================
     function parseScheduleCSV(text, opts = {}) {
         const { skipGroupRegistration = false } = opts;
         if (!text) return [];
@@ -1006,7 +938,6 @@
 
             if (!skipGroupRegistration) {
                 const normKey = normalizeGroupKey(groupClean);
-                // ✅ Atualiza mesmo se já existir (permite trocar book)
                 allGroupsFromSchedule.set(normKey, {
                     display: groupClean, book: bookClean,
                     room: cleanText(room), modal: cleanText(modal), time: cleanText(time)
@@ -1096,9 +1027,6 @@
             .replace(/\s+/g, ' ').trim();
     }
 
-    // ============================================
-    // BUSCA DE ALUNOS
-    // ============================================
     function findStudentsForGroup(groupName, bookHint) {
         if (!groupName) return [];
         
@@ -1153,9 +1081,6 @@
         return [];
     }
 
-    // ============================================
-    // MATCH DE BOOK KIDS
-    // ============================================
     function findKidsBook(text) {
         if (!text) return null;
         const norm = normalizeGroupKeyAgressive(text);
@@ -1189,23 +1114,17 @@
         return null;
     }
 
-    // ============================================
-    // ✅ MAPEAMENTO TURMA → BOOK (schedule manda)
-    // ============================================
     function buildGroupBookMap() {
-        // ✅ NÃO zera o map — só atualiza com o que vier do schedule
         allGroupsFromSchedule.forEach((info) => {
             const group = info.display;
             if (!info.book) return;
 
-            // Kids (AW/WF)
             const kids = findKidsBook(info.book);
             if (kids) {
                 groupBookMap[group] = kids;
                 return;
             }
 
-            // Book regular
             const bookKey = info.book.toUpperCase().trim();
             const bookNames = Object.keys(BOOK_STRUCTURE);
             let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
@@ -1231,13 +1150,9 @@
         return null;
     }
 
-    // ============================================
-    // ✅ BOOK VEM DO SCHEDULE (fonte da verdade)
-    // ============================================
     function getBookForGroup(group) {
         if (!group) return 'Book 1';
 
-        // ✅ SEMPRE consulta o schedule primeiro
         const normKey = normalizeGroupKey(group);
         const info = allGroupsFromSchedule.get(normKey);
 
@@ -1263,7 +1178,6 @@
             }
         }
 
-        // Fallback: tenta pelo nome da turma
         const kidsFromGroup = findKidsBook(group);
         if (kidsFromGroup) { groupBookMap[group] = kidsFromGroup; return kidsFromGroup; }
 
@@ -1297,9 +1211,6 @@
         return [];
     }
 
-    // ============================================
-    // PROGRESSO
-    // ============================================
     function loadLessonProgress() {
         try {
             const saved = localStorage.getItem('lessonProgress');
@@ -1402,9 +1313,6 @@
         return null;
     }
 
-    // ============================================
-    // NAVEGAÇÃO
-    // ============================================
     function showSelection() {
         document.getElementById('selection-screen').classList.remove('hidden');
         document.getElementById('schedule-screen').classList.add('hidden');
@@ -1469,9 +1377,6 @@
         });
     }
 
-    // ============================================
-    // HISTÓRICO
-    // ============================================
     function renderHistory() {
         const container = document.getElementById('history-content');
         if (!container) return;
@@ -1584,9 +1489,6 @@
         return numMatch ? `Aula ${numMatch[0]}` : lessonId;
     }
 
-    // ============================================
-    // PROFESSORES
-    // ============================================
     function renderTeachers() {
         const grid = document.getElementById('teachers-grid');
         if (!grid) return;
@@ -1644,9 +1546,6 @@
         renderSchedule();
     }
 
-    // ============================================
-    // RENDER SCHEDULE
-    // ============================================
     function renderSchedule() {
         const container = document.getElementById('schedule-content');
         if (!container) return;
@@ -1748,15 +1647,21 @@
         });
     }
 
-    // ============================================
-    // RAD
-    // ============================================
     function openRad(time, group, book, room, day) {
         currentRadClass = { time, group, book, room, day };
         const modal = document.getElementById('rad-modal');
         const infoDiv = document.getElementById('rad-class-info');
         const savedBadge = document.getElementById('rad-saved-badge');
         const nextBox = document.getElementById('rad-next-lesson');
+
+        // ✅ Reabilita o botão ao abrir o modal
+        const btn = document.getElementById('btn-salvar-rad');
+        if (btn) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+            btn.textContent = '💾 SALVAR RAD';
+        }
         
         infoDiv.innerHTML = `
             <strong style="color: var(--primary);">${day} - ${time}</strong><br>
@@ -1905,43 +1810,66 @@
         });
     }
 
+    // ============================================
+    // ✅ SAVE RAD — com bloqueio do botão
+    // ============================================
     async function saveRad() {
         const status = document.getElementById('rad-status').value;
         if(!status) { alert('Selecione o status da aula!'); return; }
 
-        const attendanceChecked = Array.from(document.querySelectorAll('.att-check:checked')).map(cb => cb.value);
-        const observations = document.getElementById('rad-observations').value.trim();
-
-        const lessons = getGroupLessons(currentRadClass.group);
-        const progress = getProgressForGroup(currentRadClass.group);
-        
-        let lessonOfDay = null;
-        for (let i = lessons.length - 1; i >= 0; i--) {
-            const p = progress.find(x => x.lesson === lessons[i].id);
-            if (p && p.completed) { lessonOfDay = lessons[i]; break; }
+        // ✅ Bloqueia o botão IMEDIATAMENTE
+        const btn = document.getElementById('btn-salvar-rad');
+        if (btn && btn.disabled) return; // já está salvando
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+            btn.textContent = '⏳ SALVANDO...';
         }
 
-        const lessonsDone = lessonOfDay ? [lessonOfDay.id] : [];
+        try {
+            const attendanceChecked = Array.from(document.querySelectorAll('.att-check:checked')).map(cb => cb.value);
+            const observations = document.getElementById('rad-observations').value.trim();
 
-        const data = {
-            teacher: currentTeacher.name,
-            day: currentRadClass.day,
-            time: currentRadClass.time,
-            group: currentRadClass.group,
-            book: currentRadClass.book,
-            status,
-            lessons: lessonsDone,
-            attendance: attendanceChecked,
-            observations,
-            dateSaved: new Date().toISOString()
-        };
+            const lessons = getGroupLessons(currentRadClass.group);
+            const progress = getProgressForGroup(currentRadClass.group);
+            
+            let lessonOfDay = null;
+            for (let i = lessons.length - 1; i >= 0; i--) {
+                const p = progress.find(x => x.lesson === lessons[i].id);
+                if (p && p.completed) { lessonOfDay = lessons[i]; break; }
+            }
 
-        localStorage.setItem(getRadKey(currentRadClass), JSON.stringify(data));
+            const lessonsDone = lessonOfDay ? [lessonOfDay.id] : [];
 
-        await sendRadToServer(data);
+            const data = {
+                teacher: currentTeacher.name,
+                day: currentRadClass.day,
+                time: currentRadClass.time,
+                group: currentRadClass.group,
+                book: currentRadClass.book,
+                status,
+                lessons: lessonsDone,
+                attendance: attendanceChecked,
+                observations,
+                dateSaved: new Date().toISOString()
+            };
 
-        closeModal('rad-modal');
-        renderSchedule();
+            localStorage.setItem(getRadKey(currentRadClass), JSON.stringify(data));
+
+            await sendRadToServer(data);
+
+            closeModal('rad-modal');
+            renderSchedule();
+        } finally {
+            // ✅ Reabilita quando terminar (ou mesmo se der erro)
+            if (btn) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                btn.textContent = '💾 SALVAR RAD';
+            }
+        }
     }
 
     function clearRad() {
@@ -1952,9 +1880,6 @@
         }
     }
 
-    // ============================================
-    // LESSON PLANS POR TURMA
-    // ============================================
     function saveLessonProgress() {
         if (currentGroup && currentLessonProgress[currentGroup]) {
             currentLessonProgress[currentGroup] = currentLessonProgress[currentGroup].filter(p => p.completed === true);
@@ -2137,9 +2062,6 @@
         if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule();
     }
 
-    // ============================================
-    // LISTA DE PRESENÇA
-    // ============================================
     function openAttendanceList() {
         document.getElementById('attendance-modal').classList.remove('hidden');
         loadAttendanceTable();
