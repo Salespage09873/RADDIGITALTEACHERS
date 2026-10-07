@@ -140,7 +140,6 @@
         .sync-status.error { border-color: var(--danger); color: var(--danger); }
         .sync-status.warning { border-color: var(--warning); color: #856404; }
 
-        /* FECHAMENTO */
         .fechamento-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -348,7 +347,6 @@
             </div>
             <h2 style="color: var(--primary); text-align: center; margin-bottom: 20px;">💰 Fechamento de Pagamento</h2>
 
-            <!-- Valores configuráveis -->
             <div class="valores-config">
                 <div>
                     <label>💵 Valor Aula Normal (R$)</label>
@@ -360,7 +358,6 @@
                 </div>
             </div>
 
-            <!-- Filtros -->
             <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center;">
                 <select id="fech-teacher" onchange="renderFechamento()" style="max-width: 220px; margin-bottom: 0;">
                     <option value="">Todos os professores</option>
@@ -370,10 +367,8 @@
                 <button onclick="loadHistoryFromServer()" style="margin: 0;">🔄 Atualizar</button>
             </div>
 
-            <!-- Cards de resumo -->
             <div id="fechamento-resumo" class="fechamento-grid"></div>
 
-            <!-- Lista detalhada -->
             <div id="fechamento-lista-container" class="fechamento-lista"></div>
         </div>
     </div>
@@ -579,8 +574,13 @@
     let groupBookMap = {};
     let currentRadClass = null;
 
-    // Mapa global: chave "TEACHER|DIA|TIME|GROUP" → modal (IN-C ou regular)
-    let modalPorAula = {};
+    // ✅ Índice global de modalidades (cascata)
+    let modalIndex = {
+        exato: {},
+        semDia: {},
+        semTeacher: {},
+        grupo: {}
+    };
 
     function hideLoadingScreen() {
         const ls = document.getElementById('loading-screen');
@@ -819,7 +819,6 @@
         }
         
         renderHistory();
-        // Re-renderiza fechamento se estiver aberto
         if (!document.getElementById('fechamento-screen').classList.contains('hidden')) {
             renderFechamento();
         }
@@ -868,21 +867,70 @@
     }
 
     // ============================================
-    // ✅ CONSTRÓI MAPA modalPorAula: TEACHER|DIA|TIME|GROUP → MODAL
+    // ✅ MAPA DE MODALIDADES (cascata robusta)
     // ============================================
     function buildModalMap() {
-        modalPorAula = {};
+        modalIndex = { exato: {}, semDia: {}, semTeacher: {}, grupo: {} };
         const allAulas = [...scheduleData, ...nextWeekData];
+
         allAulas.forEach(cls => {
-            const key = `${cls.teacher}|${cls.dayName}|${cls.time}|${cls.group}`.toUpperCase();
-            modalPorAula[key] = (cls.modal || '').toUpperCase();
+            const teacher = (cls.teacher || '').toUpperCase().trim();
+            const day = (cls.dayName || '').toUpperCase().trim();
+            const time = (cls.time || '').trim();
+            const group = normalizeGroupKeyAgressive(cls.group || '');
+            const modal = (cls.modal || '').toUpperCase().trim();
+
+            if (!modal || !group) return;
+
+            const kExato = `${teacher}|${day}|${time}|${group}`;
+            const kSemDia = `${teacher}|${time}|${group}`;
+            const kSemTeacher = `${day}|${time}|${group}`;
+
+            modalIndex.exato[kExato] = modal;
+            modalIndex.semDia[kSemDia] = modal;
+            modalIndex.semTeacher[kSemTeacher] = modal;
+            modalIndex.grupo[group] = modal;
         });
-        console.log(`🗺️ Mapa de modalidades: ${Object.keys(modalPorAula).length} entradas`);
+
+        console.log(`🗺️ Mapa de modalidades: exato=${Object.keys(modalIndex.exato).length}, semDia=${Object.keys(modalIndex.semDia).length}, semTeacher=${Object.keys(modalIndex.semTeacher).length}, grupo=${Object.keys(modalIndex.grupo).length}`);
     }
 
+    // ============================================
+    // ✅ BUSCA A MODALIDADE DO RAD (cascata)
+    // ============================================
     function getModalDoRad(rad) {
-        const key = `${rad.teacher}|${rad.day}|${rad.time}|${rad.group}`.toUpperCase();
-        return modalPorAula[key] || '';
+        const teacher = (rad.teacher || '').toUpperCase().trim();
+        const day = (rad.day || '').toUpperCase().trim();
+        const time = (rad.time || '').trim();
+        const group = normalizeGroupKeyAgressive(rad.group || '');
+
+        // 1️⃣ Tentativa exata
+        const kExato = `${teacher}|${day}|${time}|${group}`;
+        if (modalIndex.exato[kExato]) return modalIndex.exato[kExato];
+
+        // 2️⃣ Sem dia
+        const kSemDia = `${teacher}|${time}|${group}`;
+        if (modalIndex.semDia[kSemDia]) return modalIndex.semDia[kSemDia];
+
+        // 3️⃣ Sem teacher
+        const kSemTeacher = `${day}|${time}|${group}`;
+        if (modalIndex.semTeacher[kSemTeacher]) return modalIndex.semTeacher[kSemTeacher];
+
+        // 4️⃣ Só grupo
+        if (modalIndex.grupo[group]) return modalIndex.grupo[group];
+
+        // 5️⃣ Match parcial do group (fuzzy)
+        for (const k of Object.keys(modalIndex.exato)) {
+            const partes = k.split('|');
+            const kGroup = partes[3];
+            if (kGroup && group && (kGroup.includes(group) || group.includes(kGroup))) {
+                if (partes[0] === teacher || partes[2] === time) {
+                    return modalIndex.exato[k];
+                }
+            }
+        }
+
+        return '';
     }
 
     function isInCompany(rad) {
@@ -976,7 +1024,7 @@
 
             await Promise.allSettled(tasks);
 
-            buildModalMap(); // ✅ Constrói mapa de modalidades
+            buildModalMap();
             buildGroupBookMap();
             renderTeachers();
             populateGroupSelect();
@@ -998,7 +1046,7 @@
 
             try { await tryFlushPendingQueue(); } catch(e) { console.warn(e); }
 
-            console.log(`✅ Inicialização completa. Turmas: ${allGroupsFromSchedule.size}, RADs: ${remoteRads.length}, Modalidades: ${Object.keys(modalPorAula).length}`);
+            console.log(`✅ Inicialização completa. Turmas: ${allGroupsFromSchedule.size}, RADs: ${remoteRads.length}`);
 
         } catch (err) {
             console.error('❌ Erro na inicialização:', err);
@@ -1088,7 +1136,7 @@
             }
 
             const pendingCount = getPendingQueue().length;
-            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length}\nNext Week: ${nextWeekData.length}\nRADs servidor: ${remoteRads.length}\nModalidades: ${Object.keys(modalPorAula).length}\nPendentes: ${pendingCount}`);
+            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length}\nNext Week: ${nextWeekData.length}\nRADs servidor: ${remoteRads.length}\nModalidades: ${Object.keys(modalIndex.exato).length}\nPendentes: ${pendingCount}`);
         } catch (err) {
             console.error(err);
             alert('❌ Erro ao atualizar.');
@@ -1566,9 +1614,6 @@
         return null;
     }
 
-    // ============================================
-    // NAVEGAÇÃO
-    // ============================================
     function showSelection() {
         document.getElementById('selection-screen').classList.remove('hidden');
         document.getElementById('schedule-screen').classList.add('hidden');
@@ -1634,16 +1679,12 @@
         document.getElementById('btn-fechamento').classList.add('active');
         currentTeacher = null;
         populateFechamentoTeacherFilter();
-        // Se não tem dados ainda, carrega
         if (remoteRads.length === 0) {
             loadHistoryFromServer();
         }
         renderFechamento();
     }
 
-    // ============================================
-    // FECHAMENTO
-    // ============================================
     function loadValoresSalvos() {
         try {
             const saved = localStorage.getItem(VALORES_KEY);
@@ -1688,9 +1729,8 @@
         const valorInc = parseFloat(document.getElementById('valor-inc').value) || 0;
 
         const filtroTeacher = (document.getElementById('fech-teacher').value || '').toUpperCase();
-        const filtroMes = document.getElementById('fech-mes').value; // formato YYYY-MM
+        const filtroMes = document.getElementById('fech-mes').value;
 
-        // Filtra RADs
         let filtered = remoteRads.slice();
         if (filtroTeacher) {
             filtered = filtered.filter(r => (r.teacher || '').toUpperCase() === filtroTeacher);
@@ -1699,7 +1739,6 @@
             filtered = filtered.filter(r => {
                 if (!r.timestamp) return false;
                 const ts = String(r.timestamp);
-                // timestamp pode ser "dd/MM/yyyy HH:mm:ss" ou ISO
                 let ano, mes;
                 const match = ts.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
                 if (match) {
@@ -1716,7 +1755,6 @@
             });
         }
 
-        // Contadores
         let normais = 0, inCompany = 0, noShow = 0, canceladas = 0;
         const listaDetalhada = [];
 
@@ -1745,12 +1783,10 @@
             });
         });
 
-        // Cálculos de valor
         const totalNormal = (normais + noShow) * valorNormal;
         const totalInc = inCompany * valorInc;
         const totalGeral = totalNormal + totalInc;
 
-        // Renderiza cards
         const resumo = document.getElementById('fechamento-resumo');
         resumo.innerHTML = `
             <div class="fechamento-card">
@@ -1780,7 +1816,6 @@
             </div>
         `;
 
-        // Renderiza lista detalhada
         const lista = document.getElementById('fechamento-lista-container');
         if (listaDetalhada.length === 0) {
             lista.innerHTML = `<p style="text-align:center; color: var(--text-sec); padding: 20px;">Nenhum RAD encontrado com esses filtros.</p>`;
@@ -1828,9 +1863,6 @@
         lista.innerHTML = html;
     }
 
-    // ============================================
-    // HISTORY
-    // ============================================
     function clearHistoryFilters() {
         document.getElementById('hist-filter-teacher').value = '';
         document.getElementById('hist-filter-status').value = '';
