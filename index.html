@@ -1088,29 +1088,50 @@
         return [];
     }
 
+    // ============================================
+    // ✅ FIND KIDS BOOK — acha AW/WF em qualquer parte do nome
+    // ============================================
     function findKidsBook(text) {
         if (!text) return null;
         const norm = normalizeGroupKeyAgressive(text);
         if (!norm) return null;
 
         const books = Object.keys(KIDS_BOOK_GIDS);
+
+        // 1️⃣ Match exato
         for (const b of books) {
             if (normalizeGroupKeyAgressive(b) === norm) return b;
         }
 
-        const prefixMatch = norm.match(/^(AW|WF)\b/);
+        // 2️⃣ ✅ Procura AW ou WF em QUALQUER parte da string
+        const prefixMatch = norm.match(/\b(AW|WF)\b/);
         if (prefixMatch) {
             const prefix = prefixMatch[1];
-            const words = norm.split(' ').filter(w => w.length > 1 && w !== prefix);
-            for (const b of books) {
-                const bNorm = normalizeGroupKeyAgressive(b);
-                if (!bNorm.startsWith(prefix + ' ')) continue;
-                const bWords = bNorm.split(' ').filter(w => w.length > 1 && w !== prefix);
-                const common = words.filter(w => bWords.includes(w));
-                if (common.length > 0) return b;
+            const idx = norm.indexOf(prefix);
+            const depois = norm.substring(idx + prefix.length).trim();
+            const palavrasDepois = depois.split(' ').filter(w => w.length > 1);
+
+            if (palavrasDepois.length > 0) {
+                // Tenta match exato de TODAS as palavras
+                for (const b of books) {
+                    const bNorm = normalizeGroupKeyAgressive(b);
+                    if (!bNorm.startsWith(prefix + ' ')) continue;
+                    const bWords = bNorm.split(' ').filter(w => w.length > 1 && w !== prefix);
+                    const bate = palavrasDepois.every(w => bWords.includes(w));
+                    if (bate) return b;
+                }
+                // Tenta match parcial (alguma palavra)
+                for (const b of books) {
+                    const bNorm = normalizeGroupKeyAgressive(b);
+                    if (!bNorm.startsWith(prefix + ' ')) continue;
+                    const bWords = bNorm.split(' ').filter(w => w.length > 1 && w !== prefix);
+                    const common = palavrasDepois.filter(w => bWords.includes(w));
+                    if (common.length > 0) return b;
+                }
             }
         }
 
+        // 3️⃣ Fallback
         const words = norm.split(' ').filter(w => w.length > 1);
         if (words.length >= 2) {
             for (const b of books) {
@@ -1654,9 +1675,6 @@
         });
     }
 
-    // ============================================
-    // ✅ OPEN RAD — Trava se já foi salvo
-    // ============================================
     function openRad(time, group, book, room, day) {
         currentRadClass = { time, group, book, room, day };
         const modal = document.getElementById('rad-modal');
@@ -1681,7 +1699,6 @@
             nextBox.classList.add('hidden');
         }
 
-        // ✅ Verifica se já foi salvo
         const saved = localStorage.getItem(getRadKey(currentRadClass));
         const jaSalvo = !!saved;
 
@@ -1708,15 +1725,11 @@
             renderAttendanceCheckboxes(group, book, []);
         }
 
-        // ✅ Se já salvo, TRAVA tudo
         travarRadForm(jaSalvo);
 
         modal.classList.remove('hidden');
     }
 
-    /**
-     * ✅ Trava/destrava todos os campos do modal RAD
-     */
     function travarRadForm(travar) {
         const modal = document.getElementById('rad-modal');
         const btnSalvar = document.getElementById('btn-salvar-rad');
@@ -1753,9 +1766,6 @@
         }
     }
 
-    // ============================================
-    // ✅ RESET COM SENHA
-    // ============================================
     function resetarRadComSenha() {
         const senha = prompt('🔒 Digite a senha da coordenação para liberar este RAD:');
         if (senha === null) return;
