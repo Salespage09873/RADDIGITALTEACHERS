@@ -21,675 +21,120 @@
             --shadow: 0 2px 8px rgba(0,0,0,0.08);
             --shadow-hover: 0 4px 16px rgba(0,0,0,0.12);
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; overflow-x: hidden; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .hidden { display: none !important; }
-
-        header {
-            text-align: center;
-            padding: 30px 0;
-            border-bottom: 3px solid var(--primary);
-            margin-bottom: 30px;
-            background: linear-gradient(180deg, var(--primary-light) 0%, transparent 100%);
-        }
-
-        h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-
+        header { text-align: center; padding: 30px 0; border-bottom: 3px solid var(--primary); margin-bottom: 30px; background: linear-gradient(180deg, var(--primary-light) 0%, transparent 100%); }
+        h1 { font-size: 2rem; font-weight: 700; letter-spacing: 1px; color: var(--primary); margin-bottom: 10px; }
         h2, h3 { font-weight: 600; letter-spacing: 0.5px; }
-
-        .header-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-top: 15px;
-        }
-
-        button {
-            background: var(--bg-color);
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            padding: 12px 24px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-radius: 6px;
-            margin: 5px;
-            box-shadow: var(--shadow);
-        }
-
-        button:hover {
-            background: var(--primary);
-            color: #fff;
-            box-shadow: var(--shadow-hover);
-            transform: translateY(-1px);
-        }
-
+        .header-buttons { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 15px; }
+        button { background: var(--bg-color); border: 2px solid var(--primary); color: var(--primary); padding: 12px 24px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; border-radius: 6px; margin: 5px; box-shadow: var(--shadow); }
+        button:hover { background: var(--primary); color: #fff; box-shadow: var(--shadow-hover); transform: translateY(-1px); }
         button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
         button.btn-danger { border-color: var(--danger); color: var(--danger); }
         button.btn-danger:hover { background: var(--danger); color: #fff; }
         button.btn-success { border-color: var(--success); color: var(--success); }
         button.btn-success:hover { background: var(--success); color: #fff; }
-
-        .teachers-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-            justify-items: center;
-            margin-top: 20px;
-        }
-
-        .teacher-card {
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            padding: 20px;
-            width: 100%;
-            max-width: 200px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-        }
-
-        .teacher-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-hover);
-            background: var(--primary-light);
-        }
-
-        .teacher-name {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text-main);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .schedule-header {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 20px;
-        }
-
-        .week-selector {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .day-section {
-            margin-bottom: 40px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            overflow: hidden;
-            background: var(--card-bg);
-            box-shadow: var(--shadow);
-        }
-
-        .day-header {
-            background: var(--primary-light);
-            color: var(--primary);
-            padding: 15px 20px;
-            font-weight: 700;
-            text-transform: uppercase;
-            border-bottom: 2px solid var(--primary);
-            font-size: 1.2rem;
-            letter-spacing: 0.5px;
-        }
-
-        .classes-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
-            padding: 20px;
-        }
-
-        .class-card {
-            background: var(--bg-color);
-            border: 2px solid var(--border-color);
-            padding: 18px;
-            border-radius: 6px;
-            position: relative;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow);
-        }
-
+        .teachers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; justify-items: center; margin-top: 20px; }
+        .teacher-card { background: var(--card-bg); border: 2px solid var(--border-color); padding: 20px; width: 100%; max-width: 200px; text-align: center; cursor: pointer; transition: all 0.3s ease; border-radius: 8px; box-shadow: var(--shadow); }
+        .teacher-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow-hover); background: var(--primary-light); }
+        .teacher-name { font-size: 1.1rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px; }
+        .schedule-header { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; border-bottom: 2px solid var(--border-color); padding-bottom: 20px; }
+        .week-selector { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .day-section { margin-bottom: 40px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--card-bg); box-shadow: var(--shadow); }
+        .day-header { background: var(--primary-light); color: var(--primary); padding: 15px 20px; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid var(--primary); font-size: 1.2rem; letter-spacing: 0.5px; }
+        .classes-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; padding: 20px; }
+        .class-card { background: var(--bg-color); border: 2px solid var(--border-color); padding: 18px; border-radius: 6px; position: relative; transition: all 0.3s ease; box-shadow: var(--shadow); }
         .class-card:hover { border-color: var(--primary); box-shadow: var(--shadow-hover); }
-
-        .class-card.rad-saved {
-            border-color: var(--success);
-            background: var(--success-light);
-            opacity: 0.55;
-        }
+        .class-card.rad-saved { border-color: var(--success); background: var(--success-light); opacity: 0.55; }
         .class-card.rad-saved:hover { opacity: 1; }
         .class-card.next-week-card { border-left: 5px solid var(--warning); }
-
-        .class-time {
-            font-size: 1.3rem;
-            color: var(--primary);
-            font-weight: 700;
-            margin-bottom: 8px;
-            display: block;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 8px;
-        }
-
+        .class-time { font-size: 1.3rem; color: var(--primary); font-weight: 700; margin-bottom: 8px; display: block; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; }
         .class-info { font-size: 0.95rem; color: var(--text-sec); margin-bottom: 5px; }
-
-        .badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-right: 5px;
-            margin-bottom: 5px;
-            color: #fff;
-        }
-
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-right: 5px; margin-bottom: 5px; color: #fff; }
         .badge-book { background: var(--warning); color: #000; }
         .badge-room { background: var(--success); }
         .badge-modal { background: var(--primary); }
         .badge-saved { background: var(--success); }
         .badge-next-week { background: var(--warning); color: #000; }
-
-        .action-btn {
-            width: 100%;
-            margin-top: 12px;
-            padding: 10px;
-            font-size: 0.85rem;
-            border: 2px solid var(--border-color);
-            color: var(--text-sec);
-            background: var(--bg-color);
-            border-radius: 6px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .action-btn:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            background: var(--primary-light);
-            transform: none;
-            box-shadow: none;
-        }
-
-        .action-btn.saved {
-            border-color: var(--success);
-            color: #fff;
-            background: var(--success);
-        }
+        .action-btn { width: 100%; margin-top: 12px; padding: 10px; font-size: 0.85rem; border: 2px solid var(--border-color); color: var(--text-sec); background: var(--bg-color); border-radius: 6px; font-weight: 600; transition: all 0.3s ease; cursor: pointer; }
+        .action-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: none; box-shadow: none; }
+        .action-btn.saved { border-color: var(--success); color: #fff; background: var(--success); }
         .action-btn.saved:hover { background: #157347; border-color: #157347; color: #fff; }
-
-        .status-indicator {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
+        .status-indicator { position: absolute; top: 12px; right: 12px; width: 12px; height: 12px; border-radius: 50%; }
         .status-done { background: var(--success); }
         .status-noshow { background: var(--danger); }
         .status-cancel { background: var(--warning); }
-
-        .rad-saved-check {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 1.2rem;
-            color: #fff;
-            background: var(--success);
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid var(--success);
-            box-shadow: 0 0 10px rgba(25, 135, 84, 0.3);
-            z-index: 2;
-        }
-
-        .class-card.rad-saved .rad-saved-check {
-            width: 48px;
-            height: 48px;
-            font-size: 1.9rem;
-            border-width: 3px;
-            box-shadow: 0 0 18px rgba(25, 135, 84, 0.6);
-            animation: pulse-check 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse-check {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(4px);
-        }
-
-        .modal-content {
-            background: var(--bg-color);
-            border: none;
-            border-radius: 12px;
-            padding: 30px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 15px;
-        }
-
+        .rad-saved-check { position: absolute; top: 10px; right: 10px; font-size: 1.2rem; color: #fff; background: var(--success); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--success); box-shadow: 0 0 10px rgba(25, 135, 84, 0.3); z-index: 2; }
+        .class-card.rad-saved .rad-saved-check { width: 48px; height: 48px; font-size: 1.9rem; border-width: 3px; box-shadow: 0 0 18px rgba(25, 135, 84, 0.6); animation: pulse-check 2s ease-in-out infinite; }
+        @keyframes pulse-check { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--bg-color); border: none; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
         .modal-header h3 { color: var(--primary); font-size: 1.2rem; }
-
-        .close-modal {
-            background: none;
-            border: none;
-            color: var(--text-sec);
-            font-size: 1.8rem;
-            cursor: pointer;
-            padding: 0 8px;
-            margin: 0;
-            box-shadow: none;
-            font-weight: 300;
-        }
+        .close-modal { background: none; border: none; color: var(--text-sec); font-size: 1.8rem; cursor: pointer; padding: 0 8px; margin: 0; box-shadow: none; font-weight: 300; }
         .close-modal:hover { color: var(--text-main); background: none; transform: none; }
-
-        .modal-saved-badge {
-            background: var(--success-light);
-            border: 2px solid var(--success);
-            border-radius: 6px;
-            padding: 10px 15px;
-            color: var(--success);
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            background: var(--bg-color);
-            border: 2px solid var(--border-color);
-            color: var(--text-main);
-            padding: 10px 14px;
-            margin-bottom: 12px;
-            border-radius: 6px;
-            font-family: inherit;
-            font-size: 0.95rem;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-dim);
-        }
-
+        .modal-saved-badge { background: var(--success-light); border: 2px solid var(--success); border-radius: 6px; padding: 10px 15px; color: var(--success); font-weight: 600; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        input, select, textarea { width: 100%; background: var(--bg-color); border: 2px solid var(--border-color); color: var(--text-main); padding: 10px 14px; margin-bottom: 12px; border-radius: 6px; font-family: inherit; font-size: 0.95rem; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-dim); }
         textarea { resize: vertical; min-height: 80px; font-family: inherit; }
-
-        label {
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--text-sec);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: block;
-            margin-bottom: 6px;
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            background: var(--card-bg);
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
+        label { font-weight: 600; font-size: 0.85rem; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+        .checkbox-group { display: flex; align-items: center; margin-bottom: 8px; background: var(--card-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); transition: all 0.2s ease; cursor: pointer; }
         .checkbox-group:hover { border-color: var(--primary); background: var(--primary-light); }
-        .checkbox-group input {
-            width: auto;
-            margin-right: 12px;
-            margin-bottom: 0;
-            accent-color: var(--primary);
-            transform: scale(1.1);
-            cursor: pointer;
-        }
-        .checkbox-group label {
-            flex: 1;
-            cursor: pointer;
-            font-size: 0.9rem;
-            color: var(--text-main);
-            text-transform: none;
-            font-weight: 400;
-            margin-bottom: 0;
-        }
+        .checkbox-group input { width: auto; margin-right: 12px; margin-bottom: 0; accent-color: var(--primary); transform: scale(1.1); cursor: pointer; }
+        .checkbox-group label { flex: 1; cursor: pointer; font-size: 0.9rem; color: var(--text-main); text-transform: none; font-weight: 400; margin-bottom: 0; }
         .checkbox-group.checked { background: var(--success-light); border-color: var(--success); }
         .checkbox-group.checked label { color: var(--success); font-weight: 600; }
-
-        .checkbox-group .done-badge {
-            display: inline-block;
-            background: var(--success);
-            color: #fff;
-            font-size: 0.65rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-left: 8px;
-            font-weight: 700;
-        }
-        .checkbox-group .next-badge {
-            display: inline-block;
-            background: var(--warning);
-            color: #000;
-            font-size: 0.65rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-left: 8px;
-            font-weight: 700;
-        }
-
-        .attendance-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 0.85rem;
-            background: var(--bg-color);
-            border-radius: 6px;
-            overflow: hidden;
-        }
-        .attendance-table th, .attendance-table td {
-            border: 1px solid var(--border-color);
-            padding: 10px 12px;
-            text-align: center;
-        }
-        .attendance-table th {
-            background: var(--primary-light);
-            color: var(--primary);
-            font-weight: 700;
-        }
-
-        #loading-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-color);
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .loader {
-            width: 50px;
-            height: 50px;
-            border: 4px solid var(--border-color);
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
+        .checkbox-group .done-badge { display: inline-block; background: var(--success); color: #fff; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 700; }
+        .checkbox-group .next-badge { display: inline-block; background: var(--warning); color: #000; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 700; }
+        .attendance-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; background: var(--bg-color); border-radius: 6px; overflow: hidden; }
+        .attendance-table th, .attendance-table td { border: 1px solid var(--border-color); padding: 10px 12px; text-align: center; }
+        .attendance-table th { background: var(--primary-light); color: var(--primary); font-weight: 700; }
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .loader { width: 50px; height: 50px; border: 4px solid var(--border-color); border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #loading-screen p {
-            margin-top: 20px;
-            color: var(--primary);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        #loading-msg {
-            font-size: 0.75rem !important;
-            color: var(--text-sec) !important;
-            text-transform: none !important;
-            letter-spacing: 0 !important;
-            margin-top: 8px !important;
-        }
-
-        .observations-box {
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 6px;
-            padding: 12px;
-            margin-bottom: 15px;
-        }
+        #loading-screen p { margin-top: 20px; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        #loading-msg { font-size: 0.75rem !important; color: var(--text-sec) !important; text-transform: none !important; letter-spacing: 0 !important; margin-top: 8px !important; }
+        .observations-box { background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 6px; padding: 12px; margin-bottom: 15px; }
         .observations-box textarea { margin-bottom: 0; border: 1px solid var(--border-color); }
         .observations-box textarea:focus { border-color: var(--primary); }
-
-        .group-lesson-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .group-card {
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow);
-            text-align: center;
-        }
-        .group-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-hover);
-            background: var(--primary-light);
-        }
-        .group-card h3 {
-            color: var(--primary);
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            word-break: break-word;
-        }
+        .group-lesson-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
+        .group-card { background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 8px; padding: 20px; cursor: pointer; transition: all 0.3s ease; box-shadow: var(--shadow); text-align: center; }
+        .group-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow-hover); background: var(--primary-light); }
+        .group-card h3 { color: var(--primary); font-size: 1.2rem; margin-bottom: 10px; word-break: break-word; }
         .group-card .book-info { font-size: 0.9rem; color: var(--text-sec); margin-bottom: 8px; }
         .group-card .progress { font-size: 0.9rem; color: var(--text-sec); }
-        .group-card .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: var(--border-color);
-            border-radius: 4px;
-            margin-top: 10px;
-            overflow: hidden;
-        }
-        .group-card .progress-bar .fill {
-            height: 100%;
-            background: var(--success);
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-
-        .lesson-item {
-            display: flex;
-            align-items: center;
-            padding: 10px 15px;
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            margin-bottom: 8px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
+        .group-card .progress-bar { width: 100%; height: 8px; background: var(--border-color); border-radius: 4px; margin-top: 10px; overflow: hidden; }
+        .group-card .progress-bar .fill { height: 100%; background: var(--success); border-radius: 4px; transition: width 0.3s ease; }
+        .lesson-item { display: flex; align-items: center; padding: 10px 15px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 8px; transition: all 0.2s ease; cursor: pointer; }
         .lesson-item:hover { border-color: var(--primary); background: var(--primary-light); }
-        .lesson-item input[type="checkbox"] {
-            width: auto;
-            margin-right: 15px;
-            margin-bottom: 0;
-            accent-color: var(--primary);
-            transform: scale(1.2);
-            cursor: pointer;
-        }
+        .lesson-item input[type="checkbox"] { width: auto; margin-right: 15px; margin-bottom: 0; accent-color: var(--primary); transform: scale(1.2); cursor: pointer; }
         .lesson-item .lesson-label { flex: 1; font-size: 0.95rem; cursor: pointer; }
         .lesson-item .lesson-date { font-size: 0.8rem; color: var(--text-sec); margin-left: 10px; }
         .lesson-item .lesson-checked { color: var(--success); font-weight: 600; }
-
         .lesson-item.revision { background: #fff3cd; border-color: var(--warning); }
-        .lesson-item .revision-badge {
-            background: var(--warning);
-            color: #000;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            margin-left: 10px;
-        }
+        .lesson-item .revision-badge { background: var(--warning); color: #000; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; margin-left: 10px; }
         .lesson-item.test { background: #f8d7da; border-color: var(--danger); }
-        .lesson-item .test-badge {
-            background: var(--danger);
-            color: #fff;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            margin-left: 10px;
-        }
+        .lesson-item .test-badge { background: var(--danger); color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; margin-left: 10px; }
         .lesson-item.checked { background: var(--success-light); border-color: var(--success); }
         .lesson-item.checked .lesson-label { color: var(--success); font-weight: 600; }
-        .lesson-item.next {
-            border: 3px solid var(--warning);
-            background: #fff8e1;
-            box-shadow: 0 0 0 3px rgba(255,193,7,0.25);
-        }
-        .lesson-item .next-label-badge {
-            background: var(--warning);
-            color: #000;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            margin-left: 10px;
-        }
-
+        .lesson-item.next { border: 3px solid var(--warning); background: #fff8e1; box-shadow: 0 0 0 3px rgba(255,193,7,0.25); }
+        .lesson-item .next-label-badge { background: var(--warning); color: #000; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; margin-left: 10px; }
         .group-lessons-container { max-height: 500px; overflow-y: auto; padding: 5px; }
-        .group-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--border-color);
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+        .group-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color); flex-wrap: wrap; gap: 10px; }
         .group-header h2 { color: var(--primary); word-break: break-word; }
-        .group-header .book-badge {
-            background: var(--primary-light);
-            color: var(--primary);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
+        .group-header .book-badge { background: var(--primary-light); color: var(--primary); padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; }
         .refresh-btn { border-color: var(--success) !important; color: var(--success) !important; }
         .refresh-btn:hover { background: var(--success) !important; color: #fff !important; }
-
-        .chain-info {
-            font-size: 0.8rem;
-            color: var(--text-sec);
-            font-style: italic;
-            margin-top: 5px;
-            text-align: center;
-        }
-
-        .error-banner {
-            background: #fff3cd;
-            border: 2px solid var(--warning);
-            border-radius: 8px;
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            color: #856404;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .next-lesson-box {
-            background: var(--primary-light);
-            border-left: 5px solid var(--primary);
-            border-radius: 6px;
-            padding: 12px 16px;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-        }
+        .chain-info { font-size: 0.8rem; color: var(--text-sec); font-style: italic; margin-top: 5px; text-align: center; }
+        .error-banner { background: #fff3cd; border: 2px solid var(--warning); border-radius: 8px; padding: 15px 20px; margin-bottom: 20px; color: #856404; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .next-lesson-box { background: var(--primary-light); border-left: 5px solid var(--primary); border-radius: 6px; padding: 12px 16px; margin-bottom: 15px; font-size: 0.9rem; }
         .next-lesson-box strong { color: var(--primary); }
-
-        .sync-status {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--card-bg);
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            padding: 10px 16px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--primary);
-            box-shadow: var(--shadow-hover);
-            z-index: 1500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            max-width: 300px;
-        }
+        .sync-status { position: fixed; bottom: 20px; right: 20px; background: var(--card-bg); border: 2px solid var(--primary); border-radius: 8px; padding: 10px 16px; font-size: 0.85rem; font-weight: 600; color: var(--primary); box-shadow: var(--shadow-hover); z-index: 1500; display: flex; align-items: center; gap: 8px; max-width: 300px; }
         .sync-status.success { border-color: var(--success); color: var(--success); }
         .sync-status.error { border-color: var(--danger); color: var(--danger); }
         .sync-status.warning { border-color: var(--warning); color: #856404; }
-
         @media (max-width: 600px) {
             .teachers-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
             .classes-list { grid-template-columns: 1fr; padding: 15px; }
@@ -698,7 +143,6 @@
             .header-buttons { flex-direction: column; align-items: center; }
             .sync-status { bottom: 10px; right: 10px; font-size: 0.75rem; }
         }
-
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--card-bg); }
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
@@ -1063,14 +507,32 @@
 
     // ============================================
     // ✅ ENVIO DE PROGRESSO AO SERVIDOR (GLOBAL)
+    // Aceita tanto { lessonId: {completed, date} } quanto { lessonId: true }
     // ============================================
     async function sendProgressToServer(group, lessonsMap) {
         try {
+            // Normaliza: garante que cada lesson tenha {completed, date}
+            const normalized = {};
+            Object.keys(lessonsMap || {}).forEach(lid => {
+                const info = lessonsMap[lid];
+                if (info === true) {
+                    normalized[lid] = { completed: true, date: '' };
+                } else if (info === false) {
+                    normalized[lid] = { completed: false, date: '' };
+                } else if (info && typeof info === 'object') {
+                    normalized[lid] = {
+                        completed: info.completed === true,
+                        date: info.date || ''
+                    };
+                }
+            });
+
             const payload = {
                 action: 'progress',
                 group: group,
-                lessons: lessonsMap
+                lessons: normalized
             };
+
             const resp = await fetch(API_URL + '?action=progress', {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -1078,10 +540,10 @@
             });
             const data = await resp.json();
             if (data && data.ok) {
-                console.log('✅ Progresso enviado ao servidor:', group);
+                console.log('✅ Progresso enviado ao servidor:', group, '(', Object.keys(normalized).length, 'lessons )');
                 return true;
             }
-            console.warn('❌ Resposta:', data);
+            console.warn('❌ Resposta do servidor:', data);
         } catch (e) {
             console.warn('❌ Falha ao enviar progresso:', e.message);
         }
@@ -1174,7 +636,6 @@
     }
 
     async function reallySendToServer(radData) {
-        // Tentativa 1: POST JSON normal
         try {
             const res = await fetch(API_URL, {
                 method: 'POST',
@@ -1193,7 +654,6 @@
             console.warn('Tentativa 1 (JSON) falhou:', e.message);
         }
 
-        // Tentativa 2: form-urlencoded no-cors
         try {
             const params = new URLSearchParams();
             params.append('payload', JSON.stringify(radData));
@@ -1210,7 +670,6 @@
             console.warn('Tentativa 2 (form) falhou:', e.message);
         }
 
-        // Tentativa 3: text/plain no-cors
         try {
             await fetch(API_URL, {
                 method: 'POST',
@@ -1838,6 +1297,12 @@
         return -1;
     }
 
+    // ============================================
+    // ✅ APLICA TOGGLE (marca/desmarca em cadeia)
+    // Agora ENVIA o mapa ATUALIZADO pro servidor.
+    // Lessons que ficaram com completed=false NÃO vão no mapa,
+    // e o Apps Script as REMOVE da planilha.
+    // ============================================
     function applyChainToggle(group, clickedIndex, completed) {
         if (!currentLessonProgress[group]) currentLessonProgress[group] = [];
         const lessons = getGroupLessons(group);
@@ -1864,10 +1329,13 @@
         try { if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) renderGroupLessonPlans(); } catch(e) {}
         try { if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule(); } catch(e) {}
 
-        // ✅ Envia o progresso ao servidor (todos veem)
+        // ✅ Monta o mapa APENAS com lessons completed=true
+        // As false são omitidas → o Apps Script remove essas linhas
         const lessonsMap = {};
         (currentLessonProgress[group] || []).forEach(p => {
-            lessonsMap[p.lesson] = { completed: p.completed, date: p.date || '' };
+            if (p.completed === true) {
+                lessonsMap[p.lesson] = { completed: true, date: p.date || '' };
+            }
         });
         sendProgressToServer(group, lessonsMap);
     }
@@ -2459,9 +1927,12 @@
     function saveLessonProgress() {
         persistLessonProgress();
         if (currentGroup) {
+            // ✅ Envia APENAS as completed=true (as outras o Apps Script remove)
             const lessonsMap = {};
             (currentLessonProgress[currentGroup] || []).forEach(p => {
-                lessonsMap[p.lesson] = { completed: p.completed, date: p.date || '' };
+                if (p.completed === true) {
+                    lessonsMap[p.lesson] = { completed: true, date: p.date || '' };
+                }
             });
             sendProgressToServer(currentGroup, lessonsMap);
         }
@@ -2607,14 +2078,14 @@
         if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule();
     }
 
-    // ✅ RESET — agora avisa o servidor para apagar TUDO dessa turma
+    // ✅ RESET — envia {} pro servidor apagar TODAS as linhas dessa turma
     function resetLessonProgress() {
         if(!currentGroup) return;
         if(confirm(`Resetar progresso da turma ${currentGroup}?`)) {
             currentLessonProgress[currentGroup] = [];
             persistLessonProgress();
 
-            // ✅ Avisa o servidor para apagar TODAS as lessons dessa turma
+            // ✅ Envia mapa VAZIO → Apps Script remove todas as linhas da turma
             sendProgressToServer(currentGroup, {});
 
             if(currentGroup) openGroupDetail(currentGroup);
