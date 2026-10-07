@@ -32,6 +32,7 @@
         button { background: var(--bg-color); border: 2px solid var(--primary); color: var(--primary); padding: 12px 24px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; border-radius: 6px; margin: 5px; box-shadow: var(--shadow); }
         button:hover { background: var(--primary); color: #fff; box-shadow: var(--shadow-hover); transform: translateY(-1px); }
         button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
         button.btn-danger { border-color: var(--danger); color: var(--danger); }
         button.btn-danger:hover { background: var(--danger); color: #fff; }
         button.btn-success { border-color: var(--success); color: var(--success); }
@@ -78,11 +79,13 @@
         .modal-saved-badge { background: var(--success-light); border: 2px solid var(--success); border-radius: 6px; padding: 10px 15px; color: var(--success); font-weight: 600; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
         input, select, textarea { width: 100%; background: var(--bg-color); border: 2px solid var(--border-color); color: var(--text-main); padding: 10px 14px; margin-bottom: 12px; border-radius: 6px; font-family: inherit; font-size: 0.95rem; }
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-dim); }
+        input:disabled, select:disabled, textarea:disabled { background: #e9ecef; color: #6c757d; cursor: not-allowed; opacity: 0.8; }
         textarea { resize: vertical; min-height: 80px; font-family: inherit; }
         label { font-weight: 600; font-size: 0.85rem; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
         .checkbox-group { display: flex; align-items: center; margin-bottom: 8px; background: var(--card-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); transition: all 0.2s ease; cursor: pointer; }
         .checkbox-group:hover { border-color: var(--primary); background: var(--primary-light); }
         .checkbox-group input { width: auto; margin-right: 12px; margin-bottom: 0; accent-color: var(--primary); transform: scale(1.1); cursor: pointer; }
+        .checkbox-group input:disabled { cursor: not-allowed; }
         .checkbox-group label { flex: 1; cursor: pointer; font-size: 0.9rem; color: var(--text-main); text-transform: none; font-weight: 400; margin-bottom: 0; }
         .checkbox-group.checked { background: var(--success-light); border-color: var(--success); }
         .checkbox-group.checked label { color: var(--success); font-weight: 600; }
@@ -274,7 +277,10 @@
                 <button id="btn-salvar-rad" onclick="saveRad()" class="btn-success" style="width: 100%; background: var(--success); color: #fff; border-color: var(--success);">
                     💾 SALVAR RAD
                 </button>
-                <button onclick="clearRad()" class="btn-danger" style="width: 100%; margin-top: 8px; border-color: var(--danger); color: var(--danger);">
+                <button id="btn-resetar-rad" onclick="resetarRadComSenha()" class="btn-danger hidden" style="width: 100%; margin-top: 8px; border-color: var(--danger); color: var(--danger);">
+                    🔓 RESETAR RAD
+                </button>
+                <button id="btn-limpar-rad" onclick="clearRad()" class="btn-danger" style="width: 100%; margin-top: 8px; border-color: var(--danger); color: var(--danger);">
                     🗑️ LIMPAR DADOS
                 </button>
             </div>
@@ -321,6 +327,7 @@
     // ============================================
     const API_URL = 'https://script.google.com/macros/s/AKfycbyka0_cGN6B68Inu2zYr950TdeHTGTL5fT4rfYvFwtIQw9jm2_sfsszE9C06oBovMWg/exec';
     const PENDING_QUEUE_KEY = 'radPendingQueue';
+    const SENHA_RESET = 'coordenacaoml';
 
     let remoteRads = [];
 
@@ -1647,6 +1654,9 @@
         });
     }
 
+    // ============================================
+    // ✅ OPEN RAD — Trava se já foi salvo
+    // ============================================
     function openRad(time, group, book, room, day) {
         currentRadClass = { time, group, book, room, day };
         const modal = document.getElementById('rad-modal');
@@ -1654,15 +1664,6 @@
         const savedBadge = document.getElementById('rad-saved-badge');
         const nextBox = document.getElementById('rad-next-lesson');
 
-        // ✅ Reabilita o botão ao abrir o modal
-        const btn = document.getElementById('btn-salvar-rad');
-        if (btn) {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            btn.style.cursor = 'pointer';
-            btn.textContent = '💾 SALVAR RAD';
-        }
-        
         infoDiv.innerHTML = `
             <strong style="color: var(--primary);">${day} - ${time}</strong><br>
             <span style="color: var(--text-sec);">Turma: ${group} | Book: ${book} | Sala: ${room}</span>
@@ -1680,13 +1681,16 @@
             nextBox.classList.add('hidden');
         }
 
+        // ✅ Verifica se já foi salvo
+        const saved = localStorage.getItem(getRadKey(currentRadClass));
+        const jaSalvo = !!saved;
+
         document.getElementById('rad-status').value = '';
         document.getElementById('rad-observations').value = '';
         savedBadge.classList.add('hidden');
         toggleRadFields();
-        
-        const saved = localStorage.getItem(getRadKey(currentRadClass));
-        if(saved) {
+
+        if (saved) {
             try {
                 const data = JSON.parse(saved);
                 savedBadge.classList.remove('hidden');
@@ -1704,7 +1708,66 @@
             renderAttendanceCheckboxes(group, book, []);
         }
 
+        // ✅ Se já salvo, TRAVA tudo
+        travarRadForm(jaSalvo);
+
         modal.classList.remove('hidden');
+    }
+
+    /**
+     * ✅ Trava/destrava todos os campos do modal RAD
+     */
+    function travarRadForm(travar) {
+        const modal = document.getElementById('rad-modal');
+        const btnSalvar = document.getElementById('btn-salvar-rad');
+        const btnReset = document.getElementById('btn-resetar-rad');
+        const btnLimpar = document.getElementById('btn-limpar-rad');
+        const statusSel = document.getElementById('rad-status');
+        const obsText = document.getElementById('rad-observations');
+
+        if (statusSel) statusSel.disabled = travar;
+        if (obsText) obsText.disabled = travar;
+
+        modal.querySelectorAll('#lesson-plan-container input[type="checkbox"]').forEach(cb => {
+            cb.disabled = travar;
+        });
+
+        modal.querySelectorAll('#attendance-container input[type="checkbox"]').forEach(cb => {
+            cb.disabled = travar;
+        });
+
+        if (btnSalvar) btnSalvar.classList.toggle('hidden', travar);
+        if (btnLimpar) btnLimpar.classList.toggle('hidden', travar);
+        if (btnReset) btnReset.classList.toggle('hidden', !travar);
+
+        if (travar) {
+            modal.querySelectorAll('#lesson-plan-container .checkbox-group, #attendance-container .checkbox-group').forEach(el => {
+                el.style.opacity = '0.7';
+                el.style.pointerEvents = 'none';
+            });
+        } else {
+            modal.querySelectorAll('#lesson-plan-container .checkbox-group, #attendance-container .checkbox-group').forEach(el => {
+                el.style.opacity = '1';
+                el.style.pointerEvents = 'auto';
+            });
+        }
+    }
+
+    // ============================================
+    // ✅ RESET COM SENHA
+    // ============================================
+    function resetarRadComSenha() {
+        const senha = prompt('🔒 Digite a senha da coordenação para liberar este RAD:');
+        if (senha === null) return;
+
+        if (senha !== SENHA_RESET) {
+            alert('❌ Senha incorreta. O RAD continua bloqueado.');
+            return;
+        }
+
+        travarRadForm(false);
+        document.getElementById('rad-saved-badge').classList.add('hidden');
+        console.log('🔓 RAD liberado para edição:', getRadKey(currentRadClass));
     }
 
     function toggleRadFields() {
@@ -1810,16 +1873,12 @@
         });
     }
 
-    // ============================================
-    // ✅ SAVE RAD — com bloqueio do botão
-    // ============================================
     async function saveRad() {
         const status = document.getElementById('rad-status').value;
         if(!status) { alert('Selecione o status da aula!'); return; }
 
-        // ✅ Bloqueia o botão IMEDIATAMENTE
         const btn = document.getElementById('btn-salvar-rad');
-        if (btn && btn.disabled) return; // já está salvando
+        if (btn && btn.disabled) return;
         if (btn) {
             btn.disabled = true;
             btn.style.opacity = '0.5';
@@ -1862,7 +1921,6 @@
             closeModal('rad-modal');
             renderSchedule();
         } finally {
-            // ✅ Reabilita quando terminar (ou mesmo se der erro)
             if (btn) {
                 btn.disabled = false;
                 btn.style.opacity = '1';
