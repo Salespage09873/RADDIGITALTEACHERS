@@ -1089,7 +1089,7 @@
     }
 
     // ============================================
-    // ✅ FIND KIDS BOOK — acha AW/WF em qualquer parte do nome
+    // ✅ FIND KIDS BOOK
     // ============================================
     function findKidsBook(text) {
         if (!text) return null;
@@ -1103,7 +1103,7 @@
             if (normalizeGroupKeyAgressive(b) === norm) return b;
         }
 
-        // 2️⃣ ✅ Procura AW ou WF em QUALQUER parte da string
+        // 2️⃣ Procura AW ou WF em QUALQUER parte da string
         const prefixMatch = norm.match(/\b(AW|WF)\b/);
         if (prefixMatch) {
             const prefix = prefixMatch[1];
@@ -1112,7 +1112,7 @@
             const palavrasDepois = depois.split(' ').filter(w => w.length > 1);
 
             if (palavrasDepois.length > 0) {
-                // Tenta match exato de TODAS as palavras
+                // Match exato de todas as palavras
                 for (const b of books) {
                     const bNorm = normalizeGroupKeyAgressive(b);
                     if (!bNorm.startsWith(prefix + ' ')) continue;
@@ -1120,7 +1120,7 @@
                     const bate = palavrasDepois.every(w => bWords.includes(w));
                     if (bate) return b;
                 }
-                // Tenta match parcial (alguma palavra)
+                // Match parcial (alguma palavra)
                 for (const b of books) {
                     const bNorm = normalizeGroupKeyAgressive(b);
                     if (!bNorm.startsWith(prefix + ' ')) continue;
@@ -1131,7 +1131,10 @@
             }
         }
 
-        // 3️⃣ Fallback
+        // 3️⃣ Se for só "AW" ou "WF", não retorna nada
+        if (norm === 'AW' || norm === 'WF') return null;
+
+        // 4️⃣ Fallback genérico
         const words = norm.split(' ').filter(w => w.length > 1);
         if (words.length >= 2) {
             for (const b of books) {
@@ -1142,18 +1145,45 @@
         return null;
     }
 
+    // ============================================
+    // ✅ BUILD GROUP BOOK MAP
+    // ============================================
     function buildGroupBookMap() {
         allGroupsFromSchedule.forEach((info) => {
             const group = info.display;
-            if (!info.book) return;
+            const bookStr = (info.book || '').trim();
+            if (!bookStr) return;
 
-            const kids = findKidsBook(info.book);
+            // Tenta book + group juntos
+            const combinado = (bookStr + ' ' + group).trim();
+            let kids = findKidsBook(combinado);
+            if (!kids) kids = findKidsBook(bookStr);
+
             if (kids) {
                 groupBookMap[group] = kids;
                 return;
             }
 
-            const bookKey = info.book.toUpperCase().trim();
+            // Se for só AW/WF, procura a palavra-chave no GROUP
+            if (bookStr.toUpperCase() === 'AW' || bookStr.toUpperCase() === 'WF') {
+                const prefix = bookStr.toUpperCase();
+                const groupNorm = normalizeGroupKeyAgressive(group);
+                const groupWords = groupNorm.split(' ').filter(w => w.length > 2);
+                const books = Object.keys(KIDS_BOOK_GIDS);
+                for (const b of books) {
+                    const bNorm = normalizeGroupKeyAgressive(b);
+                    if (!bNorm.startsWith(prefix + ' ')) continue;
+                    const bWords = bNorm.split(' ').filter(w => w.length > 1 && w !== prefix);
+                    const common = groupWords.filter(w => bWords.includes(w));
+                    if (common.length > 0) {
+                        groupBookMap[group] = b;
+                        return;
+                    }
+                }
+            }
+
+            // Tenta Book N
+            const bookKey = bookStr.toUpperCase().trim();
             const bookNames = Object.keys(BOOK_STRUCTURE);
             let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
             if (!foundBook) {
@@ -1178,34 +1208,67 @@
         return null;
     }
 
+    // ============================================
+    // ✅ GET BOOK FOR GROUP
+    // ============================================
     function getBookForGroup(group) {
         if (!group) return 'Book 1';
 
         const normKey = normalizeGroupKey(group);
         const info = allGroupsFromSchedule.get(normKey);
 
-        if (info && info.book) {
-            const kids = findKidsBook(info.book);
+        if (info) {
+            const bookStr = (info.book || '').trim();
+            const groupStr = group;
+
+            // Tenta book + group juntos
+            const combinado = (bookStr + ' ' + groupStr).trim();
+            let kids = findKidsBook(combinado);
+            if (!kids && bookStr) kids = findKidsBook(bookStr);
+
             if (kids) {
                 groupBookMap[group] = kids;
                 return kids;
             }
-            const bookKey = info.book.toUpperCase().trim();
-            const bookNames = Object.keys(BOOK_STRUCTURE);
-            let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
-            if (!foundBook) {
-                const numMatch = bookKey.match(/\d+/);
-                if (numMatch) {
-                    const num = parseInt(numMatch[0]);
-                    if (num >= 1 && num <= 10) foundBook = `Book ${num}`;
+
+            // Se for só AW/WF, procura a palavra-chave no GROUP
+            if (bookStr.toUpperCase() === 'AW' || bookStr.toUpperCase() === 'WF') {
+                const prefix = bookStr.toUpperCase();
+                const groupNorm = normalizeGroupKeyAgressive(groupStr);
+                const groupWords = groupNorm.split(' ').filter(w => w.length > 2);
+                const books = Object.keys(KIDS_BOOK_GIDS);
+                for (const b of books) {
+                    const bNorm = normalizeGroupKeyAgressive(b);
+                    if (!bNorm.startsWith(prefix + ' ')) continue;
+                    const bWords = bNorm.split(' ').filter(w => w.length > 1 && w !== prefix);
+                    const common = groupWords.filter(w => bWords.includes(w));
+                    if (common.length > 0) {
+                        groupBookMap[group] = b;
+                        return b;
+                    }
                 }
             }
-            if (foundBook) {
-                groupBookMap[group] = foundBook;
-                return foundBook;
+
+            // Tenta Book N
+            if (bookStr) {
+                const bookKey = bookStr.toUpperCase().trim();
+                const bookNames = Object.keys(BOOK_STRUCTURE);
+                let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
+                if (!foundBook) {
+                    const numMatch = bookKey.match(/\d+/);
+                    if (numMatch) {
+                        const num = parseInt(numMatch[0]);
+                        if (num >= 1 && num <= 10) foundBook = `Book ${num}`;
+                    }
+                }
+                if (foundBook) {
+                    groupBookMap[group] = foundBook;
+                    return foundBook;
+                }
             }
         }
 
+        // Fallback final: tenta pelo nome do grupo
         const kidsFromGroup = findKidsBook(group);
         if (kidsFromGroup) { groupBookMap[group] = kidsFromGroup; return kidsFromGroup; }
 
