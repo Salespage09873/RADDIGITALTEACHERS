@@ -415,9 +415,6 @@
                 <button id="btn-salvar-rad" onclick="saveRad()" class="btn-success" style="width: 100%; background: var(--success); color: #fff; border-color: var(--success);">
                     💾 SALVAR RAD
                 </button>
-                <button id="btn-resetar-rad" onclick="resetarRadComSenha()" class="btn-danger hidden" style="width: 100%; margin-top: 8px; border-color: var(--danger); color: var(--danger);">
-                    🔓 RESETAR RAD
-                </button>
                 <button id="btn-limpar-rad" onclick="clearRad()" class="btn-danger" style="width: 100%; margin-top: 8px; border-color: var(--danger); color: var(--danger);">
                     🗑️ LIMPAR DADOS
                 </button>
@@ -465,7 +462,6 @@
     // ============================================
     const API_URL = 'https://script.google.com/macros/s/AKfycbyka0_cGN6B68Inu2zYr950TdeHTGTL5fT4rfYvFwtIQw9jm2_sfsszE9C06oBovMWg/exec';
     const PENDING_QUEUE_KEY = 'radPendingQueue';
-    const SENHA_RESET = 'coordenacaoml';
     const VALORES_KEY = 'fechamentoValores';
 
     let remoteRads = [];
@@ -1567,9 +1563,6 @@
         sendProgressToServer(group, lessonsMap);
     }
 
-    // ============================================
-    // ✅ DATA DA AULA NA SEMANA EXIBIDA
-    // ============================================
     function getDataDaAulaNaSemana(cls, weekName) {
         const diasSemana = { 'Domingo': 0, 'Segunda': 1, 'Terça': 2, 'Quarta': 3, 'Quinta': 4, 'Sexta': 5, 'Sábado': 6 };
         const dia = diasSemana[cls.dayName];
@@ -2234,23 +2227,22 @@
             nextBox.classList.add('hidden');
         }
 
-        const saved = localStorage.getItem(getRadKey(currentRadClass));
-        const jaSalvo = !!saved;
-
         document.getElementById('rad-status').value = '';
         document.getElementById('rad-observations').value = '';
         savedBadge.classList.add('hidden');
         toggleRadFields();
 
+        const saved = getRadSavedData(currentRadClass);
         if (saved) {
             try {
-                const data = JSON.parse(saved);
-                savedBadge.classList.remove('hidden');
-                document.getElementById('rad-status').value = data.status;
-                document.getElementById('rad-observations').value = data.observations || '';
+                if (saved.status) {
+                    savedBadge.classList.remove('hidden');
+                    document.getElementById('rad-status').value = saved.status;
+                }
+                document.getElementById('rad-observations').value = saved.observations || '';
                 toggleRadFields();
                 renderLessonPlanCheckboxes(group);
-                renderAttendanceCheckboxes(group, book, data.attendance || []);
+                renderAttendanceCheckboxes(group, book, saved.attendance || []);
             } catch(e) {
                 renderLessonPlanCheckboxes(group);
                 renderAttendanceCheckboxes(group, book, []);
@@ -2260,59 +2252,17 @@
             renderAttendanceCheckboxes(group, book, []);
         }
 
-        travarRadForm(jaSalvo);
-
         modal.classList.remove('hidden');
     }
 
     function travarRadForm(travar) {
-        const modal = document.getElementById('rad-modal');
-        const btnSalvar = document.getElementById('btn-salvar-rad');
-        const btnReset = document.getElementById('btn-resetar-rad');
-        const btnLimpar = document.getElementById('btn-limpar-rad');
-        const statusSel = document.getElementById('rad-status');
-        const obsText = document.getElementById('rad-observations');
-
-        if (statusSel) statusSel.disabled = travar;
-        if (obsText) obsText.disabled = travar;
-
-        modal.querySelectorAll('#lesson-plan-container input[type="checkbox"]').forEach(cb => {
-            cb.disabled = travar;
-        });
-
-        modal.querySelectorAll('#attendance-container input[type="checkbox"]').forEach(cb => {
-            cb.disabled = travar;
-        });
-
-        if (btnSalvar) btnSalvar.classList.toggle('hidden', travar);
-        if (btnLimpar) btnLimpar.classList.toggle('hidden', travar);
-        if (btnReset) btnReset.classList.toggle('hidden', !travar);
-
-        if (travar) {
-            modal.querySelectorAll('#lesson-plan-container .checkbox-group, #attendance-container .checkbox-group').forEach(el => {
-                el.style.opacity = '0.7';
-                el.style.pointerEvents = 'none';
-            });
-        } else {
-            modal.querySelectorAll('#lesson-plan-container .checkbox-group, #attendance-container .checkbox-group').forEach(el => {
-                el.style.opacity = '1';
-                el.style.pointerEvents = 'auto';
-            });
-        }
+        // ✅ Removido — teacher pode editar livremente
+        return;
     }
 
     function resetarRadComSenha() {
-        const senha = prompt('🔒 Digite a senha da coordenação para liberar este RAD:');
-        if (senha === null) return;
-
-        if (senha !== SENHA_RESET) {
-            alert('❌ Senha incorreta. O RAD continua bloqueado.');
-            return;
-        }
-
-        travarRadForm(false);
-        document.getElementById('rad-saved-badge').classList.add('hidden');
-        console.log('🔓 RAD liberado para edição:', getRadKey(currentRadClass));
+        // ✅ Removido
+        return;
     }
 
     function toggleRadFields() {
@@ -2418,9 +2368,6 @@
         });
     }
 
-    // ============================================
-    // ✅ SAVE RAD — sem trava, sem duplicar
-    // ============================================
     async function saveRad() {
         const status = document.getElementById('rad-status').value;
         if(!status) { alert('Selecione o status da aula!'); return; }
@@ -2454,7 +2401,6 @@
 
         localStorage.setItem(getRadKey(currentRadClass), JSON.stringify(data));
 
-        // ✅ Envia sem bloquear. Apps Script só atualiza a mesma linha.
         const ok = await sendRadToServer(data);
 
         if (ok) {
