@@ -574,7 +574,6 @@
     let groupBookMap = {};
     let currentRadClass = null;
 
-    // ✅ Índice global de modalidades (cascata)
     let modalIndex = {
         exato: {},
         semDia: {},
@@ -866,9 +865,6 @@
         return lessons;
     }
 
-    // ============================================
-    // ✅ MAPA DE MODALIDADES (cascata robusta)
-    // ============================================
     function buildModalMap() {
         modalIndex = { exato: {}, semDia: {}, semTeacher: {}, grupo: {} };
         const allAulas = [...scheduleData, ...nextWeekData];
@@ -895,31 +891,23 @@
         console.log(`🗺️ Mapa de modalidades: exato=${Object.keys(modalIndex.exato).length}, semDia=${Object.keys(modalIndex.semDia).length}, semTeacher=${Object.keys(modalIndex.semTeacher).length}, grupo=${Object.keys(modalIndex.grupo).length}`);
     }
 
-    // ============================================
-    // ✅ BUSCA A MODALIDADE DO RAD (cascata)
-    // ============================================
     function getModalDoRad(rad) {
         const teacher = (rad.teacher || '').toUpperCase().trim();
         const day = (rad.day || '').toUpperCase().trim();
         const time = (rad.time || '').trim();
         const group = normalizeGroupKeyAgressive(rad.group || '');
 
-        // 1️⃣ Tentativa exata
         const kExato = `${teacher}|${day}|${time}|${group}`;
         if (modalIndex.exato[kExato]) return modalIndex.exato[kExato];
 
-        // 2️⃣ Sem dia
         const kSemDia = `${teacher}|${time}|${group}`;
         if (modalIndex.semDia[kSemDia]) return modalIndex.semDia[kSemDia];
 
-        // 3️⃣ Sem teacher
         const kSemTeacher = `${day}|${time}|${group}`;
         if (modalIndex.semTeacher[kSemTeacher]) return modalIndex.semTeacher[kSemTeacher];
 
-        // 4️⃣ Só grupo
         if (modalIndex.grupo[group]) return modalIndex.grupo[group];
 
-        // 5️⃣ Match parcial do group (fuzzy)
         for (const k of Object.keys(modalIndex.exato)) {
             const partes = k.split('|');
             const kGroup = partes[3];
@@ -1145,6 +1133,9 @@
         }
     }
 
+    // ============================================
+    // ✅ PARSE SCHEDULE — schedule é FONTE DA VERDADE
+    // ============================================
     function parseScheduleCSV(text, opts = {}) {
         const { skipGroupRegistration = false } = opts;
         if (!text) return [];
@@ -1177,6 +1168,7 @@
 
             if (!skipGroupRegistration) {
                 const normKey = normalizeGroupKey(groupClean);
+                // ✅ Sempre ATUALIZA com o que veio do schedule (fonte da verdade)
                 allGroupsFromSchedule.set(normKey, {
                     display: groupClean, book: bookClean,
                     room: cleanText(room), modal: cleanText(modal), time: cleanText(time)
@@ -1368,6 +1360,9 @@
         return null;
     }
 
+    // ============================================
+    // ✅ BUILD GROUP BOOK MAP — schedule manda
+    // ============================================
     function buildGroupBookMap() {
         allGroupsFromSchedule.forEach((info) => {
             const group = info.display;
@@ -1425,20 +1420,22 @@
         return null;
     }
 
+    // ============================================
+    // ✅ GET BOOK FOR GROUP — schedule é PRIORIDADE 1
+    // ============================================
     function getBookForGroup(group) {
         if (!group) return 'Book 1';
 
         const normKey = normalizeGroupKey(group);
         const info = allGroupsFromSchedule.get(normKey);
 
-        if (info) {
-            const bookStr = (info.book || '').trim();
-            const groupStr = group;
+        // ✅ PRIORIDADE 1: livro do schedule (coluna B)
+        if (info && info.book) {
+            const bookStr = info.book.trim();
+            const combinado = (bookStr + ' ' + group).trim();
 
-            const combinado = (bookStr + ' ' + groupStr).trim();
             let kids = findKidsBook(combinado);
-            if (!kids && bookStr) kids = findKidsBook(bookStr);
-
+            if (!kids) kids = findKidsBook(bookStr);
             if (kids) {
                 groupBookMap[group] = kids;
                 return kids;
@@ -1446,7 +1443,7 @@
 
             if (bookStr.toUpperCase() === 'AW' || bookStr.toUpperCase() === 'WF') {
                 const prefix = bookStr.toUpperCase();
-                const groupNorm = normalizeGroupKeyAgressive(groupStr);
+                const groupNorm = normalizeGroupKeyAgressive(group);
                 const groupWords = groupNorm.split(' ').filter(w => w.length > 2);
                 const books = Object.keys(KIDS_BOOK_GIDS);
                 for (const b of books) {
@@ -1461,24 +1458,23 @@
                 }
             }
 
-            if (bookStr) {
-                const bookKey = bookStr.toUpperCase().trim();
-                const bookNames = Object.keys(BOOK_STRUCTURE);
-                let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
-                if (!foundBook) {
-                    const numMatch = bookKey.match(/\d+/);
-                    if (numMatch) {
-                        const num = parseInt(numMatch[0]);
-                        if (num >= 1 && num <= 10) foundBook = `Book ${num}`;
-                    }
+            const bookKey = bookStr.toUpperCase().trim();
+            const bookNames = Object.keys(BOOK_STRUCTURE);
+            let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
+            if (!foundBook) {
+                const numMatch = bookKey.match(/\d+/);
+                if (numMatch) {
+                    const num = parseInt(numMatch[0]);
+                    if (num >= 1 && num <= 10) foundBook = `Book ${num}`;
                 }
-                if (foundBook) {
-                    groupBookMap[group] = foundBook;
-                    return foundBook;
-                }
+            }
+            if (foundBook) {
+                groupBookMap[group] = foundBook;
+                return foundBook;
             }
         }
 
+        // ✅ PRIORIDADE 2 (fallback): tenta pelo nome do grupo
         const kidsFromGroup = findKidsBook(group);
         if (kidsFromGroup) { groupBookMap[group] = kidsFromGroup; return kidsFromGroup; }
 
