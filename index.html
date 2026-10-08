@@ -1133,9 +1133,6 @@
         }
     }
 
-    // ============================================
-    // ✅ PARSE SCHEDULE — schedule é FONTE DA VERDADE
-    // ============================================
     function parseScheduleCSV(text, opts = {}) {
         const { skipGroupRegistration = false } = opts;
         if (!text) return [];
@@ -1168,7 +1165,6 @@
 
             if (!skipGroupRegistration) {
                 const normKey = normalizeGroupKey(groupClean);
-                // ✅ Sempre ATUALIZA com o que veio do schedule (fonte da verdade)
                 allGroupsFromSchedule.set(normKey, {
                     display: groupClean, book: bookClean,
                     room: cleanText(room), modal: cleanText(modal), time: cleanText(time)
@@ -1360,9 +1356,6 @@
         return null;
     }
 
-    // ============================================
-    // ✅ BUILD GROUP BOOK MAP — schedule manda
-    // ============================================
     function buildGroupBookMap() {
         allGroupsFromSchedule.forEach((info) => {
             const group = info.display;
@@ -1420,16 +1413,12 @@
         return null;
     }
 
-    // ============================================
-    // ✅ GET BOOK FOR GROUP — schedule é PRIORIDADE 1
-    // ============================================
     function getBookForGroup(group) {
         if (!group) return 'Book 1';
 
         const normKey = normalizeGroupKey(group);
         const info = allGroupsFromSchedule.get(normKey);
 
-        // ✅ PRIORIDADE 1: livro do schedule (coluna B)
         if (info && info.book) {
             const bookStr = info.book.trim();
             const combinado = (bookStr + ' ' + group).trim();
@@ -1474,7 +1463,6 @@
             }
         }
 
-        // ✅ PRIORIDADE 2 (fallback): tenta pelo nome do grupo
         const kidsFromGroup = findKidsBook(group);
         if (kidsFromGroup) { groupBookMap[group] = kidsFromGroup; return kidsFromGroup; }
 
@@ -1579,12 +1567,60 @@
         sendProgressToServer(group, lessonsMap);
     }
 
+    // ============================================
+    // ✅ DATA DA AULA NA SEMANA EXIBIDA
+    // ============================================
+    function getDataDaAulaNaSemana(cls, weekName) {
+        const diasSemana = { 'Domingo': 0, 'Segunda': 1, 'Terça': 2, 'Quarta': 3, 'Quinta': 4, 'Sexta': 5, 'Sábado': 6 };
+        const dia = diasSemana[cls.dayName];
+        if (dia === undefined) return null;
+
+        const hoje = new Date();
+        const diaHoje = hoje.getDay();
+        const diff = dia - diaHoje;
+        const offset = (weekName === 'Next Week') ? 7 : 0;
+
+        const dataAula = new Date(hoje);
+        dataAula.setDate(hoje.getDate() + diff + offset);
+
+        const dd = String(dataAula.getDate()).padStart(2, '0');
+        const mm = String(dataAula.getMonth() + 1).padStart(2, '0');
+        const yyyy = dataAula.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+    }
+
+    function radEhDaSemana(rad, cls, weekName) {
+        if (!rad.timestamp) return false;
+
+        const dataAula = getDataDaAulaNaSemana(cls, weekName);
+        if (!dataAula) return false;
+
+        const ts = String(rad.timestamp);
+        const match = ts.match(/^(\d{2}\/\d{2}\/\d{4})/);
+        if (match) {
+            return match[1] === dataAula;
+        }
+
+        try {
+            const d = new Date(ts);
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
+            return `${dd}/${mm}/${yyyy}` === dataAula;
+        } catch(e) {}
+
+        return false;
+    }
+
     function getRadKey(cls) {
         if (!currentTeacher) return 'rad_unknown';
-        return `rad_${currentTeacher.name}_${cls.dayName}_${cls.time}_${cls.group}`;
+        const dataAula = getDataDaAulaNaSemana(cls, currentWeekName);
+        return `rad_${currentTeacher.name}_${dataAula}_${cls.dayName}_${cls.time}_${cls.group}`;
     }
 
     function isRadSaved(cls) {
+        if (!currentTeacher) return false;
+
         try {
             const saved = localStorage.getItem(getRadKey(cls));
             if (saved) {
@@ -1593,13 +1629,20 @@
             }
         } catch(e) {}
 
-        const match = remoteRads.find(r => 
+        const matches = remoteRads.filter(r =>
             r.teacher === currentTeacher.name &&
             r.day === cls.dayName &&
             r.time === cls.time &&
             r.group === cls.group
         );
-        return !!match;
+
+        for (const rad of matches) {
+            if (radEhDaSemana(rad, cls, currentWeekName)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     function getRadSavedData(cls) {
@@ -1607,6 +1650,20 @@
             const saved = localStorage.getItem(getRadKey(cls));
             if (saved) return JSON.parse(saved);
         } catch(e) {}
+
+        const matches = remoteRads.filter(r =>
+            r.teacher === currentTeacher?.name &&
+            r.day === cls.dayName &&
+            r.time === cls.time &&
+            r.group === cls.group
+        );
+
+        for (const rad of matches) {
+            if (radEhDaSemana(rad, cls, currentWeekName)) {
+                return rad;
+            }
+        }
+
         return null;
     }
 
@@ -2361,60 +2418,50 @@
         });
     }
 
+    // ============================================
+    // ✅ SAVE RAD — sem trava, sem duplicar
+    // ============================================
     async function saveRad() {
         const status = document.getElementById('rad-status').value;
         if(!status) { alert('Selecione o status da aula!'); return; }
 
-        const btn = document.getElementById('btn-salvar-rad');
-        if (btn && btn.disabled) return;
-        if (btn) {
-            btn.disabled = true;
-            btn.style.opacity = '0.5';
-            btn.style.cursor = 'not-allowed';
-            btn.textContent = '⏳ SALVANDO...';
+        const attendanceChecked = Array.from(document.querySelectorAll('.att-check:checked')).map(cb => cb.value);
+        const observations = document.getElementById('rad-observations').value.trim();
+
+        const lessons = getGroupLessons(currentRadClass.group);
+        const progress = getProgressForGroup(currentRadClass.group);
+        
+        let lessonOfDay = null;
+        for (let i = lessons.length - 1; i >= 0; i--) {
+            const p = progress.find(x => x.lesson === lessons[i].id);
+            if (p && p.completed) { lessonOfDay = lessons[i]; break; }
         }
 
-        try {
-            const attendanceChecked = Array.from(document.querySelectorAll('.att-check:checked')).map(cb => cb.value);
-            const observations = document.getElementById('rad-observations').value.trim();
+        const lessonsDone = lessonOfDay ? [lessonOfDay.id] : [];
 
-            const lessons = getGroupLessons(currentRadClass.group);
-            const progress = getProgressForGroup(currentRadClass.group);
-            
-            let lessonOfDay = null;
-            for (let i = lessons.length - 1; i >= 0; i--) {
-                const p = progress.find(x => x.lesson === lessons[i].id);
-                if (p && p.completed) { lessonOfDay = lessons[i]; break; }
-            }
+        const data = {
+            teacher: currentTeacher.name,
+            day: currentRadClass.day,
+            time: currentRadClass.time,
+            group: currentRadClass.group,
+            book: currentRadClass.book,
+            status,
+            lessons: lessonsDone,
+            attendance: attendanceChecked,
+            observations,
+            dateSaved: new Date().toISOString()
+        };
 
-            const lessonsDone = lessonOfDay ? [lessonOfDay.id] : [];
+        localStorage.setItem(getRadKey(currentRadClass), JSON.stringify(data));
 
-            const data = {
-                teacher: currentTeacher.name,
-                day: currentRadClass.day,
-                time: currentRadClass.time,
-                group: currentRadClass.group,
-                book: currentRadClass.book,
-                status,
-                lessons: lessonsDone,
-                attendance: attendanceChecked,
-                observations,
-                dateSaved: new Date().toISOString()
-            };
+        // ✅ Envia sem bloquear. Apps Script só atualiza a mesma linha.
+        const ok = await sendRadToServer(data);
 
-            localStorage.setItem(getRadKey(currentRadClass), JSON.stringify(data));
-
-            await sendRadToServer(data);
-
+        if (ok) {
             closeModal('rad-modal');
             renderSchedule();
-        } finally {
-            if (btn) {
-                btn.disabled = false;
-                btn.style.opacity = '1';
-                btn.style.cursor = 'pointer';
-                btn.textContent = '💾 SALVAR RAD';
-            }
+        } else {
+            alert('⚠️ Não foi possível enviar ao servidor. Salvo localmente.');
         }
     }
 
