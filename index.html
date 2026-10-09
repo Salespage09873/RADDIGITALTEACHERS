@@ -80,13 +80,11 @@
         .modal-saved-badge { background: var(--success-light); border: 2px solid var(--success); border-radius: 6px; padding: 10px 15px; color: var(--success); font-weight: 600; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
         input, select, textarea { width: 100%; background: var(--bg-color); border: 2px solid var(--border-color); color: var(--text-main); padding: 10px 14px; margin-bottom: 12px; border-radius: 6px; font-family: inherit; font-size: 0.95rem; }
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-dim); }
-        input:disabled, select:disabled, textarea:disabled { background: #e9ecef; color: #6c757d; cursor: not-allowed; opacity: 0.8; }
         textarea { resize: vertical; min-height: 80px; font-family: inherit; }
         label { font-weight: 600; font-size: 0.85rem; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
         .checkbox-group { display: flex; align-items: center; margin-bottom: 8px; background: var(--card-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); transition: all 0.2s ease; cursor: pointer; }
         .checkbox-group:hover { border-color: var(--primary); background: var(--primary-light); }
         .checkbox-group input { width: auto; margin-right: 12px; margin-bottom: 0; accent-color: var(--primary); transform: scale(1.1); cursor: pointer; }
-        .checkbox-group input:disabled { cursor: not-allowed; }
         .checkbox-group label { flex: 1; cursor: pointer; font-size: 0.9rem; color: var(--text-main); text-transform: none; font-weight: 400; margin-bottom: 0; }
         .checkbox-group.checked { background: var(--success-light); border-color: var(--success); }
         .checkbox-group.checked label { color: var(--success); font-weight: 600; }
@@ -139,108 +137,26 @@
         .sync-status.success { border-color: var(--success); color: var(--success); }
         .sync-status.error { border-color: var(--danger); color: var(--danger); }
         .sync-status.warning { border-color: var(--warning); color: #856404; }
-
-        .fechamento-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        .fechamento-card {
-            background: var(--bg-color);
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-        }
-        .fechamento-card h4 {
-            font-size: 0.85rem;
-            color: var(--text-sec);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 10px;
-        }
-        .fechamento-card .valor {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-        .fechamento-card.total {
-            border-color: var(--success);
-            background: var(--success-light);
-        }
-        .fechamento-card.total .valor {
-            color: var(--success);
-        }
-        .fechamento-card.inc {
-            border-color: #6f42c1;
-            background: #f3e8ff;
-        }
-        .fechamento-card.inc .valor {
-            color: #6f42c1;
-        }
-        .fechamento-card.noshow {
-            border-color: var(--warning);
-            background: #fff8e1;
-        }
-        .fechamento-card.noshow .valor {
-            color: #856404;
-        }
-        .fechamento-card.cancel {
-            border-color: var(--danger);
-            background: #f8d7da;
-        }
-        .fechamento-card.cancel .valor {
-            color: var(--danger);
-        }
-        .valores-config {
-            background: var(--card-bg);
-            border: 2px solid var(--primary);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 25px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            align-items: end;
-        }
-        .valores-config label {
-            margin-bottom: 6px;
-        }
-        .valores-config input {
-            margin-bottom: 0;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-        .fechamento-lista {
-            background: var(--bg-color);
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 25px;
-        }
-        .fechamento-lista table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        .fechamento-lista th, .fechamento-lista td {
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border-color);
-            text-align: left;
-            font-size: 0.9rem;
-        }
-        .fechamento-lista th {
-            background: var(--primary-light);
-            color: var(--primary);
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.5px;
-        }
-        .fechamento-lista tr:hover td {
-            background: var(--card-bg);
-        }
+        .fechamento-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .fechamento-card { background: var(--bg-color); border: 2px solid var(--border-color); border-radius: 10px; padding: 20px; box-shadow: var(--shadow); }
+        .fechamento-card h4 { font-size: 0.85rem; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .fechamento-card .valor { font-size: 2rem; font-weight: 700; color: var(--primary); }
+        .fechamento-card.total { border-color: var(--success); background: var(--success-light); }
+        .fechamento-card.total .valor { color: var(--success); }
+        .fechamento-card.inc { border-color: #6f42c1; background: #f3e8ff; }
+        .fechamento-card.inc .valor { color: #6f42c1; }
+        .fechamento-card.noshow { border-color: var(--warning); background: #fff8e1; }
+        .fechamento-card.noshow .valor { color: #856404; }
+        .fechamento-card.cancel { border-color: var(--danger); background: #f8d7da; }
+        .fechamento-card.cancel .valor { color: var(--danger); }
+        .valores-config { background: var(--card-bg); border: 2px solid var(--primary); border-radius: 10px; padding: 20px; margin-bottom: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end; }
+        .valores-config label { margin-bottom: 6px; }
+        .valores-config input { margin-bottom: 0; font-weight: 600; font-size: 1.1rem; }
+        .fechamento-lista { background: var(--bg-color); border: 2px solid var(--border-color); border-radius: 10px; padding: 20px; margin-top: 25px; }
+        .fechamento-lista table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .fechamento-lista th, .fechamento-lista td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.9rem; }
+        .fechamento-lista th { background: var(--primary-light); color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+        .fechamento-lista tr:hover td { background: var(--card-bg); }
         @media (max-width: 600px) {
             .teachers-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
             .classes-list { grid-template-columns: 1fr; padding: 15px; }
@@ -266,7 +182,6 @@
     <header>
         <h1>Sistema de Gestão</h1>
         <p style="color: var(--text-sec); font-size: 0.95rem; font-weight: 500;">GERENCIAMENTO DE AULAS E LESSON PLANS</p>
-        
         <div class="header-buttons">
             <button onclick="showSelection()" class="active" id="btn-schedule">📅 Cronograma</button>
             <button onclick="showLessonPlans()" id="btn-lessons">📚 Lesson Plans por Turma</button>
@@ -277,25 +192,18 @@
     </header>
 
     <div class="container">
-        <div id="error-banner" class="error-banner hidden">
-            <span>⚠️</span>
-            <span id="error-banner-msg"></span>
-        </div>
+        <div id="error-banner" class="error-banner hidden"><span>⚠️</span><span id="error-banner-msg"></span></div>
 
         <div id="selection-screen">
             <div class="teachers-grid" id="teachers-grid"></div>
             <div style="text-align: center; margin-top: 40px;">
-                <button onclick="openAttendanceList()" style="border-color: var(--success); color: var(--success);">
-                    📋 Lista de Presença Geral
-                </button>
+                <button onclick="openAttendanceList()" style="border-color: var(--success); color: var(--success);">📋 Lista de Presença Geral</button>
             </div>
         </div>
 
         <div id="schedule-screen" class="hidden">
             <div class="schedule-header">
-                <button onclick="showSelection()" style="align-self: flex-start; border-color: var(--text-sec); color: var(--text-sec);">
-                    ← Voltar
-                </button>
+                <button onclick="showSelection()" style="align-self: flex-start; border-color: var(--text-sec); color: var(--text-sec);">← Voltar</button>
                 <h2 id="current-teacher-name" style="color: var(--primary); text-align: center;"></h2>
                 <div class="week-selector" id="week-selector"></div>
             </div>
@@ -304,21 +212,16 @@
 
         <div id="lesson-plan-screen" class="hidden">
             <div style="margin-bottom: 20px;">
-                <button onclick="showSelection()" style="border-color: var(--text-sec); color: var(--text-sec);">
-                    ← Voltar
-                </button>
+                <button onclick="showSelection()" style="border-color: var(--text-sec); color: var(--text-sec);">← Voltar</button>
             </div>
             <div id="lesson-plan-content"></div>
         </div>
 
         <div id="history-screen" class="hidden">
             <div style="margin-bottom: 20px;">
-                <button onclick="showSelection()" style="border-color: var(--text-sec); color: var(--text-sec);">
-                    ← Voltar
-                </button>
+                <button onclick="showSelection()" style="border-color: var(--text-sec); color: var(--text-sec);">← Voltar</button>
             </div>
             <h2 style="color: var(--primary); text-align: center; margin-bottom: 20px;">📊 Histórico de Aulas</h2>
-
             <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center;">
                 <select id="hist-filter-teacher" onchange="renderHistory()" style="max-width: 200px; margin-bottom: 0;">
                     <option value="">Todos os professores</option>
@@ -333,31 +236,18 @@
                 <button onclick="loadHistoryFromServer()" style="margin: 0;">🔄 Atualizar</button>
                 <button onclick="clearHistoryFilters()" style="margin: 0;">🧹 Limpar</button>
             </div>
-
-            <div id="history-content">
-                <p style="text-align:center; color: var(--text-sec); margin-top:40px;">Carregando histórico...</p>
-            </div>
+            <div id="history-content"><p style="text-align:center; color: var(--text-sec); margin-top:40px;">Carregando histórico...</p></div>
         </div>
 
         <div id="fechamento-screen" class="hidden">
             <div style="margin-bottom: 20px;">
-                <button onclick="showSelection()" style="border-color: var(--text-sec); color: var(--text-sec);">
-                    ← Voltar
-                </button>
+                <button onclick="showSelection()" style="border-color: var(--text-sec); color: var(--text-sec);">← Voltar</button>
             </div>
             <h2 style="color: var(--primary); text-align: center; margin-bottom: 20px;">💰 Fechamento de Pagamento</h2>
-
             <div class="valores-config">
-                <div>
-                    <label>💵 Valor Aula Normal (R$)</label>
-                    <input type="number" id="valor-normal" value="50" min="0" step="0.01" oninput="renderFechamento()">
-                </div>
-                <div>
-                    <label>🏢 Valor Aula In Company (R$)</label>
-                    <input type="number" id="valor-inc" value="70" min="0" step="0.01" oninput="renderFechamento()">
-                </div>
+                <div><label>💵 Valor Aula Normal (R$)</label><input type="number" id="valor-normal" value="50" min="0" step="0.01" oninput="renderFechamento()"></div>
+                <div><label>🏢 Valor Aula In Company (R$)</label><input type="number" id="valor-inc" value="70" min="0" step="0.01" oninput="renderFechamento()"></div>
             </div>
-
             <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center;">
                 <select id="fech-teacher" onchange="renderFechamento()" style="max-width: 220px; margin-bottom: 0;">
                     <option value="">Todos os professores</option>
@@ -366,9 +256,7 @@
                 <button onclick="limparFiltrosFechamento()" style="margin: 0;">🧹 Limpar</button>
                 <button onclick="loadHistoryFromServer()" style="margin: 0;">🔄 Atualizar</button>
             </div>
-
             <div id="fechamento-resumo" class="fechamento-grid"></div>
-
             <div id="fechamento-lista-container" class="fechamento-lista"></div>
         </div>
     </div>
@@ -387,7 +275,6 @@
             <div id="rad-saved-badge" class="modal-saved-badge hidden">✅ RAD já salvo anteriormente</div>
             <div id="rad-class-info" style="margin-bottom: 15px; padding: 12px; background: var(--card-bg); border-radius: 6px; border-left: 4px solid var(--primary);"></div>
             <div id="rad-next-lesson" class="next-lesson-box hidden"></div>
-
             <label>Status da Aula:</label>
             <select id="rad-status" onchange="toggleRadFields()">
                 <option value="">Selecione...</option>
@@ -395,29 +282,19 @@
                 <option value="noshow">No Show (Aluno não veio)</option>
                 <option value="cancelada">Cancelada</option>
             </select>
-
             <div id="rad-fields" class="hidden">
                 <hr style="border: 0; border-top: 2px solid var(--border-color); margin: 20px 0;">
                 <label>Lesson Plan Realizada:</label>
-                <div class="chain-info" style="text-align:left; margin-bottom:6px;">
-                    💡 Ao marcar uma aula, todas as anteriores são marcadas automaticamente.
-                </div>
+                <div class="chain-info" style="text-align:left; margin-bottom:6px;">💡 Ao marcar uma aula, todas as anteriores são marcadas automaticamente.</div>
                 <div id="lesson-plan-container" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px;"></div>
-
                 <label>Lista de Presença:</label>
                 <div id="attendance-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px;"></div>
-
                 <div class="observations-box">
                     <label style="color: var(--primary);">📝 Observações:</label>
                     <textarea id="rad-observations" placeholder="Digite aqui suas observações sobre a aula..." rows="3"></textarea>
                 </div>
-
-                <button id="btn-salvar-rad" onclick="saveRad()" class="btn-success" style="width: 100%; background: var(--success); color: #fff; border-color: var(--success);">
-                    💾 SALVAR RAD
-                </button>
-                <button id="btn-limpar-rad" onclick="clearRad()" class="btn-danger" style="width: 100%; margin-top: 8px; border-color: var(--danger); color: var(--danger);">
-                    🗑️ LIMPAR DADOS
-                </button>
+                <button id="btn-salvar-rad" onclick="saveRad()" class="btn-success" style="width: 100%; background: var(--success); color: #fff; border-color: var(--success);">💾 SALVAR RAD</button>
+                <button id="btn-limpar-rad" onclick="clearRad()" class="btn-danger" style="width: 100%; margin-top: 8px; border-color: var(--danger); color: var(--danger);">🗑️ LIMPAR DADOS</button>
             </div>
         </div>
     </div>
@@ -430,12 +307,8 @@
             </div>
             <div id="lesson-detail-content"></div>
             <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
-                <button onclick="saveLessonProgress()" class="btn-success" style="flex: 1; background: var(--success); color: #fff; border-color: var(--success);">
-                    💾 SALVAR PROGRESSO
-                </button>
-                <button onclick="resetLessonProgress()" class="btn-danger" style="flex: 1; border-color: var(--danger); color: var(--danger);">
-                    🔄 RESETAR PROGRESSO
-                </button>
+                <button onclick="saveLessonProgress()" class="btn-success" style="flex: 1; background: var(--success); color: #fff; border-color: var(--success);">💾 SALVAR PROGRESSO</button>
+                <button onclick="resetLessonProgress()" class="btn-danger" style="flex: 1; border-color: var(--danger); color: var(--danger);">🔄 RESETAR PROGRESSO</button>
             </div>
         </div>
     </div>
@@ -458,7 +331,7 @@
 
 <script>
     // ============================================
-    // ✅ CONFIGURAÇÃO
+    // CONFIGURAÇÃO
     // ============================================
     const API_URL = 'https://script.google.com/macros/s/AKfycbz4I_zZpO7UeTpPSqtYCq6vjRIv09RGlicQYvqDHBjL6ardcn-MbL7as1FwkDyJ-QYo/exec';
     const PENDING_QUEUE_KEY = 'radPendingQueue';
@@ -471,19 +344,15 @@
         const icon = document.getElementById('sync-icon');
         const txt = document.getElementById('sync-text');
         if (!el || !icon || !txt) return;
-
         el.classList.remove('hidden', 'success', 'error', 'warning');
         if (type === 'success') el.classList.add('success');
         if (type === 'error') el.classList.add('error');
         if (type === 'warning') el.classList.add('warning');
-
         if (type === 'success') icon.textContent = '✅';
         else if (type === 'error') icon.textContent = '❌';
         else if (type === 'warning') icon.textContent = '⚠️';
         else icon.textContent = '🔄';
-
         txt.textContent = text;
-
         if (type === 'success' || type === 'error' || type === 'warning') {
             setTimeout(() => el.classList.add('hidden'), 4000);
         }
@@ -495,31 +364,17 @@
     const LESSON_PLANS_BASE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR8P-aCBn4HeNpri88Hd-VWSfD8pXaNZ5Y0vYCJ_FSCmDGpEJDHwnRU_72NS7rhpLEQAa_CzGklUu2p/pub';
 
     const KIDS_BOOK_GIDS = {
-        'AW HIGH FIVE':     '0',
-        'AW FRIENDSHIP':    '852178178',
-        'AW ADVENTURE':     '1274563307',
-        'AW PLAYTIME':      '403683685',
-        'AW WINNERS':       '1259782943',
-        'WF HIGH FIVE':     '749978300',
-        'WF PIECE OF CAKE': '903327626',
-        'WF PLAYTIME':      '491371915',
-        'WF WINNERS':       '506732494',
-        'WF ADVENTURE':     '2075038143',
-        'WF FRIENDSHIP':    '1798862018'
+        'AW HIGH FIVE': '0', 'AW FRIENDSHIP': '852178178', 'AW ADVENTURE': '1274563307',
+        'AW PLAYTIME': '403683685', 'AW WINNERS': '1259782943',
+        'WF HIGH FIVE': '749978300', 'WF PIECE OF CAKE': '903327626', 'WF PLAYTIME': '491371915',
+        'WF WINNERS': '506732494', 'WF ADVENTURE': '2075038143', 'WF FRIENDSHIP': '1798862018'
     };
 
     const FETCH_TIMEOUT_MS = 5000;
 
     const VALID_TEACHERS = [
-        { name: 'BARBARA', color: '#0d6efd' },
-        { name: 'CARLA', color: '#0d6efd' },
-        { name: 'CARLOS', color: '#0d6efd' },
-        { name: 'CAROL', color: '#0d6efd' },
-        { name: 'DIOGO', color: '#0d6efd' },
-        { name: 'HOPE', color: '#0d6efd' },
-        { name: 'LUISA', color: '#0d6efd' },
-        { name: 'MAT', color: '#0d6efd' },
-        { name: 'PEDRO', color: '#0d6efd' }
+        { name: 'BARBARA' }, { name: 'CARLA' }, { name: 'CARLOS' }, { name: 'CAROL' },
+        { name: 'DIOGO' }, { name: 'HOPE' }, { name: 'LUISA' }, { name: 'MAT' }, { name: 'PEDRO' }
     ];
 
     const BOOK_STRUCTURE = {};
@@ -544,7 +399,6 @@
             'REVISION 111 - 120 / READING 14 / REVISION 121 - 135',
             'REVISION 136 - 145 / READING 9 / REVISION 146 - 160'
         ];
-
         for (let n = 1; n <= 10; n++) {
             let arr = [...baseLessons];
             if (n >= 2) arr = arr.concat(['LESSON 33', 'LESSON 34', 'LESSON 35']);
@@ -570,51 +424,23 @@
     let groupBookMap = {};
     let currentRadClass = null;
 
-    let modalIndex = {
-        exato: {},
-        semDia: {},
-        semTeacher: {},
-        grupo: {}
-    };
+    let modalIndex = { exato: {}, semDia: {}, semTeacher: {}, grupo: {} };
 
-    function hideLoadingScreen() {
-        const ls = document.getElementById('loading-screen');
-        if (ls) ls.classList.add('hidden');
-    }
-
-    function showLoadingMsg(msg) {
-        const el = document.getElementById('loading-msg');
-        if (el) el.textContent = msg;
-    }
-
+    function hideLoadingScreen() { const ls = document.getElementById('loading-screen'); if (ls) ls.classList.add('hidden'); }
+    function showLoadingMsg(msg) { const el = document.getElementById('loading-msg'); if (el) el.textContent = msg; }
     function showErrorBanner(msg) {
         const banner = document.getElementById('error-banner');
         const msgEl = document.getElementById('error-banner-msg');
-        if (banner && msgEl) {
-            msgEl.textContent = msg;
-            banner.classList.remove('hidden');
-        }
+        if (banner && msgEl) { msgEl.textContent = msg; banner.classList.remove('hidden'); }
     }
 
     function fetchWithTimeout(url, timeoutMs, opts = {}) {
         return new Promise((resolve, reject) => {
             const controller = new AbortController();
-            const timer = setTimeout(() => {
-                controller.abort();
-                reject(new Error('Timeout após ' + timeoutMs + 'ms'));
-            }, timeoutMs);
-
+            const timer = setTimeout(() => { controller.abort(); reject(new Error('Timeout')); }, timeoutMs);
             fetch(url, { ...opts, signal: controller.signal })
-                .then(res => {
-                    clearTimeout(timer);
-                    if (!res.ok) throw new Error('HTTP ' + res.status);
-                    return res.text();
-                })
-                .then(resolve)
-                .catch(err => {
-                    clearTimeout(timer);
-                    reject(err);
-                });
+                .then(res => { clearTimeout(timer); if (!res.ok) throw new Error('HTTP ' + res.status); return res.text(); })
+                .then(resolve).catch(err => { clearTimeout(timer); reject(err); });
         });
     }
 
@@ -627,10 +453,49 @@
             if (data && data.ok && data.progress) return data.progress;
             if (data && data.ok) return [];
             throw new Error(data && data.error ? data.error : 'Resposta inválida');
-        } catch (err) {
-            console.error('Falha fetch:', err.message);
-            throw err;
+        } catch (err) { console.error('Falha fetch:', err.message); throw err; }
+    }
+
+    // ============================================
+    // ✅ PING — acorda o Apps Script antes de enviar
+    // ============================================
+    async function pingServer() {
+        try { await fetch(API_URL + '?action=ping&_=' + Date.now(), { method: 'GET' }); } catch(e) {}
+    }
+
+    // ============================================
+    // ✅ ENVIO COM RETRY
+    // ============================================
+    async function reallySendToServer(radData) {
+        // ✅ 1) Acorda o servidor antes
+        await pingServer();
+        await new Promise(r => setTimeout(r, 300));
+
+        for (let tentativa = 1; tentativa <= 2; tentativa++) {
+            try {
+                const res = await fetch(API_URL + '?_=' + Date.now(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(radData),
+                    redirect: 'follow'
+                });
+                const text = await res.text();
+                if (text.trim().startsWith('<')) {
+                    console.warn(`⚠️ Tentativa ${tentativa} retornou HTML (status ${res.status})`);
+                    if (tentativa < 2) { await new Promise(r => setTimeout(r, 1500)); continue; }
+                    return false;
+                }
+                try {
+                    const json = JSON.parse(text);
+                    if (json.ok) { console.log(`✅ RAD salvo (tentativa ${tentativa})`); return true; }
+                    console.warn('⚠️ Resposta:', json);
+                } catch(e) { console.warn('⚠️ Resposta não-JSON:', text.substring(0, 100)); }
+            } catch(e) {
+                console.warn(`❌ Tentativa ${tentativa} falhou:`, e.message);
+            }
+            if (tentativa < 2) await new Promise(r => setTimeout(r, 1000));
         }
+        return false;
     }
 
     async function sendProgressToServer(group, lessonsMap) {
@@ -638,34 +503,19 @@
             const normalized = {};
             Object.keys(lessonsMap || {}).forEach(lid => {
                 const info = lessonsMap[lid];
-                if (info === true) {
-                    normalized[lid] = { completed: true, date: '' };
-                } else if (info === false) {
-                    normalized[lid] = { completed: false, date: '' };
-                } else if (info && typeof info === 'object') {
-                    normalized[lid] = {
-                        completed: info.completed === true,
-                        date: info.date || ''
-                    };
-                }
+                if (info === true) normalized[lid] = { completed: true, date: '' };
+                else if (info === false) normalized[lid] = { completed: false, date: '' };
+                else if (info && typeof info === 'object') normalized[lid] = { completed: info.completed === true, date: info.date || '' };
             });
-
             const payload = { action: 'progress', group: group, lessons: normalized };
-
             const resp = await fetch(API_URL + '?action=progress', {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload)
             });
             const data = await resp.json();
-            if (data && data.ok) {
-                console.log('✅ Progresso enviado ao servidor:', group, '(', Object.keys(normalized).length, 'lessons )');
-                return true;
-            }
-            console.warn('❌ Resposta do servidor:', data);
-        } catch (e) {
-            console.warn('❌ Falha ao enviar progresso:', e.message);
-        }
+            if (data && data.ok) { console.log('✅ Progresso enviado:', group); return true; }
+        } catch (e) { console.warn('❌ Falha ao enviar progresso:', e.message); }
         return false;
     }
 
@@ -677,176 +527,87 @@
                 const novo = {};
                 Object.keys(data.progress).forEach(group => {
                     const obj = data.progress[group];
-                    novo[group] = Object.keys(obj).map(lid => ({
-                        lesson: lid,
-                        completed: obj[lid].completed === true,
-                        date: obj[lid].date || ''
-                    }));
+                    novo[group] = Object.keys(obj).map(lid => ({ lesson: lid, completed: obj[lid].completed === true, date: obj[lid].date || '' }));
                 });
                 currentLessonProgress = novo;
                 persistLessonProgress();
-                console.log('✅ Progresso do servidor (substituído):', Object.keys(novo).length, 'turmas');
+                console.log('✅ Progresso do servidor:', Object.keys(novo).length, 'turmas');
             }
-        } catch (e) {
-            console.warn('Progresso do servidor falhou:', e.message);
-        }
+        } catch (e) { console.warn('Progresso do servidor falhou:', e.message); }
     }
 
     function getPendingQueue() {
-        try {
-            const s = localStorage.getItem(PENDING_QUEUE_KEY);
-            return s ? JSON.parse(s) : [];
-        } catch(e) { return []; }
+        try { const s = localStorage.getItem(PENDING_QUEUE_KEY); return s ? JSON.parse(s) : []; } catch(e) { return []; }
     }
-
     function addToPendingQueue(radData) {
         const queue = getPendingQueue();
         queue.push({ ...radData, queuedAt: new Date().toISOString() });
-        try {
-            localStorage.setItem(PENDING_QUEUE_KEY, JSON.stringify(queue));
-        } catch(e) { console.warn(e); }
+        try { localStorage.setItem(PENDING_QUEUE_KEY, JSON.stringify(queue)); } catch(e) {}
     }
-
-    function clearPendingQueue() {
-        try { localStorage.removeItem(PENDING_QUEUE_KEY); } catch(e) {}
-    }
+    function clearPendingQueue() { try { localStorage.removeItem(PENDING_QUEUE_KEY); } catch(e) {} }
 
     async function tryFlushPendingQueue() {
         const queue = getPendingQueue();
         if (queue.length === 0) return;
-
-        console.log(`🔄 Tentando enviar ${queue.length} RADs pendentes...`);
         const remaining = [];
-
         for (const rad of queue) {
             const ok = await reallySendToServer(rad);
             if (!ok) remaining.push(rad);
         }
-
-        if (remaining.length === 0) {
-            clearPendingQueue();
-            console.log('✅ Fila pendente limpa!');
-        } else {
-            try { localStorage.setItem(PENDING_QUEUE_KEY, JSON.stringify(remaining)); } catch(e) {}
-            console.warn(`⚠️ Ainda faltam ${remaining.length} na fila`);
-        }
+        if (remaining.length === 0) { clearPendingQueue(); console.log('✅ Fila limpa!'); }
+        else { try { localStorage.setItem(PENDING_QUEUE_KEY, JSON.stringify(remaining)); } catch(e) {} }
     }
 
     async function sendRadToServer(radData) {
         showSyncStatus('Salvando no servidor...', 'default');
         const ok = await reallySendToServer(radData);
-        
-        if (ok) {
-            showSyncStatus('RAD sincronizado!', 'success');
-            return true;
-        } else {
-            showSyncStatus('Salvo localmente (envio pendente)', 'warning');
-            addToPendingQueue(radData);
-            return false;
-        }
-    }
-
-    // ============================================
-    // ✅ ENVIA COM text/plain — evita redirect 302 do Google
-    // ============================================
-    async function reallySendToServer(radData) {
-        try {
-            const res = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(radData),
-                redirect: 'follow'
-            });
-            const text = await res.text();
-            try {
-                const json = JSON.parse(text);
-                if (json.ok) {
-                    console.log('✅ RAD salvo no servidor');
-                    return true;
-                }
-                console.warn('⚠️ Servidor respondeu:', json);
-            } catch(e) {
-                console.warn('⚠️ Resposta não-JSON:', text.substring(0, 100));
-            }
-        } catch(e) {
-            console.warn('❌ POST falhou:', e.message);
-        }
-        return false;
+        if (ok) { showSyncStatus('RAD sincronizado!', 'success'); return true; }
+        else { showSyncStatus('Salvo localmente (envio pendente)', 'warning'); addToPendingQueue(radData); return false; }
     }
 
     async function loadHistoryFromServer() {
         const container = document.getElementById('history-content');
-        if (container) {
-            container.innerHTML = '<p style="text-align:center; color: var(--text-sec); margin-top:40px;">Carregando histórico do servidor...</p>';
-        }
-        
+        if (container) container.innerHTML = '<p style="text-align:center; color: var(--text-sec); margin-top:40px;">Carregando...</p>';
         showSyncStatus('Carregando histórico...', 'default');
-        
         try {
             const rads = await jsonpRequest(API_URL);
             remoteRads = rads || [];
-            console.log(`✅ ${remoteRads.length} RADs carregados do servidor`);
+            console.log(`✅ ${remoteRads.length} RADs do servidor`);
             showSyncStatus(`${remoteRads.length} RADs carregados`, 'success');
         } catch (e) {
-            console.error('Erro ao carregar histórico:', e.message);
-            remoteRads = [];
+            console.error('Erro:', e.message); remoteRads = [];
             showSyncStatus('Servidor indisponível', 'error');
-            
-            if (container) {
-                container.innerHTML = `
-                    <div class="error-banner">
-                        ⚠️ Não foi possível carregar o histórico do servidor.<br>
-                        <small>Erro: ${e.message}</small>
-                    </div>
-                `;
-            }
+            if (container) container.innerHTML = `<div class="error-banner">⚠️ Erro: ${e.message}</div>`;
             return;
         }
-        
         renderHistory();
-        if (!document.getElementById('fechamento-screen').classList.contains('hidden')) {
-            renderFechamento();
-        }
+        if (!document.getElementById('fechamento-screen').classList.contains('hidden')) renderFechamento();
     }
 
     async function loadKidsLessonPlans() {
         const bookNames = Object.keys(KIDS_BOOK_GIDS);
-        console.log(`📚 Carregando ${bookNames.length} lesson plans kids...`);
-
         const promises = bookNames.map(async (bookName) => {
             const gid = KIDS_BOOK_GIDS[bookName];
             const url = `${LESSON_PLANS_BASE_URL}?gid=${gid}&single=true&output=csv`;
             try {
                 const text = await fetchWithTimeout(url, FETCH_TIMEOUT_MS);
                 const lessons = parseKidsLessonPlanCSV(text);
-                if (lessons.length > 0) {
-                    KIDS_BOOK_STRUCTURE[bookName] = { lessons };
-                }
-            } catch (e) {
-                console.warn(`❌ Falha ao carregar ${bookName}:`, e.message);
-            }
+                if (lessons.length > 0) KIDS_BOOK_STRUCTURE[bookName] = { lessons };
+            } catch (e) {}
         });
-
         await Promise.all(promises);
-        console.log(`✅ Total kids carregados: ${Object.keys(KIDS_BOOK_STRUCTURE).length}`);
     }
 
     function parseKidsLessonPlanCSV(text) {
         if (!text) return [];
         const lines = text.split('\n').map(l => l.trim()).filter(l => l);
         if (lines.length < 2) return [];
-
         const lessons = [];
         for (let i = 1; i < lines.length; i++) {
             let row;
-            try {
-                row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-            } catch(e) { continue; }
-            
+            try { row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); } catch(e) { continue; }
             const lesson = (row[0] || '').replace(/"/g, '').trim();
-            if (lesson && lesson.toUpperCase() !== 'LESSON') {
-                lessons.push(lesson);
-            }
+            if (lesson && lesson.toUpperCase() !== 'LESSON') lessons.push(lesson);
         }
         return lessons;
     }
@@ -854,27 +615,21 @@
     function buildModalMap() {
         modalIndex = { exato: {}, semDia: {}, semTeacher: {}, grupo: {} };
         const allAulas = [...scheduleData, ...nextWeekData];
-
         allAulas.forEach(cls => {
             const teacher = (cls.teacher || '').toUpperCase().trim();
             const day = (cls.dayName || '').toUpperCase().trim();
             const time = (cls.time || '').trim();
             const group = normalizeGroupKeyAgressive(cls.group || '');
             const modal = (cls.modal || '').toUpperCase().trim();
-
             if (!modal || !group) return;
-
             const kExato = `${teacher}|${day}|${time}|${group}`;
             const kSemDia = `${teacher}|${time}|${group}`;
             const kSemTeacher = `${day}|${time}|${group}`;
-
             modalIndex.exato[kExato] = modal;
             modalIndex.semDia[kSemDia] = modal;
             modalIndex.semTeacher[kSemTeacher] = modal;
             modalIndex.grupo[group] = modal;
         });
-
-        console.log(`🗺️ Mapa de modalidades: exato=${Object.keys(modalIndex.exato).length}, semDia=${Object.keys(modalIndex.semDia).length}, semTeacher=${Object.keys(modalIndex.semTeacher).length}, grupo=${Object.keys(modalIndex.grupo).length}`);
     }
 
     function getModalDoRad(rad) {
@@ -882,28 +637,16 @@
         const day = (rad.day || '').toUpperCase().trim();
         const time = (rad.time || '').trim();
         const group = normalizeGroupKeyAgressive(rad.group || '');
-
-        const kExato = `${teacher}|${day}|${time}|${group}`;
-        if (modalIndex.exato[kExato]) return modalIndex.exato[kExato];
-
-        const kSemDia = `${teacher}|${time}|${group}`;
-        if (modalIndex.semDia[kSemDia]) return modalIndex.semDia[kSemDia];
-
-        const kSemTeacher = `${day}|${time}|${group}`;
-        if (modalIndex.semTeacher[kSemTeacher]) return modalIndex.semTeacher[kSemTeacher];
-
+        if (modalIndex.exato[`${teacher}|${day}|${time}|${group}`]) return modalIndex.exato[`${teacher}|${day}|${time}|${group}`];
+        if (modalIndex.semDia[`${teacher}|${time}|${group}`]) return modalIndex.semDia[`${teacher}|${time}|${group}`];
+        if (modalIndex.semTeacher[`${day}|${time}|${group}`]) return modalIndex.semTeacher[`${day}|${time}|${group}`];
         if (modalIndex.grupo[group]) return modalIndex.grupo[group];
-
         for (const k of Object.keys(modalIndex.exato)) {
-            const partes = k.split('|');
-            const kGroup = partes[3];
-            if (kGroup && group && (kGroup.includes(group) || group.includes(kGroup))) {
-                if (partes[0] === teacher || partes[2] === time) {
-                    return modalIndex.exato[k];
-                }
+            const p = k.split('|');
+            if (p[3] && group && (p[3].includes(group) || group.includes(p[3]))) {
+                if (p[0] === teacher || p[2] === time) return modalIndex.exato[k];
             }
         }
-
         return '';
     }
 
@@ -913,23 +656,12 @@
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
-        const safetyTimer = setTimeout(() => {
-            console.warn('⚠️ Safety timeout: forçando remoção da loading screen');
-            hideLoadingScreen();
-        }, 3000);
-
-        const forceHide = () => {
-            clearTimeout(safetyTimer);
-            hideLoadingScreen();
-        };
-
+        const safetyTimer = setTimeout(() => hideLoadingScreen(), 3000);
+        const forceHide = () => { clearTimeout(safetyTimer); hideLoadingScreen(); };
         try {
             showLoadingMsg('Carregando...');
-
-            loadLessonProgress();
-            loadValoresSalvos();
-            renderTeachers();
-            populateGroupSelect();
+            loadLessonProgress(); loadValoresSalvos();
+            renderTeachers(); populateGroupSelect();
             try {
                 const now = new Date();
                 const mi = document.getElementById('att-month-select');
@@ -937,101 +669,53 @@
                 const mf = document.getElementById('fech-mes');
                 if (mf) mf.value = now.toISOString().slice(0, 7);
             } catch(e) {}
-
             forceHide();
 
             const tasks = [
-                (async () => {
-                    try { await loadKidsLessonPlans(); } 
-                    catch(e) { console.warn('Kids falhou:', e.message); }
-                })(),
-
+                (async () => { try { await loadKidsLessonPlans(); } catch(e) {} })(),
                 (async () => {
                     try {
                         const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
                         scheduleData = parseScheduleCSV(text);
                         allWeeks['This Week'] = scheduleData;
-                        console.log(`📋 This Week: ${scheduleData.length}`);
-
-                        if (currentTeacher && !document.getElementById('schedule-screen').classList.contains('hidden')) {
-                            loadWeekData(currentWeekName);
-                        }
-                    } catch(e) { console.warn('This Week falhou:', e.message); }
+                    } catch(e) {}
                 })(),
-
                 (async () => {
                     try {
                         const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS);
                         nextWeekData = parseScheduleCSV(text, { skipGroupRegistration: true });
                         allWeeks['Next Week'] = nextWeekData;
-                        console.log(`📋 Next Week: ${nextWeekData.length}`);
-                    } catch(e) { console.warn('Next Week falhou:', e.message); }
+                    } catch(e) {}
                 })(),
-
                 (async () => {
                     try {
                         const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
                         parseStudentsCSV(text);
-                        populateGroupSelect();
-                    } catch(e) { console.warn('Alunos falhou:', e.message); }
+                    } catch(e) {}
                 })(),
-
                 (async () => {
                     try {
                         const rads = await jsonpRequest(API_URL);
                         remoteRads = rads || [];
-                        console.log(`✅ ${remoteRads.length} RADs do servidor`);
-                    } catch(e) { console.warn('RADs do servidor falhou:', e.message); }
+                    } catch(e) {}
                 })(),
-
-                (async () => {
-                    try {
-                        await loadGlobalProgress();
-                        renderGroupLessonPlans();
-                        if (!document.getElementById('schedule-screen').classList.contains('hidden')) {
-                            renderSchedule();
-                        }
-                        if (currentGroup) openGroupDetail(currentGroup);
-                    } catch(e) { console.warn('Progresso do servidor falhou:', e.message); }
-                })()
+                (async () => { try { await loadGlobalProgress(); } catch(e) {} })()
             ];
-
             await Promise.allSettled(tasks);
 
-            buildModalMap();
-            buildGroupBookMap();
-            renderTeachers();
-            populateGroupSelect();
-            renderGroupLessonPlans();
+            buildModalMap(); buildGroupBookMap();
+            renderTeachers(); populateGroupSelect(); renderGroupLessonPlans();
             populateFechamentoTeacherFilter();
-            if (currentTeacher && !document.getElementById('schedule-screen').classList.contains('hidden')) {
-                loadWeekData(currentWeekName);
-            }
-
-            if (scheduleData.length === 0 && nextWeekData.length === 0) {
-                carregarScheduleFallback();
-                allWeeks = { 'This Week': scheduleData, 'Next Week': nextWeekData };
-                showErrorBanner('Não foi possível carregar o cronograma. Exibindo dados de exemplo.');
-            }
-
-            if (Object.keys(studentsData).length === 0) {
-                carregarAlunosFallback();
-            }
-
-            try { await tryFlushPendingQueue(); } catch(e) { console.warn(e); }
-
+            try { await tryFlushPendingQueue(); } catch(e) {}
             console.log(`✅ Inicialização completa. Turmas: ${allGroupsFromSchedule.size}, RADs: ${remoteRads.length}`);
-
         } catch (err) {
-            console.error('❌ Erro na inicialização:', err);
-            showErrorBanner('Erro ao carregar dados.');
+            console.error('❌ Erro:', err);
             forceHide();
         }
     });
 
     function carregarScheduleFallback() {
-        const fallbackGroups = ['G1 - TURMA 1', 'G2 - TURMA 2'];
-        fallbackGroups.forEach(g => {
+        ['G1 - TURMA 1', 'G2 - TURMA 2'].forEach(g => {
             const key = normalizeGroupKey(g);
             if (!allGroupsFromSchedule.has(key)) allGroupsFromSchedule.set(key, g);
         });
@@ -1040,125 +724,61 @@
             { book: 'Book 2', group: 'G2 - TURMA 2', room: 'Sala 2', modal: 'REGULAR', time: '15:10', dayName: 'Segunda', teacher: 'HOPE' }
         ];
     }
-
-    function carregarAlunosFallback() {
-        studentsData = { 'G1 - TURMA 1': ['Aluno 1'], 'G2 - TURMA 2': ['Aluno 2'] };
-    }
+    function carregarAlunosFallback() { studentsData = { 'G1 - TURMA 1': ['Aluno 1'] }; }
 
     async function refreshData() {
         if(!confirm('Deseja recarregar os dados?')) return;
-        
         const ls = document.getElementById('loading-screen');
         if (ls) ls.classList.remove('hidden');
-
         try {
             const tasks = [
                 (async () => { try { await loadKidsLessonPlans(); } catch(e) {} })(),
-                (async () => {
-                    try {
-                        const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS);
-                        scheduleData = parseScheduleCSV(text);
-                    } catch(e) {}
-                })(),
-                (async () => {
-                    try {
-                        const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS);
-                        nextWeekData = parseScheduleCSV(text, { skipGroupRegistration: true });
-                    } catch(e) {}
-                })(),
-                (async () => {
-                    try {
-                        const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS);
-                        parseStudentsCSV(text);
-                    } catch(e) {}
-                })(),
-                (async () => {
-                    try {
-                        const rads = await jsonpRequest(API_URL);
-                        remoteRads = rads || [];
-                    } catch(e) {}
-                })(),
-                (async () => {
-                    try { await loadGlobalProgress(); } catch(e) {}
-                })()
+                (async () => { try { const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS); scheduleData = parseScheduleCSV(text); } catch(e) {} })(),
+                (async () => { try { const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS); nextWeekData = parseScheduleCSV(text, { skipGroupRegistration: true }); } catch(e) {} })(),
+                (async () => { try { const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS); parseStudentsCSV(text); } catch(e) {} })(),
+                (async () => { try { const rads = await jsonpRequest(API_URL); remoteRads = rads || []; } catch(e) {} })(),
+                (async () => { try { await loadGlobalProgress(); } catch(e) {} })()
             ];
-
             await Promise.allSettled(tasks);
-
             allWeeks = { 'This Week': scheduleData, 'Next Week': nextWeekData };
-
             try { await tryFlushPendingQueue(); } catch(e) {}
-
-            buildModalMap();
-            buildGroupBookMap();
-            loadLessonProgress();
-            populateGroupSelect();
-            populateFechamentoTeacherFilter();
-            renderTeachers();
-
-            if (!document.getElementById('schedule-screen').classList.contains('hidden') && currentTeacher) {
-                loadWeekData(currentWeekName);
-            }
-            if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) {
-                renderGroupLessonPlans();
-            }
-            if (!document.getElementById('history-screen').classList.contains('hidden')) {
-                renderHistory();
-            }
-            if (!document.getElementById('fechamento-screen').classList.contains('hidden')) {
-                renderFechamento();
-            }
-
-            const pendingCount = getPendingQueue().length;
-            alert(`✅ Dados atualizados!\nThis Week: ${scheduleData.length}\nNext Week: ${nextWeekData.length}\nRADs servidor: ${remoteRads.length}\nModalidades: ${Object.keys(modalIndex.exato).length}\nPendentes: ${pendingCount}`);
-        } catch (err) {
-            console.error(err);
-            alert('❌ Erro ao atualizar.');
-        } finally {
-            hideLoadingScreen();
-        }
+            buildModalMap(); buildGroupBookMap();
+            loadLessonProgress(); populateGroupSelect();
+            populateFechamentoTeacherFilter(); renderTeachers();
+            if (!document.getElementById('schedule-screen').classList.contains('hidden') && currentTeacher) loadWeekData(currentWeekName);
+            if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) renderGroupLessonPlans();
+            if (!document.getElementById('history-screen').classList.contains('hidden')) renderHistory();
+            if (!document.getElementById('fechamento-screen').classList.contains('hidden')) renderFechamento();
+            alert('✅ Dados atualizados!');
+        } catch (err) { console.error(err); alert('❌ Erro ao atualizar.'); }
+        finally { hideLoadingScreen(); }
     }
 
     function parseScheduleCSV(text, opts = {}) {
         const { skipGroupRegistration = false } = opts;
         if (!text) return [];
-
         const lines = text.split('\n').map(l => l.trim()).filter(l => l);
         if(lines.length < 2) return [];
-
         const COL_BOOK = 1, COL_GROUP = 2, COL_ROOM = 3, COL_MODAL = 4, COL_TIME = 5, DAYS_START = 6;
         const daysMap = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
-
         const aulas = [];
         const chavesAulas = new Set();
-
         for(let i=1; i<lines.length; i++) {
             let row;
-            try {
-                row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
-            } catch(e) { continue; }
-
+            try { row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim()); } catch(e) { continue; }
             const book = row[COL_BOOK] || '';
             const groupRaw = row[COL_GROUP] || '';
             const room = row[COL_ROOM] || '';
             const modal = row[COL_MODAL] || '';
             const time = row[COL_TIME] || '';
-
             if(!groupRaw || groupRaw.trim() === '') continue;
-
             const groupClean = cleanText(groupRaw);
             const bookClean = cleanText(book);
-
             if (!skipGroupRegistration) {
                 const normKey = normalizeGroupKey(groupClean);
-                allGroupsFromSchedule.set(normKey, {
-                    display: groupClean, book: bookClean,
-                    room: cleanText(room), modal: cleanText(modal), time: cleanText(time)
-                });
+                allGroupsFromSchedule.set(normKey, { display: groupClean, book: bookClean, room: cleanText(room), modal: cleanText(modal), time: cleanText(time) });
             }
-
             if(!time) continue;
-
             for(let d=0; d<5; d++) {
                 const cellContent = row[DAYS_START + d];
                 if(cellContent && cellContent.trim() !== '') {
@@ -1167,12 +787,7 @@
                         const key = `${bookClean}|${groupClean}|${room}|${modal}|${time}|${daysMap[d]}|${teacherName}`;
                         if (chavesAulas.has(key)) continue;
                         chavesAulas.add(key);
-
-                        aulas.push({
-                            book: bookClean, group: groupClean,
-                            room: cleanText(room), modal: cleanText(modal), time: cleanText(time),
-                            dayIndex: d, dayName: daysMap[d], teacher: teacherName
-                        });
+                        aulas.push({ book: bookClean, group: groupClean, room: cleanText(room), modal: cleanText(modal), time: cleanText(time), dayIndex: d, dayName: daysMap[d], teacher: teacherName });
                     }
                 }
             }
@@ -1184,33 +799,22 @@
         if (!text) return;
         const lines = text.split('\n').map(l => l.trim()).filter(l => l);
         if(lines.length < 2) return;
-        
         const rawGroups = {};
         for(let i=1; i<lines.length; i++) {
             let parts;
-            try {
-                parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-            } catch(e) { continue; }
-
+            try { parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); } catch(e) { continue; }
             if(parts.length >= 2) {
                 const group = parts[0].replace(/"/g, '').trim();
                 const student = parts[1].replace(/"/g, '').trim();
-                
                 if(group && student) {
                     const key = normalizeGroupKeyAgressive(group);
                     if(!rawGroups[key]) rawGroups[key] = { display: group, students: [] };
-                    if(!rawGroups[key].students.includes(student)) {
-                        rawGroups[key].students.push(student);
-                    }
+                    if(!rawGroups[key].students.includes(student)) rawGroups[key].students.push(student);
                 }
             }
         }
-        
         studentsData = {};
-        Object.keys(rawGroups).forEach(key => {
-            const { display, students } = rawGroups[key];
-            studentsData[display] = students;
-        });
+        Object.keys(rawGroups).forEach(key => { studentsData[rawGroups[key].display] = rawGroups[key].students; });
     }
 
     function cleanText(str) { return str ? str.replace(/<.*?>/g, '').trim() : ''; }
@@ -1225,48 +829,32 @@
         return null;
     }
 
-    function normalizeGroupKey(str) {
-        if (!str) return '';
-        return str.toUpperCase().replace(/\s+/g, ' ').trim();
-    }
+    function normalizeGroupKey(str) { return str ? str.toUpperCase().replace(/\s+/g, ' ').trim() : ''; }
 
     function normalizeGroupKeyAgressive(str) {
         if (!str) return '';
-        return str.toUpperCase()
-            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-            .replace(/[\(\)\[\]]/g, ' ')
-            .replace(/[~\-_/\\|:;,.!?@#$%^&*+=<>"']/g, ' ')
-            .replace(/[^A-Z0-9 ]+/g, ' ')
-            .replace(/\s+/g, ' ').trim();
+        return str.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[\(\)\[\]]/g, ' ').replace(/[~\-_/\\|:;,.!?@#$%^&*+=<>"']/g, ' ')
+            .replace(/[^A-Z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
     }
 
     function findStudentsForGroup(groupName, bookHint) {
         if (!groupName) return [];
-        
         const targetKey = normalizeGroupKeyAgressive(groupName);
         const bookKey = bookHint ? normalizeGroupKeyAgressive(bookHint) : '';
         const bookUpper = (bookHint || '').toUpperCase();
         const groupUpper = (groupName || '').toUpperCase();
         const keys = Object.keys(studentsData);
-
         if (groupUpper.includes('CONNECT')) {
             const wantKids = bookUpper.includes('KIDS') || targetKey.includes('KIDS');
             const suffix = wantKids ? 'KIDS' : 'GET IT';
-            const match = keys.find(k => {
-                const kNorm = normalizeGroupKeyAgressive(k);
-                return kNorm.includes('CONNECT') && kNorm.includes(suffix);
-            });
+            const match = keys.find(k => { const kNorm = normalizeGroupKeyAgressive(k); return kNorm.includes('CONNECT') && kNorm.includes(suffix); });
             if (match && studentsData[match]) return studentsData[match];
         }
-
         if (groupUpper.includes('MUFASA') || targetKey.includes('MUFASA') || targetKey.includes('TIMBO')) {
-            const match = keys.find(k => {
-                const kNorm = normalizeGroupKeyAgressive(k);
-                return kNorm.includes('MUFASA') || kNorm.includes('TIMBO');
-            });
+            const match = keys.find(k => { const kNorm = normalizeGroupKeyAgressive(k); return kNorm.includes('MUFASA') || kNorm.includes('TIMBO'); });
             if (match && studentsData[match]) return studentsData[match];
         }
-
         function score(k) {
             const kNorm = normalizeGroupKeyAgressive(k);
             let s = 0;
@@ -1279,17 +867,11 @@
             if (targetGx && keyGx && targetGx[1] === keyGx[1]) s += 300;
             const targetWords = targetKey.split(' ').filter(w => w.length > 3);
             const kWords = kNorm.split(' ');
-            const commonWords = targetWords.filter(w => kWords.includes(w));
-            s += commonWords.length * 100;
+            s += targetWords.filter(w => kWords.includes(w)).length * 100;
             return s;
         }
-
         let bestKey = null, bestScore = 0;
-        keys.forEach(k => {
-            const s = score(k);
-            if (s > bestScore) { bestScore = s; bestKey = k; }
-        });
-
+        keys.forEach(k => { const s = score(k); if (s > bestScore) { bestScore = s; bestKey = k; } });
         if (bestKey && bestScore > 0 && studentsData[bestKey]) return studentsData[bestKey];
         return [];
     }
@@ -1298,40 +880,30 @@
         if (!text) return null;
         const norm = normalizeGroupKeyAgressive(text);
         if (!norm) return null;
-
         const books = Object.keys(KIDS_BOOK_GIDS);
-
-        for (const b of books) {
-            if (normalizeGroupKeyAgressive(b) === norm) return b;
-        }
-
+        for (const b of books) if (normalizeGroupKeyAgressive(b) === norm) return b;
         const prefixMatch = norm.match(/\b(AW|WF)\b/);
         if (prefixMatch) {
             const prefix = prefixMatch[1];
             const idx = norm.indexOf(prefix);
             const depois = norm.substring(idx + prefix.length).trim();
             const palavrasDepois = depois.split(' ').filter(w => w.length > 1);
-
             if (palavrasDepois.length > 0) {
                 for (const b of books) {
                     const bNorm = normalizeGroupKeyAgressive(b);
                     if (!bNorm.startsWith(prefix + ' ')) continue;
                     const bWords = bNorm.split(' ').filter(w => w.length > 1 && w !== prefix);
-                    const bate = palavrasDepois.every(w => bWords.includes(w));
-                    if (bate) return b;
+                    if (palavrasDepois.every(w => bWords.includes(w))) return b;
                 }
                 for (const b of books) {
                     const bNorm = normalizeGroupKeyAgressive(b);
                     if (!bNorm.startsWith(prefix + ' ')) continue;
                     const bWords = bNorm.split(' ').filter(w => w.length > 1 && w !== prefix);
-                    const common = palavrasDepois.filter(w => bWords.includes(w));
-                    if (common.length > 0) return b;
+                    if (palavrasDepois.filter(w => bWords.includes(w)).length > 0) return b;
                 }
             }
         }
-
         if (norm === 'AW' || norm === 'WF') return null;
-
         const words = norm.split(' ').filter(w => w.length > 1);
         if (words.length >= 2) {
             for (const b of books) {
@@ -1347,16 +919,10 @@
             const group = info.display;
             const bookStr = (info.book || '').trim();
             if (!bookStr) return;
-
             const combinado = (bookStr + ' ' + group).trim();
             let kids = findKidsBook(combinado);
             if (!kids) kids = findKidsBook(bookStr);
-
-            if (kids) {
-                groupBookMap[group] = kids;
-                return;
-            }
-
+            if (kids) { groupBookMap[group] = kids; return; }
             if (bookStr.toUpperCase() === 'AW' || bookStr.toUpperCase() === 'WF') {
                 const prefix = bookStr.toUpperCase();
                 const groupNorm = normalizeGroupKeyAgressive(group);
@@ -1366,27 +932,17 @@
                     const bNorm = normalizeGroupKeyAgressive(b);
                     if (!bNorm.startsWith(prefix + ' ')) continue;
                     const bWords = bNorm.split(' ').filter(w => w.length > 1 && w !== prefix);
-                    const common = groupWords.filter(w => bWords.includes(w));
-                    if (common.length > 0) {
-                        groupBookMap[group] = b;
-                        return;
-                    }
+                    if (groupWords.filter(w => bWords.includes(w)).length > 0) { groupBookMap[group] = b; return; }
                 }
             }
-
             const bookKey = bookStr.toUpperCase().trim();
             const bookNames = Object.keys(BOOK_STRUCTURE);
             let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
             if (!foundBook) {
                 const numMatch = bookKey.match(/\d+/);
-                if (numMatch) {
-                    const num = parseInt(numMatch[0]);
-                    if (num >= 1 && num <= 10) foundBook = `Book ${num}`;
-                }
+                if (numMatch) { const num = parseInt(numMatch[0]); if (num >= 1 && num <= 10) foundBook = `Book ${num}`; }
             }
-            if (foundBook) {
-                groupBookMap[group] = foundBook;
-            }
+            if (foundBook) groupBookMap[group] = foundBook;
         });
     }
 
@@ -1401,21 +957,14 @@
 
     function getBookForGroup(group) {
         if (!group) return 'Book 1';
-
         const normKey = normalizeGroupKey(group);
         const info = allGroupsFromSchedule.get(normKey);
-
         if (info && info.book) {
             const bookStr = info.book.trim();
             const combinado = (bookStr + ' ' + group).trim();
-
             let kids = findKidsBook(combinado);
             if (!kids) kids = findKidsBook(bookStr);
-            if (kids) {
-                groupBookMap[group] = kids;
-                return kids;
-            }
-
+            if (kids) { groupBookMap[group] = kids; return kids; }
             if (bookStr.toUpperCase() === 'AW' || bookStr.toUpperCase() === 'WF') {
                 const prefix = bookStr.toUpperCase();
                 const groupNorm = normalizeGroupKeyAgressive(group);
@@ -1425,52 +974,35 @@
                     const bNorm = normalizeGroupKeyAgressive(b);
                     if (!bNorm.startsWith(prefix + ' ')) continue;
                     const bWords = bNorm.split(' ').filter(w => w.length > 1 && w !== prefix);
-                    const common = groupWords.filter(w => bWords.includes(w));
-                    if (common.length > 0) {
-                        groupBookMap[group] = b;
-                        return b;
-                    }
+                    if (groupWords.filter(w => bWords.includes(w)).length > 0) { groupBookMap[group] = b; return b; }
                 }
             }
-
             const bookKey = bookStr.toUpperCase().trim();
             const bookNames = Object.keys(BOOK_STRUCTURE);
             let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
             if (!foundBook) {
                 const numMatch = bookKey.match(/\d+/);
-                if (numMatch) {
-                    const num = parseInt(numMatch[0]);
-                    if (num >= 1 && num <= 10) foundBook = `Book ${num}`;
-                }
+                if (numMatch) { const num = parseInt(numMatch[0]); if (num >= 1 && num <= 10) foundBook = `Book ${num}`; }
             }
-            if (foundBook) {
-                groupBookMap[group] = foundBook;
-                return foundBook;
-            }
+            if (foundBook) { groupBookMap[group] = foundBook; return foundBook; }
         }
-
         const kidsFromGroup = findKidsBook(group);
         if (kidsFromGroup) { groupBookMap[group] = kidsFromGroup; return kidsFromGroup; }
-
         const bookFromName = getBookFromGroupName(group);
         if (bookFromName) { groupBookMap[group] = bookFromName; return bookFromName; }
-
         groupBookMap[group] = 'Book 1';
         return 'Book 1';
     }
 
     function getGroupLessons(group) {
         const bookName = getBookForGroup(group);
-        
         if (KIDS_BOOK_STRUCTURE[bookName]) {
-            const lessons = KIDS_BOOK_STRUCTURE[bookName].lessons;
-            return lessons.map((label, index) => ({
+            return KIDS_BOOK_STRUCTURE[bookName].lessons.map((label, index) => ({
                 id: `lesson_${index}`, label,
                 isRevision: label.toUpperCase().includes('REVISION') || label.toUpperCase().includes('REVIEW'),
                 isTest: label.toUpperCase().includes('TEST'), order: index
             }));
         }
-
         const bookData = BOOK_STRUCTURE[bookName];
         if (bookData && bookData.lessons) {
             return bookData.lessons.map((label, index) => ({
@@ -1483,23 +1015,11 @@
     }
 
     function loadLessonProgress() {
-        try {
-            const saved = localStorage.getItem('lessonProgress');
-            currentLessonProgress = saved ? JSON.parse(saved) : {};
-        } catch(e) { currentLessonProgress = {}; }
+        try { const saved = localStorage.getItem('lessonProgress'); currentLessonProgress = saved ? JSON.parse(saved) : {}; } catch(e) { currentLessonProgress = {}; }
     }
-
-    function persistLessonProgress() {
-        try { localStorage.setItem('lessonProgress', JSON.stringify(currentLessonProgress)); } catch(e) {}
-    }
-
+    function persistLessonProgress() { try { localStorage.setItem('lessonProgress', JSON.stringify(currentLessonProgress)); } catch(e) {} }
     function getProgressForGroup(group) { return currentLessonProgress[group] || []; }
-
-    function isLessonDone(group, lessonId) {
-        const arr = getProgressForGroup(group);
-        const item = arr.find(p => p.lesson === lessonId);
-        return !!(item && item.completed);
-    }
+    function isLessonDone(group, lessonId) { const arr = getProgressForGroup(group); const item = arr.find(p => p.lesson === lessonId); return !!(item && item.completed); }
 
     function getNextLessonIndex(group) {
         const lessons = getGroupLessons(group);
@@ -1515,41 +1035,28 @@
         if (!currentLessonProgress[group]) currentLessonProgress[group] = [];
         const lessons = getGroupLessons(group);
         const today = new Date().toLocaleDateString('pt-BR');
-
         if (completed) {
             for (let i = 0; i <= clickedIndex; i++) {
-                const lesson = lessons[i];
-                if (!lesson) continue;
+                const lesson = lessons[i]; if (!lesson) continue;
                 const existing = currentLessonProgress[group].find(p => p.lesson === lesson.id);
                 if (existing) { existing.completed = true; existing.date = today; }
                 else currentLessonProgress[group].push({ lesson: lesson.id, completed: true, date: today });
             }
         } else {
             for (let i = clickedIndex; i < lessons.length; i++) {
-                const lesson = lessons[i];
-                if (!lesson) continue;
+                const lesson = lessons[i]; if (!lesson) continue;
                 const existing = currentLessonProgress[group].find(p => p.lesson === lesson.id);
                 if (existing) { existing.completed = false; existing.date = ''; }
             }
         }
-
         currentLessonProgress[group] = currentLessonProgress[group].filter(p => p.completed === true);
-        if (currentLessonProgress[group].length === 0) {
-            delete currentLessonProgress[group];
-        }
-
+        if (currentLessonProgress[group].length === 0) delete currentLessonProgress[group];
         persistLessonProgress();
-
         try { if (currentGroup) openGroupDetail(currentGroup); } catch(e) {}
         try { if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) renderGroupLessonPlans(); } catch(e) {}
         try { if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule(); } catch(e) {}
-
         const lessonsMap = {};
-        (currentLessonProgress[group] || []).forEach(p => {
-            if (p.completed === true) {
-                lessonsMap[p.lesson] = { completed: true, date: p.date || '' };
-            }
-        });
+        (currentLessonProgress[group] || []).forEach(p => { if (p.completed === true) lessonsMap[p.lesson] = { completed: true, date: p.date || '' }; });
         sendProgressToServer(group, lessonsMap);
     }
 
@@ -1557,41 +1064,27 @@
         const diasSemana = { 'Domingo': 0, 'Segunda': 1, 'Terça': 2, 'Quarta': 3, 'Quinta': 4, 'Sexta': 5, 'Sábado': 6 };
         const dia = diasSemana[cls.dayName];
         if (dia === undefined) return null;
-
         const hoje = new Date();
-        const diaHoje = hoje.getDay();
-        const diff = dia - diaHoje;
+        const diff = dia - hoje.getDay();
         const offset = (weekName === 'Next Week') ? 7 : 0;
-
         const dataAula = new Date(hoje);
         dataAula.setDate(hoje.getDate() + diff + offset);
-
         const dd = String(dataAula.getDate()).padStart(2, '0');
         const mm = String(dataAula.getMonth() + 1).padStart(2, '0');
-        const yyyy = dataAula.getFullYear();
-        return `${dd}/${mm}/${yyyy}`;
+        return `${dd}/${mm}/${dataAula.getFullYear()}`;
     }
 
     function radEhDaSemana(rad, cls, weekName) {
         if (!rad.timestamp) return false;
-
         const dataAula = getDataDaAulaNaSemana(cls, weekName);
         if (!dataAula) return false;
-
         const ts = String(rad.timestamp);
         const match = ts.match(/^(\d{2}\/\d{2}\/\d{4})/);
-        if (match) {
-            return match[1] === dataAula;
-        }
-
+        if (match) return match[1] === dataAula;
         try {
             const d = new Date(ts);
-            const dd = String(d.getDate()).padStart(2, '0');
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const yyyy = d.getFullYear();
-            return `${dd}/${mm}/${yyyy}` === dataAula;
+            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}` === dataAula;
         } catch(e) {}
-
         return false;
     }
 
@@ -1603,50 +1096,16 @@
 
     function isRadSaved(cls) {
         if (!currentTeacher) return false;
-
-        try {
-            const saved = localStorage.getItem(getRadKey(cls));
-            if (saved) {
-                const data = JSON.parse(saved);
-                if (data.status && data.status !== '') return true;
-            }
-        } catch(e) {}
-
-        const matches = remoteRads.filter(r =>
-            r.teacher === currentTeacher.name &&
-            r.day === cls.dayName &&
-            r.time === cls.time &&
-            r.group === cls.group
-        );
-
-        for (const rad of matches) {
-            if (radEhDaSemana(rad, cls, currentWeekName)) {
-                return true;
-            }
-        }
-
+        try { const saved = localStorage.getItem(getRadKey(cls)); if (saved) { const data = JSON.parse(saved); if (data.status && data.status !== '') return true; } } catch(e) {}
+        const matches = remoteRads.filter(r => r.teacher === currentTeacher.name && r.day === cls.dayName && r.time === cls.time && r.group === cls.group);
+        for (const rad of matches) if (radEhDaSemana(rad, cls, currentWeekName)) return true;
         return false;
     }
 
     function getRadSavedData(cls) {
-        try {
-            const saved = localStorage.getItem(getRadKey(cls));
-            if (saved) return JSON.parse(saved);
-        } catch(e) {}
-
-        const matches = remoteRads.filter(r =>
-            r.teacher === currentTeacher?.name &&
-            r.day === cls.dayName &&
-            r.time === cls.time &&
-            r.group === cls.group
-        );
-
-        for (const rad of matches) {
-            if (radEhDaSemana(rad, cls, currentWeekName)) {
-                return rad;
-            }
-        }
-
+        try { const saved = localStorage.getItem(getRadKey(cls)); if (saved) return JSON.parse(saved); } catch(e) {}
+        const matches = remoteRads.filter(r => r.teacher === currentTeacher?.name && r.day === cls.dayName && r.time === cls.time && r.group === cls.group);
+        for (const rad of matches) if (radEhDaSemana(rad, cls, currentWeekName)) return rad;
         return null;
     }
 
@@ -1662,7 +1121,6 @@
         document.getElementById('btn-fechamento').classList.remove('active');
         currentTeacher = null;
     }
-
     function showSchedule() {
         document.getElementById('selection-screen').classList.add('hidden');
         document.getElementById('schedule-screen').classList.remove('hidden');
@@ -1674,7 +1132,6 @@
         document.getElementById('btn-history').classList.remove('active');
         document.getElementById('btn-fechamento').classList.remove('active');
     }
-
     function showLessonPlans() {
         document.getElementById('selection-screen').classList.add('hidden');
         document.getElementById('schedule-screen').classList.add('hidden');
@@ -1687,7 +1144,6 @@
         document.getElementById('btn-fechamento').classList.remove('active');
         renderGroupLessonPlans();
     }
-
     function showHistory() {
         document.getElementById('selection-screen').classList.add('hidden');
         document.getElementById('schedule-screen').classList.add('hidden');
@@ -1702,7 +1158,6 @@
         populateHistoryTeacherFilter();
         loadHistoryFromServer();
     }
-
     function showFechamento() {
         document.getElementById('selection-screen').classList.add('hidden');
         document.getElementById('schedule-screen').classList.add('hidden');
@@ -1715,40 +1170,25 @@
         document.getElementById('btn-fechamento').classList.add('active');
         currentTeacher = null;
         populateFechamentoTeacherFilter();
-        if (remoteRads.length === 0) {
-            loadHistoryFromServer();
-        }
+        if (remoteRads.length === 0) loadHistoryFromServer();
         renderFechamento();
     }
 
     function loadValoresSalvos() {
-        try {
-            const saved = localStorage.getItem(VALORES_KEY);
-            if (saved) {
-                const v = JSON.parse(saved);
-                if (v.normal !== undefined) document.getElementById('valor-normal').value = v.normal;
-                if (v.inc !== undefined) document.getElementById('valor-inc').value = v.inc;
-            }
-        } catch(e) {}
+        try { const saved = localStorage.getItem(VALORES_KEY); if (saved) { const v = JSON.parse(saved); if (v.normal !== undefined) document.getElementById('valor-normal').value = v.normal; if (v.inc !== undefined) document.getElementById('valor-inc').value = v.inc; } } catch(e) {}
     }
-
     function salvarValores() {
         const normal = parseFloat(document.getElementById('valor-normal').value) || 0;
         const inc = parseFloat(document.getElementById('valor-inc').value) || 0;
-        try {
-            localStorage.setItem(VALORES_KEY, JSON.stringify({ normal, inc }));
-        } catch(e) {}
+        try { localStorage.setItem(VALORES_KEY, JSON.stringify({ normal, inc })); } catch(e) {}
     }
 
     function populateFechamentoTeacherFilter() {
         const select = document.getElementById('fech-teacher');
         if (!select) return;
         select.innerHTML = '<option value="">Todos os professores</option>';
-        VALID_TEACHERS.sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
-            const opt = document.createElement('option');
-            opt.value = t.name;
-            opt.textContent = t.name;
-            select.appendChild(opt);
+        VALID_TEACHERS.slice().sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
+            const opt = document.createElement('option'); opt.value = t.name; opt.textContent = t.name; select.appendChild(opt);
         });
     }
 
@@ -1760,141 +1200,54 @@
 
     function renderFechamento() {
         salvarValores();
-
         const valorNormal = parseFloat(document.getElementById('valor-normal').value) || 0;
         const valorInc = parseFloat(document.getElementById('valor-inc').value) || 0;
-
         const filtroTeacher = (document.getElementById('fech-teacher').value || '').toUpperCase();
         const filtroMes = document.getElementById('fech-mes').value;
-
         let filtered = remoteRads.slice();
-        if (filtroTeacher) {
-            filtered = filtered.filter(r => (r.teacher || '').toUpperCase() === filtroTeacher);
-        }
-        if (filtroMes) {
-            filtered = filtered.filter(r => {
-                if (!r.timestamp) return false;
-                const ts = String(r.timestamp);
-                let ano, mes;
-                const match = ts.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
-                if (match) {
-                    ano = match[3];
-                    mes = match[2];
-                } else {
-                    try {
-                        const d = new Date(ts);
-                        ano = String(d.getFullYear());
-                        mes = String(d.getMonth() + 1).padStart(2, '0');
-                    } catch(e) { return false; }
-                }
-                return `${ano}-${mes}` === filtroMes;
-            });
-        }
-
+        if (filtroTeacher) filtered = filtered.filter(r => (r.teacher || '').toUpperCase() === filtroTeacher);
+        if (filtroMes) filtered = filtered.filter(r => {
+            if (!r.timestamp) return false;
+            const ts = String(r.timestamp);
+            let ano, mes;
+            const match = ts.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+            if (match) { ano = match[3]; mes = match[2]; } else {
+                try { const d = new Date(ts); ano = String(d.getFullYear()); mes = String(d.getMonth() + 1).padStart(2, '0'); } catch(e) { return false; }
+            }
+            return `${ano}-${mes}` === filtroMes;
+        });
         let normais = 0, inCompany = 0, noShow = 0, canceladas = 0;
         const listaDetalhada = [];
-
         filtered.forEach(rad => {
             const status = (rad.status || '').toLowerCase();
             const inc = isInCompany(rad);
-
-            if (status === 'realizada') {
-                if (inc) inCompany++;
-                else normais++;
-            } else if (status === 'noshow') {
-                noShow++;
-            } else if (status === 'cancelada') {
-                canceladas++;
-            }
-
-            listaDetalhada.push({
-                teacher: rad.teacher,
-                day: rad.day,
-                time: rad.time,
-                group: rad.group,
-                status: rad.status,
-                inc: inc,
-                modal: getModalDoRad(rad),
-                timestamp: rad.timestamp
-            });
+            if (status === 'realizada') { if (inc) inCompany++; else normais++; }
+            else if (status === 'noshow') noShow++;
+            else if (status === 'cancelada') canceladas++;
+            listaDetalhada.push({ teacher: rad.teacher, day: rad.day, time: rad.time, group: rad.group, status: rad.status, inc, modal: getModalDoRad(rad), timestamp: rad.timestamp });
         });
-
         const totalNormal = (normais + noShow) * valorNormal;
         const totalInc = inCompany * valorInc;
         const totalGeral = totalNormal + totalInc;
-
         const resumo = document.getElementById('fechamento-resumo');
         resumo.innerHTML = `
-            <div class="fechamento-card">
-                <h4>✅ Aulas Normais</h4>
-                <div class="valor">${normais}</div>
-                <div style="color: var(--text-sec); font-size: 0.85rem; margin-top: 5px;">R$ ${valorNormal.toFixed(2)} cada</div>
-            </div>
-            <div class="fechamento-card inc">
-                <h4>🏢 In Company</h4>
-                <div class="valor">${inCompany}</div>
-                <div style="color: #6f42c1; font-size: 0.85rem; margin-top: 5px;">R$ ${valorInc.toFixed(2)} cada</div>
-            </div>
-            <div class="fechamento-card noshow">
-                <h4>❌ No Show</h4>
-                <div class="valor">${noShow}</div>
-                <div style="color: #856404; font-size: 0.85rem; margin-top: 5px;">R$ ${valorNormal.toFixed(2)} cada</div>
-            </div>
-            <div class="fechamento-card cancel">
-                <h4>⚠️ Canceladas</h4>
-                <div class="valor">${canceladas}</div>
-                <div style="color: var(--danger); font-size: 0.85rem; margin-top: 5px;">Não paga</div>
-            </div>
-            <div class="fechamento-card total">
-                <h4>💰 TOTAL A PAGAR</h4>
-                <div class="valor">R$ ${totalGeral.toFixed(2)}</div>
-                <div style="color: var(--success); font-size: 0.85rem; margin-top: 5px;">${normais + noShow + inCompany} aulas pagas</div>
-            </div>
+            <div class="fechamento-card"><h4>✅ Aulas Normais</h4><div class="valor">${normais}</div><div style="color:var(--text-sec);font-size:0.85rem;margin-top:5px;">R$ ${valorNormal.toFixed(2)} cada</div></div>
+            <div class="fechamento-card inc"><h4>🏢 In Company</h4><div class="valor">${inCompany}</div><div style="color:#6f42c1;font-size:0.85rem;margin-top:5px;">R$ ${valorInc.toFixed(2)} cada</div></div>
+            <div class="fechamento-card noshow"><h4>❌ No Show</h4><div class="valor">${noShow}</div><div style="color:#856404;font-size:0.85rem;margin-top:5px;">R$ ${valorNormal.toFixed(2)} cada</div></div>
+            <div class="fechamento-card cancel"><h4>⚠️ Canceladas</h4><div class="valor">${canceladas}</div><div style="color:var(--danger);font-size:0.85rem;margin-top:5px;">Não paga</div></div>
+            <div class="fechamento-card total"><h4>💰 TOTAL A PAGAR</h4><div class="valor">R$ ${totalGeral.toFixed(2)}</div><div style="color:var(--success);font-size:0.85rem;margin-top:5px;">${normais + noShow + inCompany} aulas pagas</div></div>
         `;
-
         const lista = document.getElementById('fechamento-lista-container');
-        if (listaDetalhada.length === 0) {
-            lista.innerHTML = `<p style="text-align:center; color: var(--text-sec); padding: 20px;">Nenhum RAD encontrado com esses filtros.</p>`;
-            return;
-        }
-
-        let html = `<h3>📋 Detalhamento (${listaDetalhada.length} aulas)</h3>`;
-        html += `<table><thead><tr>
-            <th>Data</th><th>Teacher</th><th>Dia</th><th>Horário</th><th>Turma</th><th>Modal</th><th>Status</th><th>Valor</th>
-        </tr></thead><tbody>`;
-
+        if (listaDetalhada.length === 0) { lista.innerHTML = `<p style="text-align:center;color:var(--text-sec);padding:20px;">Nenhum RAD encontrado.</p>`; return; }
+        let html = `<h3>📋 Detalhamento (${listaDetalhada.length} aulas)</h3><table><thead><tr><th>Data</th><th>Teacher</th><th>Dia</th><th>Horário</th><th>Turma</th><th>Modal</th><th>Status</th><th>Valor</th></tr></thead><tbody>`;
         listaDetalhada.forEach(item => {
-            const statusLabel = {
-                'realizada': '✅ Realizada',
-                'noshow': '❌ No Show',
-                'cancelada': '⚠️ Cancelada'
-            }[item.status] || item.status;
-
+            const statusLabel = { 'realizada': '✅ Realizada', 'noshow': '❌ No Show', 'cancelada': '⚠️ Cancelada' }[item.status] || item.status;
             let valor = 0;
-            if (item.status === 'realizada') {
-                valor = item.inc ? valorInc : valorNormal;
-            } else if (item.status === 'noshow') {
-                valor = valorNormal;
-            } else {
-                valor = 0;
-            }
-
-            const badge = item.inc
-                ? `<span class="badge badge-inc">IN-C</span>`
-                : `<span class="badge badge-modal">${item.modal || 'REGULAR'}</span>`;
-
-            html += `<tr>
-                <td>${item.timestamp || '—'}</td>
-                <td><strong>${item.teacher || '—'}</strong></td>
-                <td>${item.day || '—'}</td>
-                <td>${item.time || '—'}</td>
-                <td>${item.group || '—'}</td>
-                <td>${badge}</td>
-                <td>${statusLabel}</td>
-                <td style="font-weight: 600; color: ${valor > 0 ? 'var(--success)' : 'var(--text-sec)'};">R$ ${valor.toFixed(2)}</td>
-            </tr>`;
+            if (item.status === 'realizada') valor = item.inc ? valorInc : valorNormal;
+            else if (item.status === 'noshow') valor = valorNormal;
+            const badge = item.inc ? `<span class="badge badge-inc">IN-C</span>` : `<span class="badge badge-modal">${item.modal || 'REGULAR'}</span>`;
+            html += `<tr><td>${item.timestamp || '—'}</td><td><strong>${item.teacher || '—'}</strong></td><td>${item.day || '—'}</td><td>${item.time || '—'}</td><td>${item.group || '—'}</td><td>${badge}</td><td>${statusLabel}</td><td style="font-weight:600;color:${valor > 0 ? 'var(--success)' : 'var(--text-sec)'};">R$ ${valor.toFixed(2)}</td></tr>`;
         });
-
         html += '</tbody></table>';
         lista.innerHTML = html;
     }
@@ -1905,130 +1258,75 @@
         document.getElementById('hist-filter-group').value = '';
         renderHistory();
     }
-
     function populateHistoryTeacherFilter() {
         const select = document.getElementById('hist-filter-teacher');
         if (!select) return;
         select.innerHTML = '<option value="">Todos os professores</option>';
-        VALID_TEACHERS.sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
-            const opt = document.createElement('option');
-            opt.value = t.name;
-            opt.textContent = t.name;
-            select.appendChild(opt);
+        VALID_TEACHERS.slice().sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
+            const opt = document.createElement('option'); opt.value = t.name; opt.textContent = t.name; select.appendChild(opt);
         });
     }
 
     function renderHistory() {
         const container = document.getElementById('history-content');
         if (!container) return;
-
         const filterTeacher = (document.getElementById('hist-filter-teacher').value || '').toUpperCase();
         const filterStatus = document.getElementById('hist-filter-status').value;
         const filterGroup = normalizeGroupKey(document.getElementById('hist-filter-group').value);
-
         let filtered = remoteRads.slice();
         if (filterTeacher) filtered = filtered.filter(r => (r.teacher || '').toUpperCase() === filterTeacher);
         if (filterStatus) filtered = filtered.filter(r => r.status === filterStatus);
         if (filterGroup) filtered = filtered.filter(r => normalizeGroupKey(r.group || '').includes(filterGroup));
-
         filtered.sort((a, b) => {
             const da = a.timestamp ? new Date(a.timestamp).getTime() : 0;
             const db = b.timestamp ? new Date(b.timestamp).getTime() : 0;
             return db - da;
         });
-
         if (filtered.length === 0) {
-            container.innerHTML = `
-                <p style="text-align:center; color: var(--text-sec); margin-top: 40px; font-size: 1.1rem;">
-                    Nenhum RAD registrado ainda.<br>
-                    <span style="font-size:0.9rem;">Quando um professor salvar um RAD, ele aparecerá aqui.</span>
-                </p>
-            `;
+            container.innerHTML = `<p style="text-align:center;color:var(--text-sec);margin-top:40px;">Nenhum RAD registrado.</p>`;
             return;
         }
-
         const statusLabel = {
             'realizada': { text: '✅ Realizada', color: 'var(--success)' },
-            'noshow':    { text: '❌ No Show',   color: 'var(--danger)' },
+            'noshow': { text: '❌ No Show', color: 'var(--danger)' },
             'cancelada': { text: '⚠️ Cancelada', color: 'var(--warning)' }
         };
-
-        let html = `<p style="text-align:center; color: var(--text-sec); margin-bottom: 15px; font-size: 0.9rem;">
-            Total: ${filtered.length} RAD${filtered.length > 1 ? 's' : ''}
-        </p>`;
-
+        let html = `<p style="text-align:center;color:var(--text-sec);margin-bottom:15px;font-size:0.9rem;">Total: ${filtered.length} RAD${filtered.length > 1 ? 's' : ''}</p>`;
         filtered.forEach(rad => {
             const st = statusLabel[rad.status] || { text: rad.status, color: 'var(--text-sec)' };
-            const dateFormatted = rad.timestamp 
-                ? new Date(rad.timestamp).toLocaleString('pt-BR')
-                : '—';
-
-            const lessonsHtml = (rad.lessons && rad.lessons.length > 0)
-                ? rad.lessons.filter(l => l).map(lessonId => {
-                    const label = getLessonLabelFromId(rad.group, lessonId);
-                    return `<span class="badge" style="background: var(--primary); margin: 2px; font-size:0.85rem; padding:6px 12px;">📘 ${label}</span>`;
-                }).join('')
-                : '<em style="color: var(--text-sec);">Nenhuma aula registrada</em>';
-
-            const attendanceHtml = (rad.attendance && rad.attendance.length > 0)
-                ? rad.attendance.filter(a => a).map(a => `<span class="badge" style="background: var(--success); margin: 2px;">✓ ${a}</span>`).join('')
-                : '<em style="color: var(--text-sec);">Nenhum aluno marcado</em>';
-
-            const groupDisplay = rad.group && rad.group.trim() !== '' ? rad.group : '—';
-
+            const dateFormatted = rad.timestamp ? new Date(rad.timestamp).toLocaleString('pt-BR') : '—';
+            const lessonsHtml = (rad.lessons && rad.lessons.length > 0) ? rad.lessons.filter(l => l).map(lessonId => {
+                const label = getLessonLabelFromId(rad.group, lessonId);
+                return `<span class="badge" style="background:var(--primary);margin:2px;font-size:0.85rem;padding:6px 12px;">📘 ${label}</span>`;
+            }).join('') : '<em style="color:var(--text-sec);">Nenhuma aula registrada</em>';
+            const attendanceHtml = (rad.attendance && rad.attendance.length > 0) ? rad.attendance.filter(a => a).map(a => `<span class="badge" style="background:var(--success);margin:2px;">✓ ${a}</span>`).join('') : '<em style="color:var(--text-sec);">Nenhum aluno marcado</em>';
             const inc = isInCompany(rad);
             const incBadge = inc ? ' <span class="badge badge-inc">IN-C</span>' : '';
-
             html += `
-                <div class="day-section" style="margin-bottom: 18px;">
-                    <div class="day-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div class="day-section" style="margin-bottom:18px;">
+                    <div class="day-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
                         <span>${rad.teacher || '—'} — ${rad.day || '—'} ${rad.time || ''}${incBadge}</span>
-                        <span style="font-weight:600; color:${st.color}; font-size:0.9rem;">${st.text}</span>
+                        <span style="font-weight:600;color:${st.color};font-size:0.9rem;">${st.text}</span>
                     </div>
-                    <div style="padding: 16px 20px;">
-                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
-                            <div style="background: var(--card-bg); padding:6px 12px; border-radius:4px; font-size:0.9rem;">
-                                <strong>Turma:</strong> ${groupDisplay}
-                            </div>
-                            <div style="background: var(--card-bg); padding:6px 12px; border-radius:4px; font-size:0.9rem;">
-                                <strong>Book:</strong> ${getBookForGroup(rad.group) || '—'}
-                            </div>
-                            <div style="background: var(--card-bg); padding:6px 12px; border-radius:4px; font-size:0.9rem;">
-                                <strong>Salvo em:</strong> ${dateFormatted}
-                            </div>
+                    <div style="padding:16px 20px;">
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+                            <div style="background:var(--card-bg);padding:6px 12px;border-radius:4px;font-size:0.9rem;"><strong>Turma:</strong> ${rad.group || '—'}</div>
+                            <div style="background:var(--card-bg);padding:6px 12px;border-radius:4px;font-size:0.9rem;"><strong>Book:</strong> ${getBookForGroup(rad.group) || '—'}</div>
+                            <div style="background:var(--card-bg);padding:6px 12px;border-radius:4px;font-size:0.9rem;"><strong>Salvo em:</strong> ${dateFormatted}</div>
                         </div>
-
-                        <div style="margin-bottom: 10px;">
-                            <label style="margin-bottom:4px;">📚 Lesson dada:</label>
-                            <div>${lessonsHtml}</div>
-                        </div>
-
-                        <div style="margin-bottom: 10px;">
-                            <label style="margin-bottom:4px;">👥 Alunos presentes:</label>
-                            <div>${attendanceHtml}</div>
-                        </div>
-
-                        ${rad.observations ? `
-                            <div>
-                                <label style="margin-bottom:4px;">📝 Observações:</label>
-                                <div style="background: var(--card-bg); padding:10px 14px; border-radius:6px; border-left:3px solid var(--primary); font-size:0.9rem; white-space: pre-wrap;">${String(rad.observations).replace(/</g, '&lt;')}</div>
-                            </div>
-                        ` : ''}
+                        <div style="margin-bottom:10px;"><label style="margin-bottom:4px;">📚 Lesson dada:</label><div>${lessonsHtml}</div></div>
+                        <div style="margin-bottom:10px;"><label style="margin-bottom:4px;">👥 Alunos presentes:</label><div>${attendanceHtml}</div></div>
+                        ${rad.observations ? `<div><label style="margin-bottom:4px;">📝 Observações:</label><div style="background:var(--card-bg);padding:10px 14px;border-radius:6px;border-left:3px solid var(--primary);font-size:0.9rem;white-space:pre-wrap;">${String(rad.observations).replace(/</g, '&lt;')}</div></div>` : ''}
                     </div>
                 </div>
             `;
         });
-
         container.innerHTML = html;
     }
 
     function getLessonLabelFromId(group, lessonId) {
         if (!group || !lessonId) return lessonId || '—';
-        try {
-            const lessons = getGroupLessons(group);
-            const lesson = lessons.find(l => l.id === lessonId);
-            if (lesson && lesson.label) return lesson.label;
-        } catch(e) {}
+        try { const lessons = getGroupLessons(group); const lesson = lessons.find(l => l.id === lessonId); if (lesson && lesson.label) return lesson.label; } catch(e) {}
         const numMatch = lessonId.match(/\d+/);
         return numMatch ? `Aula ${numMatch[0]}` : lessonId;
     }
@@ -2037,16 +1335,12 @@
         const grid = document.getElementById('teachers-grid');
         if (!grid) return;
         grid.innerHTML = '';
-        
-        VALID_TEACHERS.sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
+        VALID_TEACHERS.slice().sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
             const card = document.createElement('div');
             card.className = 'teacher-card';
-            card.style.borderColor = t.color;
-            card.innerHTML = `<div class="teacher-name" style="color: ${t.color}">${t.name}</div>`;
-            card.onclick = () => {
-                openTeacherSchedule(t.name, t.color);
-                showSchedule();
-            };
+            card.style.borderColor = '#0d6efd';
+            card.innerHTML = `<div class="teacher-name" style="color:#0d6efd">${t.name}</div>`;
+            card.onclick = () => { openTeacherSchedule(t.name, '#0d6efd'); showSchedule(); };
             grid.appendChild(card);
         });
     }
@@ -2065,10 +1359,8 @@
         const container = document.getElementById('week-selector');
         if (!container) return;
         container.innerHTML = '';
-        
         const weekNames = ['This Week', 'Next Week'];
         const labels = { 'This Week': '📅 This Week', 'Next Week': '📅 Next Week' };
-
         weekNames.forEach((weekName) => {
             const btn = document.createElement('button');
             btn.textContent = labels[weekName] || weekName;
@@ -2094,80 +1386,56 @@
         const container = document.getElementById('schedule-content');
         if (!container) return;
         container.innerHTML = '';
-
         if(currentWeekData.length === 0) {
-            container.innerHTML = `<p style="text-align:center; color: var(--text-sec); margin-top:50px; font-size:1.1rem;">
-                Nenhuma aula encontrada em "${currentWeekName}".
-            </p>`;
+            container.innerHTML = `<p style="text-align:center;color:var(--text-sec);margin-top:50px;font-size:1.1rem;">Nenhuma aula encontrada em "${currentWeekName}".</p>`;
             return;
         }
-
         const daysOrder = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
         const isNextWeek = currentWeekName === 'Next Week';
-        
         daysOrder.forEach(day => {
             const dayClasses = currentWeekData.filter(c => c.dayName === day);
             if(dayClasses.length > 0) {
                 const section = document.createElement('div');
                 section.className = 'day-section';
-                
                 const header = document.createElement('div');
                 header.className = 'day-header';
                 header.textContent = day;
                 section.appendChild(header);
-
                 const list = document.createElement('div');
                 list.className = 'classes-list';
-
                 dayClasses.forEach(cls => {
                     const card = document.createElement('div');
                     card.className = 'class-card';
                     if (isNextWeek) card.classList.add('next-week-card');
-                    
                     const isSaved = !isNextWeek && isRadSaved(cls);
                     const savedData = !isNextWeek ? getRadSavedData(cls) : null;
                     const status = savedData ? savedData.status : null;
-
                     if (isSaved) card.classList.add('rad-saved');
-
                     let statusBadge = '';
                     if(status === 'realizada') statusBadge = '<div class="status-indicator status-done"></div>';
                     if(status === 'noshow') statusBadge = '<div class="status-indicator status-noshow"></div>';
                     if(status === 'cancelada') statusBadge = '<div class="status-indicator status-cancel"></div>';
-
                     let savedBadge = isSaved ? `<div class="rad-saved-check" title="RAD salvo">✓</div>` : '';
-
                     const lessons = getGroupLessons(cls.group);
                     const progress = getProgressForGroup(cls.group);
                     const completed = progress.filter(p => p.completed).length;
                     const total = lessons.length;
                     const progressText = total > 0 ? `${completed}/${total}` : '';
-
                     const nextIdx = getNextLessonIndex(cls.group);
                     let nextLessonText = '';
                     if (nextIdx >= 0 && lessons[nextIdx]) {
-                        nextLessonText = `<div style="margin-top:8px; font-size:0.8rem; color: var(--primary); background: var(--primary-light); padding:6px 10px; border-radius:4px;">
-                            <strong>➡️ Próxima:</strong> ${lessons[nextIdx].label}
-                        </div>`;
+                        nextLessonText = `<div style="margin-top:8px;font-size:0.8rem;color:var(--primary);background:var(--primary-light);padding:6px 10px;border-radius:4px;"><strong>➡️ Próxima:</strong> ${lessons[nextIdx].label}</div>`;
                     }
-
                     let btnHtml = '';
                     if (isNextWeek) {
-                        btnHtml = `<button class="action-btn" disabled style="opacity:0.6;">
-                            🔒 Somente visualização
-                        </button>`;
+                        btnHtml = `<button class="action-btn" disabled style="opacity:0.6;">🔒 Somente visualização</button>`;
                     } else {
                         const btnClass = isSaved ? 'saved' : '';
                         const btnText = isSaved ? '✅ RAD PREENCHIDO' : 'ABRIR RAD';
-                        btnHtml = `<button class="action-btn ${btnClass}" onclick="openRad('${cls.time.replace(/'/g, "\\'")}', '${cls.group.replace(/'/g, "\\'")}', '${(cls.book||'').replace(/'/g, "\\'")}', '${(cls.room||'').replace(/'/g, "\\'")}', '${cls.dayName}')">
-                            ${btnText}
-                        </button>`;
+                        btnHtml = `<button class="action-btn ${btnClass}" onclick="openRad('${cls.time.replace(/'/g, "\\'")}', '${cls.group.replace(/'/g, "\\'")}', '${(cls.book||'').replace(/'/g, "\\'")}', '${(cls.room||'').replace(/'/g, "\\'")}', '${cls.dayName}')">${btnText}</button>`;
                     }
-
                     const nextWeekBadge = isNextWeek ? '<span class="badge badge-next-week">📅 PRÓXIMA SEMANA</span>' : '';
-
                     const incClass = (cls.modal || '').toUpperCase().includes('IN-C') ? ' <span class="badge badge-inc">IN-C</span>' : '';
-
                     card.innerHTML = `
                         ${statusBadge}
                         ${savedBadge}
@@ -2177,7 +1445,7 @@
                             <span class="badge badge-book">${cls.book || 'N/A'}</span>
                             <span class="badge badge-room">Sala: ${cls.room || '-'}</span>
                             ${incClass || `<span class="badge badge-modal">${cls.modal || 'REGULAR'}</span>`}
-                            ${progressText ? `<span class="badge" style="background: var(--success);">${progressText}</span>` : ''}
+                            ${progressText ? `<span class="badge" style="background:var(--success);">${progressText}</span>` : ''}
                             ${nextWeekBadge}
                             ${isSaved ? '<span class="badge badge-saved">✅ SALVO</span>' : ''}
                         </div>
@@ -2186,7 +1454,6 @@
                     `;
                     list.appendChild(card);
                 });
-
                 section.appendChild(list);
                 container.appendChild(section);
             }
@@ -2199,12 +1466,7 @@
         const infoDiv = document.getElementById('rad-class-info');
         const savedBadge = document.getElementById('rad-saved-badge');
         const nextBox = document.getElementById('rad-next-lesson');
-
-        infoDiv.innerHTML = `
-            <strong style="color: var(--primary);">${day} - ${time}</strong><br>
-            <span style="color: var(--text-sec);">Turma: ${group} | Book: ${book} | Sala: ${room}</span>
-        `;
-
+        infoDiv.innerHTML = `<strong style="color:var(--primary);">${day} - ${time}</strong><br><span style="color:var(--text-sec);">Turma: ${group} | Book: ${book} | Sala: ${room}</span>`;
         const lessons = getGroupLessons(group);
         const nextIdx = getNextLessonIndex(group);
         if (nextIdx >= 0 && lessons[nextIdx]) {
@@ -2213,22 +1475,15 @@
         } else if (lessons.length > 0) {
             nextBox.innerHTML = `🏁 <strong>Todas as aulas concluídas!</strong>`;
             nextBox.classList.remove('hidden');
-        } else {
-            nextBox.classList.add('hidden');
-        }
-
+        } else { nextBox.classList.add('hidden'); }
         document.getElementById('rad-status').value = '';
         document.getElementById('rad-observations').value = '';
         savedBadge.classList.add('hidden');
         toggleRadFields();
-
         const saved = getRadSavedData(currentRadClass);
         if (saved) {
             try {
-                if (saved.status) {
-                    savedBadge.classList.remove('hidden');
-                    document.getElementById('rad-status').value = saved.status;
-                }
+                if (saved.status) { savedBadge.classList.remove('hidden'); document.getElementById('rad-status').value = saved.status; }
                 document.getElementById('rad-observations').value = saved.observations || '';
                 toggleRadFields();
                 renderLessonPlanCheckboxes(group);
@@ -2241,7 +1496,6 @@
             renderLessonPlanCheckboxes(group);
             renderAttendanceCheckboxes(group, book, []);
         }
-
         modal.classList.remove('hidden');
     }
 
@@ -2256,42 +1510,25 @@
         const container = document.getElementById('lesson-plan-container');
         if (!container) return;
         container.innerHTML = '';
-        
         const lessons = getGroupLessons(group);
-        if (lessons.length === 0) {
-            container.innerHTML = '<p style="color: var(--text-sec);">Nenhuma lesson plan encontrada.</p>';
-            return;
-        }
-
+        if (lessons.length === 0) { container.innerHTML = '<p style="color:var(--text-sec);">Nenhuma lesson plan encontrada.</p>'; return; }
         const nextIdx = getNextLessonIndex(group);
-
         lessons.forEach((lesson, index) => {
             const done = isLessonDone(group, lesson.id);
             const isNext = (index === nextIdx);
-
             const div = document.createElement('div');
             div.className = 'checkbox-group';
             if (done) div.classList.add('checked');
-            if (isNext) {
-                div.style.borderLeft = '4px solid var(--primary)';
-                div.style.background = '#e7f1ff';
-            } else if (lesson.isRevision) {
-                div.style.borderLeft = '4px solid var(--warning)';
-                if (!done) div.style.background = '#fff3cd';
-            } else if (lesson.isTest) {
-                div.style.borderLeft = '4px solid var(--danger)';
-                if (!done) div.style.background = '#f8d7da';
-            }
-            
+            if (isNext) { div.style.borderLeft = '4px solid var(--primary)'; div.style.background = '#e7f1ff'; }
+            else if (lesson.isRevision) { div.style.borderLeft = '4px solid var(--warning)'; if (!done) div.style.background = '#fff3cd'; }
+            else if (lesson.isTest) { div.style.borderLeft = '4px solid var(--danger)'; if (!done) div.style.background = '#f8d7da'; }
             const lessonId = `rad_lp_${index}`;
             let labelStyle = '';
-            if (lesson.isRevision) labelStyle = 'color: #856404; font-weight: 600;';
-            if (lesson.isTest) labelStyle = 'color: var(--danger); font-weight: 700;';
-            if (done) labelStyle = 'color: var(--success); font-weight: 600;';
-            
+            if (lesson.isRevision) labelStyle = 'color:#856404;font-weight:600;';
+            if (lesson.isTest) labelStyle = 'color:var(--danger);font-weight:700;';
+            if (done) labelStyle = 'color:var(--success);font-weight:600;';
             div.innerHTML = `
-                <input type="checkbox" id="${lessonId}" ${done ? 'checked' : ''} 
-                       onchange="onRadLessonToggle('${group.replace(/'/g, "\\'")}', ${index}, this.checked)">
+                <input type="checkbox" id="${lessonId}" ${done ? 'checked' : ''} onchange="onRadLessonToggle('${group.replace(/'/g, "\\'")}', ${index}, this.checked)">
                 <label for="${lessonId}" style="${labelStyle}">
                     ${lesson.label}
                     ${lesson.isRevision ? ' 🔄' : ''}
@@ -2325,25 +1562,14 @@
         const container = document.getElementById('attendance-container');
         if (!container) return;
         container.innerHTML = '';
-        
         let students = findStudentsForGroup(groupRaw, bookHint);
-        
-        if (students.length === 0) {
-            container.innerHTML = '<p style="color: var(--text-sec); font-size: 0.9rem;">Nenhum aluno encontrado para esta turma.</p>';
-            return;
-        }
-        
+        if (students.length === 0) { container.innerHTML = '<p style="color:var(--text-sec);font-size:0.9rem;">Nenhum aluno encontrado.</p>'; return; }
         students = [...new Set(students)].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
-        
         students.forEach((student) => {
             const div = document.createElement('div');
             div.className = 'checkbox-group';
             const isPresent = presentList.includes(student) ? 'checked' : '';
-            
-            div.innerHTML = `
-                <input type="checkbox" class="att-check" value="${student.replace(/"/g, '&quot;')}" ${isPresent}>
-                <label>${student}</label>
-            `;
+            div.innerHTML = `<input type="checkbox" class="att-check" value="${student.replace(/"/g, '&quot;')}" ${isPresent}><label>${student}</label>`;
             container.appendChild(div);
         });
     }
@@ -2351,44 +1577,26 @@
     async function saveRad() {
         const status = document.getElementById('rad-status').value;
         if(!status) { alert('Selecione o status da aula!'); return; }
-
         const attendanceChecked = Array.from(document.querySelectorAll('.att-check:checked')).map(cb => cb.value);
         const observations = document.getElementById('rad-observations').value.trim();
-
         const lessons = getGroupLessons(currentRadClass.group);
         const progress = getProgressForGroup(currentRadClass.group);
-        
         let lessonOfDay = null;
         for (let i = lessons.length - 1; i >= 0; i--) {
             const p = progress.find(x => x.lesson === lessons[i].id);
             if (p && p.completed) { lessonOfDay = lessons[i]; break; }
         }
-
         const lessonsDone = lessonOfDay ? [lessonOfDay.id] : [];
-
         const data = {
-            teacher: currentTeacher.name,
-            day: currentRadClass.day,
-            time: currentRadClass.time,
-            group: currentRadClass.group,
-            book: currentRadClass.book,
-            status,
-            lessons: lessonsDone,
-            attendance: attendanceChecked,
-            observations,
+            teacher: currentTeacher.name, day: currentRadClass.day, time: currentRadClass.time,
+            group: currentRadClass.group, book: currentRadClass.book, status,
+            lessons: lessonsDone, attendance: attendanceChecked, observations,
             dateSaved: new Date().toISOString()
         };
-
         localStorage.setItem(getRadKey(currentRadClass), JSON.stringify(data));
-
         const ok = await sendRadToServer(data);
-
-        if (ok) {
-            closeModal('rad-modal');
-            renderSchedule();
-        } else {
-            alert('⚠️ Não foi possível enviar. Tente novamente.');
-        }
+        if (ok) { closeModal('rad-modal'); renderSchedule(); }
+        else alert('⚠️ Não foi possível enviar. Tente novamente.');
     }
 
     function clearRad() {
@@ -2402,20 +1610,12 @@
     function saveLessonProgress() {
         if (currentGroup && currentLessonProgress[currentGroup]) {
             currentLessonProgress[currentGroup] = currentLessonProgress[currentGroup].filter(p => p.completed === true);
-            if (currentLessonProgress[currentGroup].length === 0) {
-                delete currentLessonProgress[currentGroup];
-            }
+            if (currentLessonProgress[currentGroup].length === 0) delete currentLessonProgress[currentGroup];
         }
-
         persistLessonProgress();
-
         if (currentGroup) {
             const lessonsMap = {};
-            (currentLessonProgress[currentGroup] || []).forEach(p => {
-                if (p.completed === true) {
-                    lessonsMap[p.lesson] = { completed: true, date: p.date || '' };
-                }
-            });
+            (currentLessonProgress[currentGroup] || []).forEach(p => { if (p.completed === true) lessonsMap[p.lesson] = { completed: true, date: p.date || '' }; });
             sendProgressToServer(currentGroup, lessonsMap);
         }
         renderGroupLessonPlans();
@@ -2425,24 +1625,10 @@
     function renderGroupLessonPlans() {
         const container = document.getElementById('lesson-plan-content');
         if (!container) return;
-        
-        const groups = [...allGroupsFromSchedule.values()]
-            .map(info => info.display)
-            .sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
-        
-        if (groups.length === 0) {
-            container.innerHTML = `<h2 style="color: var(--primary); text-align: center;">📚 Lesson Plans por Turma</h2><p style="text-align:center;">Nenhuma turma encontrada.</p>`;
-            return;
-        }
-        
-        container.innerHTML = `
-            <h2 style="color: var(--primary); text-align: center; margin-bottom: 30px;">📚 Lesson Plans por Turma</h2>
-            <p style="text-align:center; color: var(--text-sec); margin-bottom: 20px; font-size: 0.9rem;">Total: ${groups.length} turmas</p>
-            <div class="group-lesson-grid" id="group-lesson-grid"></div>
-        `;
-        
+        const groups = [...allGroupsFromSchedule.values()].map(info => info.display).sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
+        if (groups.length === 0) { container.innerHTML = `<h2 style="color:var(--primary);text-align:center;">📚 Lesson Plans por Turma</h2><p style="text-align:center;">Nenhuma turma encontrada.</p>`; return; }
+        container.innerHTML = `<h2 style="color:var(--primary);text-align:center;margin-bottom:30px;">📚 Lesson Plans por Turma</h2><p style="text-align:center;color:var(--text-sec);margin-bottom:20px;font-size:0.9rem;">Total: ${groups.length} turmas</p><div class="group-lesson-grid" id="group-lesson-grid"></div>`;
         const grid = document.getElementById('group-lesson-grid');
-        
         groups.forEach(group => {
             const bookName = getBookForGroup(group);
             const lessons = getGroupLessons(group);
@@ -2451,14 +1637,9 @@
             const total = lessons.length;
             const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
             const nextIdx = getNextLessonIndex(group);
-
             let nextText = '';
-            if (nextIdx >= 0 && lessons[nextIdx]) {
-                nextText = `<div style="font-size:0.8rem; color: var(--primary); margin-top:6px;">➡️ Próxima: ${lessons[nextIdx].label}</div>`;
-            } else if (total > 0) {
-                nextText = `<div style="font-size:0.8rem; color: var(--success); margin-top:6px;">🏁 Concluído</div>`;
-            }
-            
+            if (nextIdx >= 0 && lessons[nextIdx]) nextText = `<div style="font-size:0.8rem;color:var(--primary);margin-top:6px;">➡️ Próxima: ${lessons[nextIdx].label}</div>`;
+            else if (total > 0) nextText = `<div style="font-size:0.8rem;color:var(--success);margin-top:6px;">🏁 Concluído</div>`;
             const card = document.createElement('div');
             card.className = 'group-card';
             card.innerHTML = `
@@ -2466,10 +1647,8 @@
                 <div class="book-info">📖 ${bookName}</div>
                 <div class="progress">${completed} de ${total} aulas concluídas</div>
                 ${nextText}
-                <div class="progress-bar"><div class="fill" style="width: ${percentage}%;"></div></div>
-                <button onclick="openGroupDetail('${group.replace(/'/g, "\\'")}')" style="margin-top: 15px; width: 100%;">
-                    Ver Detalhes
-                </button>
+                <div class="progress-bar"><div class="fill" style="width:${percentage}%;"></div></div>
+                <button onclick="openGroupDetail('${group.replace(/'/g, "\\'")}')" style="margin-top:15px;width:100%;">Ver Detalhes</button>
             `;
             grid.appendChild(card);
         });
@@ -2480,80 +1659,58 @@
         const modal = document.getElementById('lesson-detail-modal');
         const title = document.getElementById('lesson-detail-title');
         const content = document.getElementById('lesson-detail-content');
-        
         const bookName = getBookForGroup(group);
         title.textContent = `📖 Lesson Plan - ${group}`;
-        
         const lessons = getGroupLessons(group);
         const progress = getProgressForGroup(group);
         const nextIdx = getNextLessonIndex(group);
-        
-        if (lessons.length === 0) {
-            content.innerHTML = `<p style="color: var(--text-sec);">Nenhuma lesson plan disponível.</p>`;
-            modal.classList.remove('hidden');
-            return;
-        }
-        
+        if (lessons.length === 0) { content.innerHTML = `<p style="color:var(--text-sec);">Nenhuma lesson plan disponível.</p>`; modal.classList.remove('hidden'); return; }
         let html = `
             <div class="group-header">
-                <div>
-                    <h2>${group}</h2>
-                    <span class="book-badge">📖 ${bookName}</span>
-                </div>
-                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    <span style="color: var(--text-sec);">Total: ${lessons.length}</span>
-                    <span style="color: var(--success);">✅ ${progress.filter(p => p.completed).length}</span>
+                <div><h2>${group}</h2><span class="book-badge">📖 ${bookName}</span></div>
+                <div style="display:flex;gap:15px;flex-wrap:wrap;">
+                    <span style="color:var(--text-sec);">Total: ${lessons.length}</span>
+                    <span style="color:var(--success);">✅ ${progress.filter(p => p.completed).length}</span>
                 </div>
             </div>
             <div class="group-lessons-container">
         `;
-        
         lessons.forEach((lesson, index) => {
             const progressItem = progress.find(p => p.lesson === lesson.id);
             const isChecked = progressItem ? progressItem.completed : false;
             const date = progressItem ? progressItem.date : '';
             const isNext = (index === nextIdx);
-            
             let extraClass = '';
             let extraBadge = '';
             if (lesson.isRevision) { extraClass = ' revision'; extraBadge = ' <span class="revision-badge">REV</span>'; }
             if (lesson.isTest) { extraClass = ' test'; extraBadge = ' <span class="test-badge">TEST</span>'; }
             if (isChecked) extraClass += ' checked';
             if (isNext) extraClass += ' next';
-
             let nextBadge = isNext ? '<span class="next-label-badge">➡️ PRÓXIMA</span>' : '';
-            
             html += `
                 <div class="lesson-item${extraClass}">
-                    <input type="checkbox" id="lg_${index}" ${isChecked ? 'checked' : ''} 
-                           onchange="toggleGroupLesson('${group.replace(/'/g, "\\'")}', '${lesson.id}', this.checked, ${index})">
+                    <input type="checkbox" id="lg_${index}" ${isChecked ? 'checked' : ''} onchange="toggleGroupLesson('${group.replace(/'/g, "\\'")}', '${lesson.id}', this.checked, ${index})">
                     <label for="lg_${index}" class="lesson-label">${lesson.label}${extraBadge}${nextBadge}</label>
                     ${date ? `<span class="lesson-date">📅 ${date}</span>` : ''}
                     ${isChecked ? '<span class="lesson-checked">✓</span>' : ''}
                 </div>
             `;
         });
-        
         html += '</div>';
         content.innerHTML = html;
         modal.classList.remove('hidden');
     }
 
-    function toggleGroupLesson(group, lessonId, completed, clickedIndex) {
-        applyChainToggle(group, clickedIndex, completed);
-    }
-
+    function toggleGroupLesson(group, lessonId, completed, clickedIndex) { applyChainToggle(group, clickedIndex, completed); }
     function markAllGroupLessons(group, completed) {
         const lessons = getGroupLessons(group);
         if(!currentLessonProgress[group]) currentLessonProgress[group] = [];
         const today = completed ? new Date().toLocaleDateString('pt-BR') : '';
-        
         lessons.forEach(lesson => {
             const existing = currentLessonProgress[group].find(p => p.lesson === lesson.id);
             if(existing) { existing.completed = completed; existing.date = today; }
             else currentLessonProgress[group].push({ lesson: lesson.id, completed, date: today });
         });
-        
         persistLessonProgress();
         if(currentGroup) openGroupDetail(currentGroup);
         renderGroupLessonPlans();
@@ -2563,90 +1720,52 @@
     function resetLessonProgress() {
         if(!currentGroup) return;
         if(!confirm(`Resetar progresso da turma ${currentGroup}?`)) return;
-
         currentLessonProgress[currentGroup] = [];
         delete currentLessonProgress[currentGroup];
         persistLessonProgress();
-
-        sendProgressToServer(currentGroup, {}).then(ok => {
-            if (ok) {
-                console.log('✅ Reset confirmado pelo servidor:', currentGroup);
-            } else {
-                console.warn('⚠️ Reset pode não ter sincronizado');
-            }
-        });
-
+        sendProgressToServer(currentGroup, {});
         if (currentGroup) openGroupDetail(currentGroup);
         renderGroupLessonPlans();
         if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule();
     }
 
-    function openAttendanceList() {
-        document.getElementById('attendance-modal').classList.remove('hidden');
-        loadAttendanceTable();
-    }
+    function openAttendanceList() { document.getElementById('attendance-modal').classList.remove('hidden'); loadAttendanceTable(); }
 
     function populateGroupSelect() {
         const select = document.getElementById('att-group-select');
         if (!select) return;
-        
-        const groups = [...allGroupsFromSchedule.values()]
-            .map(info => info.display)
-            .sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
-        
+        const groups = [...allGroupsFromSchedule.values()].map(info => info.display).sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
         select.innerHTML = '<option value="">Selecione a Turma...</option>';
-        groups.forEach(g => {
-            const opt = document.createElement('option');
-            opt.value = g;
-            opt.textContent = g;
-            select.appendChild(opt);
-        });
+        groups.forEach(g => { const opt = document.createElement('option'); opt.value = g; opt.textContent = g; select.appendChild(opt); });
     }
 
     function loadAttendanceTable() {
         const group = document.getElementById('att-group-select').value;
         const monthVal = document.getElementById('att-month-select').value;
         const container = document.getElementById('attendance-table-container');
-        
-        if(!group) {
-            container.innerHTML = '<p style="color: var(--text-sec);">Selecione uma turma.</p>';
-            return;
-        }
-
+        if(!group) { container.innerHTML = '<p style="color:var(--text-sec);">Selecione uma turma.</p>'; return; }
         const info = allGroupsFromSchedule.get(normalizeGroupKey(group));
         const bookHint = info ? info.book : '';
         const students = findStudentsForGroup(group, bookHint);
-        
-        if(students.length === 0) {
-            container.innerHTML = '<p style="color: var(--text-sec);">Nenhum aluno encontrado.</p>';
-            return;
-        }
-
+        if(students.length === 0) { container.innerHTML = '<p style="color:var(--text-sec);">Nenhum aluno encontrado.</p>'; return; }
         const [year, month] = monthVal.split('-').map(Number);
         const daysInMonth = new Date(year, month, 0).getDate();
-        
         let html = '<table class="attendance-table"><thead><tr><th>Aluno</th>';
         for(let d=1; d<=daysInMonth; d++) html += `<th>${d}</th>`;
         html += '</tr></thead><tbody>';
-
         students.forEach(student => {
-            html += `<tr><td style="text-align:left; padding-left:10px; font-weight:500;">${student}</td>`;
+            html += `<tr><td style="text-align:left;padding-left:10px;font-weight:500;">${student}</td>`;
             for(let d=1; d<=daysInMonth; d++) html += `<td>•</td>`;
             html += '</tr>';
         });
-
         html += '</tbody></table>';
         container.innerHTML = html;
     }
 
-    function closeModal(id) {
-        document.getElementById(id).classList.add('hidden');
-    }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
     if (document.readyState === 'interactive' || document.readyState === 'complete') {
-        setTimeout(() => {
-            window.dispatchEvent(new Event('DOMContentLoaded'));
-        }, 0);
+        setTimeout(() => { window.dispatchEvent(new Event('DOMContentLoaded')); }, 0);
     }
 
 </script>
