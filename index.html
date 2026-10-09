@@ -458,7 +458,7 @@
 
 <script>
     // ============================================
-    // ✅ CONFIGURAÇÃO — URL DO APPS SCRIPT
+    // ✅ CONFIGURAÇÃO
     // ============================================
     const API_URL = 'https://script.google.com/macros/s/AKfycbz4I_zZpO7UeTpPSqtYCq6vjRIv09RGlicQYvqDHBjL6ardcn-MbL7as1FwkDyJ-QYo/exec';
     const PENDING_QUEUE_KEY = 'radPendingQueue';
@@ -746,41 +746,31 @@
         }
     }
 
+    // ============================================
+    // ✅ ENVIA COM text/plain — evita redirect 302 do Google
+    // ============================================
     async function reallySendToServer(radData) {
         try {
             const res = await fetch(API_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(radData)
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(radData),
+                redirect: 'follow'
             });
             const text = await res.text();
             try {
                 const json = JSON.parse(text);
                 if (json.ok) {
-                    console.log('✅ Enviado via POST JSON');
+                    console.log('✅ RAD salvo no servidor');
                     return true;
                 }
-            } catch(e) {}
+                console.warn('⚠️ Servidor respondeu:', json);
+            } catch(e) {
+                console.warn('⚠️ Resposta não-JSON:', text.substring(0, 100));
+            }
         } catch(e) {
-            console.warn('Tentativa 1 (JSON) falhou:', e.message);
+            console.warn('❌ POST falhou:', e.message);
         }
-
-        try {
-            const params = new URLSearchParams();
-            params.append('payload', JSON.stringify(radData));
-            
-            await fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: params.toString()
-            });
-            console.log('✅ Enviado via form-urlencoded (no-cors)');
-            return true;
-        } catch(e) {
-            console.warn('Tentativa 2 (form) falhou:', e.message);
-        }
-
         return false;
     }
 
@@ -2397,7 +2387,7 @@
             closeModal('rad-modal');
             renderSchedule();
         } else {
-            alert('⚠️ Não foi possível enviar ao servidor. Salvo localmente.');
+            alert('⚠️ Não foi possível enviar. Tente novamente.');
         }
     }
 
