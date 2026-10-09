@@ -301,7 +301,7 @@
                 <button id="btn-desbloquear-rad" onclick="desbloquearBotao()" class="btn-danger" style="width: 100%; margin-top: 8px; border-color: #6f42c1; color: #6f42c1;">
                     🔓 DESBLOQUEAR (senha)
                 </button>
-                <button id="btn-limpar-rad" onclick="clearRad()" class="btn-danger" style="width: 100%; margin-top: 8px; border-color: var(--danger); color: var(--danger);">
+                <button id="btn-limpar-rad" onclick="limparRadUmaVez()" class="btn-danger" style="width: 100%; margin-top: 8px; border-color: var(--danger); color: var(--danger);">
                     🗑️ LIMPAR DADOS
                 </button>
             </div>
@@ -348,7 +348,6 @@
     const SENHA_DESBLOQUEIO = '123321';
 
     let remoteRads = [];
-    let _botaoSalvarTravado = false;
 
     function showSyncStatus(text, type = 'default') {
         const el = document.getElementById('sync-status');
@@ -468,57 +467,74 @@
     }
 
     // ============================================
-    // ✅ TRAVA DO BOTÃO SALVAR RAD
+    // ✅ TRAVA DOS BOTÕES SALVAR + LIMPAR
     // ============================================
+    function _travarBotoesRad(travar) {
+        const btnSalvar = document.getElementById('btn-salvar-rad');
+        const btnLimpar = document.getElementById('btn-limpar-rad');
+
+        if (travar) {
+            if (btnSalvar) {
+                btnSalvar.disabled = true;
+                btnSalvar.style.opacity = '0.5';
+                btnSalvar.style.cursor = 'not-allowed';
+                btnSalvar.textContent = '🔒 SALVO (bloqueado)';
+            }
+            if (btnLimpar) {
+                btnLimpar.disabled = true;
+                btnLimpar.style.opacity = '0.5';
+                btnLimpar.style.cursor = 'not-allowed';
+                btnLimpar.textContent = '🔒 LIMPAR (bloqueado)';
+            }
+        } else {
+            if (btnSalvar) {
+                btnSalvar.disabled = false;
+                btnSalvar.style.opacity = '1';
+                btnSalvar.style.cursor = 'pointer';
+                btnSalvar.textContent = '💾 SALVAR RAD';
+            }
+            if (btnLimpar) {
+                btnLimpar.disabled = false;
+                btnLimpar.style.opacity = '1';
+                btnLimpar.style.cursor = 'pointer';
+                btnLimpar.textContent = '🗑️ LIMPAR DADOS';
+            }
+        }
+    }
+
     function salvarRadUmaVez() {
         const btn = document.getElementById('btn-salvar-rad');
-
-        if (_botaoSalvarTravado || (btn && btn.disabled)) {
-            console.log('🔒 Botão travado. Use o DESBLOQUEAR pra liberar.');
+        if (btn && btn.disabled) {
+            console.log('🔒 Botão travado. Use o DESBLOQUEAR.');
             return;
         }
-
-        _botaoSalvarTravado = true;
-        if (btn) {
-            btn.disabled = true;
-            btn.style.opacity = '0.5';
-            btn.style.cursor = 'not-allowed';
-            btn.textContent = '🔒 SALVO (bloqueado)';
-        }
-
+        _travarBotoesRad(true);
         saveRad();
     }
 
-    function desbloquearBotao() {
-        const senha = prompt('🔒 Digite a senha para destravar o botão SALVAR:');
-        if (senha === null) return;
+    function limparRadUmaVez() {
+        const btn = document.getElementById('btn-limpar-rad');
+        if (btn && btn.disabled) {
+            console.log('🔒 Botão LIMPAR travado. Use o DESBLOQUEAR.');
+            return;
+        }
+        clearRad();
+    }
 
+    function desbloquearBotao() {
+        const senha = prompt('🔒 Digite a senha para destravar:');
+        if (senha === null) return;
         if (senha !== SENHA_DESBLOQUEIO) {
             alert('❌ Senha incorreta.');
             return;
         }
-
-        _botaoSalvarTravado = false;
-        const btn = document.getElementById('btn-salvar-rad');
-        if (btn) {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            btn.style.cursor = 'pointer';
-            btn.textContent = '💾 SALVAR RAD';
-        }
-        console.log('🔓 Botão destravado');
-        alert('✅ Botão liberado. Você pode salvar novamente.');
+        _travarBotoesRad(false);
+        console.log('🔓 Botões destravados');
+        alert('✅ Botões liberados.');
     }
 
     function resetarTravaBotao() {
-        _botaoSalvarTravado = false;
-        const btn = document.getElementById('btn-salvar-rad');
-        if (btn) {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            btn.style.cursor = 'pointer';
-            btn.textContent = '💾 SALVAR RAD';
-        }
+        _travarBotoesRad(false);
     }
 
     async function pingServer() {
