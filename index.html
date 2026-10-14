@@ -256,7 +256,7 @@
                 </select>
                 <input type="month" id="fech-mes" onchange="renderFechamento()" style="max-width: 200px; margin-bottom: 0;">
                 <button onclick="limparFiltrosFechamento()" style="margin: 0;">🧹 Limpar</button>
-                <button onclick="loadHistoryFromServer()" style="margin: 0;">🔄 Atualizar</button>
+                <button onclick="carregarFechamentoCSV().then(renderFechamento)" style="margin: 0;">🔄 Atualizar</button>
             </div>
             <div id="fechamento-resumo" class="fechamento-grid"></div>
             <div id="fechamento-lista-container" class="fechamento-lista"></div>
@@ -346,8 +346,10 @@
     const PENDING_QUEUE_KEY = 'radPendingQueue';
     const VALORES_KEY = 'fechamentoValores';
     const SENHA_DESBLOQUEIO = '123321';
+    const FECHAMENTO_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTXUgDbf7VGEolhrORAK97drh2jz40D_m0z6fBulQrpurP3hEA9fjUX5f-uD1jcbyB_bYJwWaHCPCA/pub?output=csv';
 
     let remoteRads = [];
+    let fechamentoRads = [];
 
     function showSyncStatus(text, type = 'default') {
         const el = document.getElementById('sync-status');
@@ -382,10 +384,15 @@
 
     const FETCH_TIMEOUT_MS = 5000;
 
-    const VALID_TEACHERS = [
+    // ✅ Base de teachers fixos (Lucila incluída)
+    const BASE_TEACHERS = [
         { name: 'BARBARA' }, { name: 'CARLA' }, { name: 'CARLOS' }, { name: 'CAROL' },
-        { name: 'DIOGO' }, { name: 'HOPE' }, { name: 'LUISA' }, { name: 'MAT' }, { name: 'PEDRO' }
+        { name: 'DIOGO' }, { name: 'HOPE' }, { name: 'LUISA' }, { name: 'MAT' },
+        { name: 'PEDRO' }, { name: 'LUCILA' }
     ];
+
+    // ✅ Lista dinâmica — será preenchida com BASE_TEACHERS + qualquer teacher novo do schedule
+    let VALID_TEACHERS = BASE_TEACHERS.slice();
 
     const BOOK_STRUCTURE = {};
     (function buildBookStructure() {
@@ -467,75 +474,91 @@
     }
 
     // ============================================
-    // ✅ TRAVA DOS BOTÕES SALVAR + LIMPAR
+    // ✅ FECHAMENTO — Carrega CSV da planilha
+    // ============================================
+    async function carregarFechamentoCSV() {
+        try {
+            const resp = await fetch(FECHAMENTO_CSV_URL + '&_=' + Date.now());
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const text = await resp.text();
+            fechamentoRads = parseFechamentoCSV(text);
+            console.log('✅ Fechamento CSV:', fechamentoRads.length, 'RADs');
+            return true;
+        } catch(e) {
+            console.warn('❌ Erro ao carregar fechamento:', e.message);
+            fechamentoRads = [];
+            return false;
+        }
+    }
+
+    function parseFechamentoCSV(text) {
+        if (!text) return [];
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+        if (lines.length < 2) return [];
+        const rads = [];
+        for (let i = 1; i < lines.length; i++) {
+            let row;
+            try {
+                row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
+            } catch(e) { continue; }
+            const timestamp = row[0] || '';
+            const teacher = row[1] || '';
+            const day = row[2] || '';
+            const time = row[3] || '';
+            const group = row[4] || '';
+            const status = (row[5] || '').toLowerCase();
+            const lessons = row[6] || '';
+            const attendance = row[7] || '';
+            const observations = row[8] || '';
+            if (!teacher && !timestamp) continue;
+            rads.push({
+                timestamp, teacher, day, time, group, status,
+                lessons: lessons ? lessons.split(',').map(x=>x.trim()).filter(x=>x) : [],
+                attendance: attendance ? attendance.split(',').map(x=>x.trim()).filter(x=>x) : [],
+                observations
+            });
+        }
+        return rads;
+    }
+
+    // ============================================
+    // ✅ TRAVA DOS BOTÕES
     // ============================================
     function _travarBotoesRad(travar) {
         const btnSalvar = document.getElementById('btn-salvar-rad');
         const btnLimpar = document.getElementById('btn-limpar-rad');
-
         if (travar) {
-            if (btnSalvar) {
-                btnSalvar.disabled = true;
-                btnSalvar.style.opacity = '0.5';
-                btnSalvar.style.cursor = 'not-allowed';
-                btnSalvar.textContent = '🔒 SALVO (bloqueado)';
-            }
-            if (btnLimpar) {
-                btnLimpar.disabled = true;
-                btnLimpar.style.opacity = '0.5';
-                btnLimpar.style.cursor = 'not-allowed';
-                btnLimpar.textContent = '🔒 LIMPAR (bloqueado)';
-            }
+            if (btnSalvar) { btnSalvar.disabled = true; btnSalvar.style.opacity = '0.5'; btnSalvar.style.cursor = 'not-allowed'; btnSalvar.textContent = '🔒 SALVO (bloqueado)'; }
+            if (btnLimpar) { btnLimpar.disabled = true; btnLimpar.style.opacity = '0.5'; btnLimpar.style.cursor = 'not-allowed'; btnLimpar.textContent = '🔒 LIMPAR (bloqueado)'; }
         } else {
-            if (btnSalvar) {
-                btnSalvar.disabled = false;
-                btnSalvar.style.opacity = '1';
-                btnSalvar.style.cursor = 'pointer';
-                btnSalvar.textContent = '💾 SALVAR RAD';
-            }
-            if (btnLimpar) {
-                btnLimpar.disabled = false;
-                btnLimpar.style.opacity = '1';
-                btnLimpar.style.cursor = 'pointer';
-                btnLimpar.textContent = '🗑️ LIMPAR DADOS';
-            }
+            if (btnSalvar) { btnSalvar.disabled = false; btnSalvar.style.opacity = '1'; btnSalvar.style.cursor = 'pointer'; btnSalvar.textContent = '💾 SALVAR RAD'; }
+            if (btnLimpar) { btnLimpar.disabled = false; btnLimpar.style.opacity = '1'; btnLimpar.style.cursor = 'pointer'; btnLimpar.textContent = '🗑️ LIMPAR DADOS'; }
         }
     }
 
     function salvarRadUmaVez() {
         const btn = document.getElementById('btn-salvar-rad');
-        if (btn && btn.disabled) {
-            console.log('🔒 Botão travado. Use o DESBLOQUEAR.');
-            return;
-        }
+        if (btn && btn.disabled) { console.log('🔒 Botão travado.'); return; }
         _travarBotoesRad(true);
         saveRad();
     }
 
     function limparRadUmaVez() {
         const btn = document.getElementById('btn-limpar-rad');
-        if (btn && btn.disabled) {
-            console.log('🔒 Botão LIMPAR travado. Use o DESBLOQUEAR.');
-            return;
-        }
+        if (btn && btn.disabled) { console.log('🔒 Botão LIMPAR travado.'); return; }
         clearRad();
     }
 
     function desbloquearBotao() {
         const senha = prompt('🔒 Digite a senha para destravar:');
         if (senha === null) return;
-        if (senha !== SENHA_DESBLOQUEIO) {
-            alert('❌ Senha incorreta.');
-            return;
-        }
+        if (senha !== SENHA_DESBLOQUEIO) { alert('❌ Senha incorreta.'); return; }
         _travarBotoesRad(false);
         console.log('🔓 Botões destravados');
         alert('✅ Botões liberados.');
     }
 
-    function resetarTravaBotao() {
-        _travarBotoesRad(false);
-    }
+    function resetarTravaBotao() { _travarBotoesRad(false); }
 
     async function pingServer() {
         try { await fetch(API_URL + '?action=ping&_=' + Date.now(), { method: 'GET' }); } catch(e) {}
@@ -544,7 +567,6 @@
     async function reallySendToServer(radData) {
         await pingServer();
         await new Promise(r => setTimeout(r, 300));
-
         for (let tentativa = 1; tentativa <= 2; tentativa++) {
             try {
                 const res = await fetch(API_URL + '?_=' + Date.now(), {
@@ -555,17 +577,16 @@
                 });
                 const text = await res.text();
                 if (text.trim().startsWith('<')) {
-                    console.warn(`⚠️ Tentativa ${tentativa} retornou HTML (status ${res.status})`);
+                    console.warn(`⚠️ Tentativa ${tentativa} retornou HTML`);
                     if (tentativa < 2) { await new Promise(r => setTimeout(r, 1500)); continue; }
                     return false;
                 }
                 try {
                     const json = JSON.parse(text);
                     if (json.ok) { console.log(`✅ RAD salvo (tentativa ${tentativa})`); return true; }
-                    console.warn('⚠️ Resposta:', json);
-                } catch(e) { console.warn('⚠️ Resposta não-JSON:', text.substring(0, 100)); }
+                } catch(e) {}
             } catch(e) {
-                console.warn(`❌ Tentativa ${tentativa} falhou:`, e.message);
+                console.warn(`❌ Tentativa ${tentativa}:`, e.message);
             }
             if (tentativa < 2) await new Promise(r => setTimeout(r, 1000));
         }
@@ -589,7 +610,7 @@
             });
             const data = await resp.json();
             if (data && data.ok) { console.log('✅ Progresso enviado:', group); return true; }
-        } catch (e) { console.warn('❌ Falha ao enviar progresso:', e.message); }
+        } catch (e) { console.warn('❌ Falha progresso:', e.message); }
         return false;
     }
 
@@ -607,7 +628,7 @@
                 persistLessonProgress();
                 console.log('✅ Progresso do servidor:', Object.keys(novo).length, 'turmas');
             }
-        } catch (e) { console.warn('Progresso do servidor falhou:', e.message); }
+        } catch (e) { console.warn('Progresso falhou:', e.message); }
     }
 
     function getPendingQueue() {
@@ -628,26 +649,26 @@
             const ok = await reallySendToServer(rad);
             if (!ok) remaining.push(rad);
         }
-        if (remaining.length === 0) { clearPendingQueue(); console.log('✅ Fila limpa!'); }
+        if (remaining.length === 0) clearPendingQueue();
         else { try { localStorage.setItem(PENDING_QUEUE_KEY, JSON.stringify(remaining)); } catch(e) {} }
     }
 
     async function sendRadToServer(radData) {
-        showSyncStatus('Salvando no servidor...', 'default');
+        showSyncStatus('Salvando...', 'default');
         const ok = await reallySendToServer(radData);
         if (ok) { showSyncStatus('RAD sincronizado!', 'success'); return true; }
-        else { showSyncStatus('Salvo localmente (envio pendente)', 'warning'); addToPendingQueue(radData); return false; }
+        else { showSyncStatus('Salvo localmente', 'warning'); addToPendingQueue(radData); return false; }
     }
 
     async function loadHistoryFromServer() {
         const container = document.getElementById('history-content');
         if (container) container.innerHTML = '<p style="text-align:center; color: var(--text-sec); margin-top:40px;">Carregando...</p>';
-        showSyncStatus('Carregando histórico...', 'default');
+        showSyncStatus('Carregando...', 'default');
         try {
             const rads = await jsonpRequest(API_URL);
             remoteRads = rads || [];
-            console.log(`✅ ${remoteRads.length} RADs do servidor`);
-            showSyncStatus(`${remoteRads.length} RADs carregados`, 'success');
+            console.log(`✅ ${remoteRads.length} RADs`);
+            showSyncStatus(`${remoteRads.length} RADs`, 'success');
         } catch (e) {
             console.error('Erro:', e.message); remoteRads = [];
             showSyncStatus('Servidor indisponível', 'error');
@@ -655,7 +676,6 @@
             return;
         }
         renderHistory();
-        if (!document.getElementById('fechamento-screen').classList.contains('hidden')) renderFechamento();
     }
 
     async function loadKidsLessonPlans() {
@@ -696,12 +716,9 @@
             const group = normalizeGroupKeyAgressive(cls.group || '');
             const modal = (cls.modal || '').toUpperCase().trim();
             if (!modal || !group) return;
-            const kExato = `${teacher}|${day}|${time}|${group}`;
-            const kSemDia = `${teacher}|${time}|${group}`;
-            const kSemTeacher = `${day}|${time}|${group}`;
-            modalIndex.exato[kExato] = modal;
-            modalIndex.semDia[kSemDia] = modal;
-            modalIndex.semTeacher[kSemTeacher] = modal;
+            modalIndex.exato[`${teacher}|${day}|${time}|${group}`] = modal;
+            modalIndex.semDia[`${teacher}|${time}|${group}`] = modal;
+            modalIndex.semTeacher[`${day}|${time}|${group}`] = modal;
             modalIndex.grupo[group] = modal;
         });
     }
@@ -727,6 +744,27 @@
     function isInCompany(rad) {
         const modal = getModalDoRad(rad);
         return modal.includes('IN-C') || modal.includes('IN COMPANY') || modal.includes('IN-COMPANY');
+    }
+
+    // ============================================
+    // ✅ Detecta teachers do schedule automaticamente
+    // ============================================
+    function sincronizarTeachersComSchedule() {
+        const conhecidos = new Set(VALID_TEACHERS.map(t => t.name));
+        const doSchedule = new Set();
+        [...scheduleData, ...nextWeekData].forEach(cls => {
+            if (cls.teacher) doSchedule.add(cls.teacher);
+        });
+        const novos = [];
+        doSchedule.forEach(name => {
+            if (!conhecidos.has(name)) {
+                VALID_TEACHERS.push({ name });
+                novos.push(name);
+            }
+        });
+        if (novos.length > 0) {
+            console.log('🆕 Novos teachers detectados:', novos.join(', '));
+        }
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
@@ -777,11 +815,15 @@
             ];
             await Promise.allSettled(tasks);
 
+            // ✅ Sincroniza teachers ANTES de renderizar
+            sincronizarTeachersComSchedule();
+
             buildModalMap(); buildGroupBookMap();
             renderTeachers(); populateGroupSelect(); renderGroupLessonPlans();
             populateFechamentoTeacherFilter();
+            populateHistoryTeacherFilter();
             try { await tryFlushPendingQueue(); } catch(e) {}
-            console.log(`✅ Inicialização completa. Turmas: ${allGroupsFromSchedule.size}, RADs: ${remoteRads.length}`);
+            console.log(`✅ Inicialização completa. Turmas: ${allGroupsFromSchedule.size}, RADs: ${remoteRads.length}, Teachers: ${VALID_TEACHERS.length}`);
         } catch (err) {
             console.error('❌ Erro:', err);
             forceHide();
@@ -811,14 +853,20 @@
                 (async () => { try { const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS); nextWeekData = parseScheduleCSV(text, { skipGroupRegistration: true }); } catch(e) {} })(),
                 (async () => { try { const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS); parseStudentsCSV(text); } catch(e) {} })(),
                 (async () => { try { const rads = await jsonpRequest(API_URL); remoteRads = rads || []; } catch(e) {} })(),
-                (async () => { try { await loadGlobalProgress(); } catch(e) {} })()
+                (async () => { try { await loadGlobalProgress(); } catch(e) {} })(),
+                (async () => { try { await carregarFechamentoCSV(); } catch(e) {} })()
             ];
             await Promise.allSettled(tasks);
             allWeeks = { 'This Week': scheduleData, 'Next Week': nextWeekData };
             try { await tryFlushPendingQueue(); } catch(e) {}
+
+            sincronizarTeachersComSchedule();
+
             buildModalMap(); buildGroupBookMap();
             loadLessonProgress(); populateGroupSelect();
-            populateFechamentoTeacherFilter(); renderTeachers();
+            populateFechamentoTeacherFilter();
+            populateHistoryTeacherFilter();
+            renderTeachers();
             if (!document.getElementById('schedule-screen').classList.contains('hidden') && currentTeacher) loadWeekData(currentWeekName);
             if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) renderGroupLessonPlans();
             if (!document.getElementById('history-screen').classList.contains('hidden')) renderHistory();
@@ -893,13 +941,23 @@
 
     function cleanText(str) { return str ? str.replace(/<.*?>/g, '').trim() : ''; }
 
+    // ✅ Detecta teacher dinamicamente (não depende mais da lista fixa)
     function findTeacherInString(str) {
         if (!str) return null;
         const upperStr = str.toUpperCase();
-        for(const t of VALID_TEACHERS) {
-            const regex = new RegExp(`\\b${t.name}\\b`, 'i');
-            if(regex.test(upperStr)) return t.name;
+        const candidates = new Set();
+        VALID_TEACHERS.forEach(t => candidates.add(t.name));
+        [...scheduleData, ...nextWeekData].forEach(cls => {
+            if (cls.teacher) candidates.add(cls.teacher);
+        });
+        for (const name of candidates) {
+            if (!name) continue;
+            const regex = new RegExp(`\\b${name}\\b`, 'i');
+            if (regex.test(upperStr)) return name;
         }
+        // Fallback: se for só UMA palavra em maiúscula, usa ela
+        const match = upperStr.match(/\b([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ]{3,15})\b/g);
+        if (match && match.length === 1) return match[0];
         return null;
     }
 
@@ -1244,8 +1302,9 @@
         document.getElementById('btn-fechamento').classList.add('active');
         currentTeacher = null;
         populateFechamentoTeacherFilter();
-        if (remoteRads.length === 0) loadHistoryFromServer();
-        renderFechamento();
+        const container = document.getElementById('fechamento-lista-container');
+        if (container) container.innerHTML = '<p style="text-align:center; color: var(--text-sec); padding: 20px;">Carregando...</p>';
+        carregarFechamentoCSV().then(() => { renderFechamento(); });
     }
 
     function loadValoresSalvos() {
@@ -1260,10 +1319,12 @@
     function populateFechamentoTeacherFilter() {
         const select = document.getElementById('fech-teacher');
         if (!select) return;
+        const valorAtual = select.value;
         select.innerHTML = '<option value="">Todos os professores</option>';
         VALID_TEACHERS.slice().sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
             const opt = document.createElement('option'); opt.value = t.name; opt.textContent = t.name; select.appendChild(opt);
         });
+        if (valorAtual) select.value = valorAtual;
     }
 
     function limparFiltrosFechamento() {
@@ -1278,7 +1339,7 @@
         const valorInc = parseFloat(document.getElementById('valor-inc').value) || 0;
         const filtroTeacher = (document.getElementById('fech-teacher').value || '').toUpperCase();
         const filtroMes = document.getElementById('fech-mes').value;
-        let filtered = remoteRads.slice();
+        let filtered = fechamentoRads.slice();
         if (filtroTeacher) filtered = filtered.filter(r => (r.teacher || '').toUpperCase() === filtroTeacher);
         if (filtroMes) filtered = filtered.filter(r => {
             if (!r.timestamp) return false;
@@ -1335,10 +1396,12 @@
     function populateHistoryTeacherFilter() {
         const select = document.getElementById('hist-filter-teacher');
         if (!select) return;
+        const valorAtual = select.value;
         select.innerHTML = '<option value="">Todos os professores</option>';
         VALID_TEACHERS.slice().sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
             const opt = document.createElement('option'); opt.value = t.name; opt.textContent = t.name; select.appendChild(opt);
         });
+        if (valorAtual) select.value = valorAtual;
     }
 
     function renderHistory() {
