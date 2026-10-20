@@ -159,6 +159,26 @@
         .fechamento-lista th, .fechamento-lista td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.9rem; }
         .fechamento-lista th { background: var(--primary-light); color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
         .fechamento-lista tr:hover td { background: var(--card-bg); }
+        
+        /* Abas internas na tela de Lesson Plans */
+        .inner-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .inner-tab { padding: 10px 20px; border-radius: 30px; background: var(--bg-color); border: 2px solid var(--border-color); cursor: pointer; font-weight: 600; color: var(--text-sec); transition: all 0.2s; }
+        .inner-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        
+        /* Barra de pesquisa */
+        .search-bar { width: 100%; max-width: 400px; margin: 0 auto 20px; position: relative; }
+        .search-bar input { padding-left: 40px; border-radius: 30px; font-size: 1rem; box-shadow: var(--shadow); margin-bottom: 0; border: 2px solid var(--border-color); }
+        .search-bar::before { content: '🔍'; position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 1.1rem; color: var(--text-sec); pointer-events: none; z-index: 2; }
+        
+        /* Tabela VIP */
+        .vip-table-container { background: var(--bg-color); border-radius: 8px; box-shadow: var(--shadow); border: 2px solid var(--border-color); overflow: hidden; }
+        .vip-table { width: 100%; border-collapse: collapse; font-size: 1rem; }
+        .vip-table th, .vip-table td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .vip-table th { background: var(--primary-light); color: var(--primary); font-weight: 700; font-size: 1.05rem; }
+        .vip-table tr:last-child td { border-bottom: none; }
+        .vip-table tr:hover td { background: var(--card-bg); }
+        .vip-count-badge { background: var(--primary); color: #fff; padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 1.1rem; display: inline-block; }
+
         @media (max-width: 600px) {
             .teachers-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
             .classes-list { grid-template-columns: 1fr; padding: 15px; }
@@ -167,6 +187,7 @@
             .header-buttons { flex-direction: column; align-items: center; }
             .sync-status { bottom: 10px; right: 10px; font-size: 0.75rem; }
             .fechamento-card .valor { font-size: 1.5rem; }
+            .vip-table th, .vip-table td { padding: 10px; font-size: 0.9rem; }
         }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--card-bg); }
@@ -216,7 +237,38 @@
             <div style="margin-bottom: 20px;">
                 <button onclick="showSelection()" style="border-color: var(--text-sec); color: var(--text-sec);">← Voltar</button>
             </div>
-            <div id="lesson-plan-content"></div>
+            <div id="lesson-plan-content">
+                <h2 style="color: var(--primary); text-align: center; margin-bottom: 20px;">📚 Lesson Plans e Registros</h2>
+                
+                <div class="inner-tabs">
+                    <div class="inner-tab active" onclick="switchLessonTab('plans')" id="tab-btn-plans">Turmas</div>
+                    <div class="inner-tab" onclick="switchLessonTab('vip')" id="tab-btn-vip">👑 Registro de Aulas VIP</div>
+                </div>
+
+                <div id="tab-content-plans">
+                    <div class="search-bar">
+                        <input type="text" id="search-group" placeholder="Pesquisar turma..." oninput="renderGroupLessonPlans()">
+                    </div>
+                    <div class="group-lesson-grid" id="group-lesson-grid"></div>
+                </div>
+
+                <div id="tab-content-vip" class="hidden">
+                    <div class="vip-table-container">
+                        <table class="vip-table" id="vip-table">
+                            <thead>
+                                <tr>
+                                    <th>👤 Aluno VIP</th>
+                                    <th>📖 Turma(s)</th>
+                                    <th>✅ Aulas Feitas</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vip-table-body">
+                                <tr><td colspan="3" style="text-align:center;color:var(--text-sec);">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div id="history-screen" class="hidden">
@@ -247,8 +299,8 @@
             </div>
             <h2 style="color: var(--primary); text-align: center; margin-bottom: 20px;">💰 Fechamento de Pagamento</h2>
             <div class="valores-config">
-                <div><label>💵 Valor Aula Normal (R$)</label><input type="number" id="valor-normal" value="50" min="0" step="0.01" oninput="renderFechamento()"></div>
-                <div><label>🏢 Valor Aula In Company (R$)</label><input type="number" id="valor-inc" value="70" min="0" step="0.01" oninput="renderFechamento()"></div>
+                <div><label>💵 Valor Aula Normal (R$)</label><input type="number" id="valor-normal" value="25" min="0" step="0.01" oninput="renderFechamento()"></div>
+                <div><label>🏢 Valor Aula In Company (R$)</label><input type="number" id="valor-inc" value="30" min="0" step="0.01" oninput="renderFechamento()"></div>
             </div>
             <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center;">
                 <select id="fech-teacher" onchange="renderFechamento()" style="max-width: 220px; margin-bottom: 0;">
@@ -351,6 +403,9 @@
     let remoteRads = [];
     let fechamentoRads = [];
 
+    // Variável para controlar qual aba interna está ativa
+    let currentInnerTab = 'plans';
+
     function showSyncStatus(text, type = 'default') {
         const el = document.getElementById('sync-status');
         const icon = document.getElementById('sync-icon');
@@ -384,14 +439,12 @@
 
     const FETCH_TIMEOUT_MS = 5000;
 
-    // ✅ Base de teachers fixos (Lucila incluída)
     const BASE_TEACHERS = [
         { name: 'BARBARA' }, { name: 'CARLA' }, { name: 'CARLOS' }, { name: 'CAROL' },
         { name: 'DIOGO' }, { name: 'HOPE' }, { name: 'LUISA' }, { name: 'MAT' },
         { name: 'PEDRO' }, { name: 'LUCILA' }
     ];
 
-    // ✅ Lista dinâmica — será preenchida com BASE_TEACHERS + qualquer teacher novo do schedule
     let VALID_TEACHERS = BASE_TEACHERS.slice();
 
     const BOOK_STRUCTURE = {};
@@ -473,9 +526,6 @@
         } catch (err) { console.error('Falha fetch:', err.message); throw err; }
     }
 
-    // ============================================
-    // ✅ FECHAMENTO — Carrega CSV da planilha
-    // ============================================
     async function carregarFechamentoCSV() {
         try {
             const resp = await fetch(FECHAMENTO_CSV_URL + '&_=' + Date.now());
@@ -521,9 +571,6 @@
         return rads;
     }
 
-    // ============================================
-    // ✅ TRAVA DOS BOTÕES
-    // ============================================
     function _travarBotoesRad(travar) {
         const btnSalvar = document.getElementById('btn-salvar-rad');
         const btnLimpar = document.getElementById('btn-limpar-rad');
@@ -746,9 +793,6 @@
         return modal.includes('IN-C') || modal.includes('IN COMPANY') || modal.includes('IN-COMPANY');
     }
 
-    // ============================================
-    // ✅ Detecta teachers do schedule automaticamente
-    // ============================================
     function sincronizarTeachersComSchedule() {
         const conhecidos = new Set(VALID_TEACHERS.map(t => t.name));
         const doSchedule = new Set();
@@ -815,7 +859,6 @@
             ];
             await Promise.allSettled(tasks);
 
-            // ✅ Sincroniza teachers ANTES de renderizar
             sincronizarTeachersComSchedule();
 
             buildModalMap(); buildGroupBookMap();
@@ -868,7 +911,10 @@
             populateHistoryTeacherFilter();
             renderTeachers();
             if (!document.getElementById('schedule-screen').classList.contains('hidden') && currentTeacher) loadWeekData(currentWeekName);
-            if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) renderGroupLessonPlans();
+            if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) {
+                if (currentInnerTab === 'vip') renderVipTable();
+                else renderGroupLessonPlans();
+            }
             if (!document.getElementById('history-screen').classList.contains('hidden')) renderHistory();
             if (!document.getElementById('fechamento-screen').classList.contains('hidden')) renderFechamento();
             alert('✅ Dados atualizados!');
@@ -941,7 +987,6 @@
 
     function cleanText(str) { return str ? str.replace(/<.*?>/g, '').trim() : ''; }
 
-    // ✅ Detecta teacher dinamicamente (não depende mais da lista fixa)
     function findTeacherInString(str) {
         if (!str) return null;
         const upperStr = str.toUpperCase();
@@ -955,7 +1000,6 @@
             const regex = new RegExp(`\\b${name}\\b`, 'i');
             if (regex.test(upperStr)) return name;
         }
-        // Fallback: se for só UMA palavra em maiúscula, usa ela
         const match = upperStr.match(/\b([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ]{3,15})\b/g);
         if (match && match.length === 1) return match[0];
         return null;
@@ -1185,7 +1229,9 @@
         if (currentLessonProgress[group].length === 0) delete currentLessonProgress[group];
         persistLessonProgress();
         try { if (currentGroup) openGroupDetail(currentGroup); } catch(e) {}
-        try { if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) renderGroupLessonPlans(); } catch(e) {}
+        try { if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) {
+            if (currentInnerTab === 'vip') renderVipTable(); else renderGroupLessonPlans();
+        } } catch(e) {}
         try { if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule(); } catch(e) {}
         const lessonsMap = {};
         (currentLessonProgress[group] || []).forEach(p => { if (p.completed === true) lessonsMap[p.lesson] = { completed: true, date: p.date || '' }; });
@@ -1264,6 +1310,8 @@
         document.getElementById('btn-history').classList.remove('active');
         document.getElementById('btn-fechamento').classList.remove('active');
     }
+    
+    // ✅ Modificado para gerenciar abas internas e barra de pesquisa
     function showLessonPlans() {
         document.getElementById('selection-screen').classList.add('hidden');
         document.getElementById('schedule-screen').classList.add('hidden');
@@ -1274,8 +1322,39 @@
         document.getElementById('btn-lessons').classList.add('active');
         document.getElementById('btn-history').classList.remove('active');
         document.getElementById('btn-fechamento').classList.remove('active');
-        renderGroupLessonPlans();
+        
+        // Limpa a pesquisa ao entrar na tela
+        document.getElementById('search-group').value = '';
+
+        if (currentInnerTab === 'vip') {
+            switchLessonTab('vip');
+        } else {
+            switchLessonTab('plans');
+        }
     }
+
+    function switchLessonTab(tabName) {
+        currentInnerTab = tabName;
+        
+        // Reseta classes das abas
+        document.getElementById('tab-btn-plans').classList.remove('active');
+        document.getElementById('tab-btn-vip').classList.remove('active');
+        
+        // Reseta visibilidade dos conteúdos
+        document.getElementById('tab-content-plans').classList.add('hidden');
+        document.getElementById('tab-content-vip').classList.add('hidden');
+
+        if (tabName === 'vip') {
+            document.getElementById('tab-btn-vip').classList.add('active');
+            document.getElementById('tab-content-vip').classList.remove('hidden');
+            renderVipTable();
+        } else {
+            document.getElementById('tab-btn-plans').classList.add('active');
+            document.getElementById('tab-content-plans').classList.remove('hidden');
+            renderGroupLessonPlans();
+        }
+    }
+    
     function showHistory() {
         document.getElementById('selection-screen').classList.add('hidden');
         document.getElementById('schedule-screen').classList.add('hidden');
@@ -1761,13 +1840,25 @@
         if (currentGroup) openGroupDetail(currentGroup);
     }
 
+    // ✅ Modificada para suportar busca em tempo real
     function renderGroupLessonPlans() {
-        const container = document.getElementById('lesson-plan-content');
+        const container = document.getElementById('group-lesson-grid');
         if (!container) return;
-        const groups = [...allGroupsFromSchedule.values()].map(info => info.display).sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
-        if (groups.length === 0) { container.innerHTML = `<h2 style="color:var(--primary);text-align:center;">📚 Lesson Plans por Turma</h2><p style="text-align:center;">Nenhuma turma encontrada.</p>`; return; }
-        container.innerHTML = `<h2 style="color:var(--primary);text-align:center;margin-bottom:30px;">📚 Lesson Plans por Turma</h2><p style="text-align:center;color:var(--text-sec);margin-bottom:20px;font-size:0.9rem;">Total: ${groups.length} turmas</p><div class="group-lesson-grid" id="group-lesson-grid"></div>`;
-        const grid = document.getElementById('group-lesson-grid');
+        
+        let groups = [...allGroupsFromSchedule.values()].map(info => info.display).sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
+        
+        // Filtro de pesquisa
+        const searchTerm = (document.getElementById('search-group').value || '').toUpperCase().trim();
+        if (searchTerm) {
+            groups = groups.filter(g => g.toUpperCase().includes(searchTerm));
+        }
+
+        if (groups.length === 0) { 
+            container.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color:var(--text-sec); padding:20px;">Nenhuma turma encontrada com esse nome.</p>`; 
+            return; 
+        }
+        
+        container.innerHTML = '';
         groups.forEach(group => {
             const bookName = getBookForGroup(group);
             const lessons = getGroupLessons(group);
@@ -1789,8 +1880,88 @@
                 <div class="progress-bar"><div class="fill" style="width:${percentage}%;"></div></div>
                 <button onclick="openGroupDetail('${group.replace(/'/g, "\\'")}')" style="margin-top:15px;width:100%;">Ver Detalhes</button>
             `;
-            grid.appendChild(card);
+            container.appendChild(card);
         });
+    }
+
+    // ✅ Nova função para renderizar a tabela VIP
+    function renderVipTable() {
+        const tbody = document.getElementById('vip-table-body');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-sec);">Carregando...</td></tr>';
+
+        try {
+            // 1) Mapear todos os alunos VIP (aqueles que estão em turmas com modal VIP ou nome VIP)
+            const alunosVip = {}; 
+            
+            // Vamos cruzar os grupos que têm "VIP" no nome ou modalidade
+            allGroupsFromSchedule.forEach((info) => {
+                const groupName = info.display;
+                const isVipGroup = groupName.toUpperCase().includes('VIP') || (info.modal || '').toUpperCase().includes('VIP');
+                
+                if (isVipGroup) {
+                    const students = findStudentsForGroup(groupName, info.book);
+                    students.forEach(student => {
+                        if (!alunosVip[student]) alunosVip[student] = { turmas: new Set(), aulasFeitas: 0 };
+                        alunosVip[student].turmas.add(groupName);
+                    });
+                }
+            });
+
+            // 2) Contar as aulas de cada aluno VIP cruzando os RADs salvos
+            // Vamos verificar em todos os RADs (remoteRads + fechamentoRads) quem compareceu
+            const todosRads = [...remoteRads, ...fechamentoRads];
+            
+            // Para evitar duplicatas do mesmo dia/turma, vamos criar uma chave única
+            const presencasUnicas = new Set();
+
+            todosRads.forEach(rad => {
+                if (rad.status !== 'realizada') return;
+                if (!rad.attendance || rad.attendance.length === 0) return;
+
+                // Usamos timestamp (ou dia/time/group se não tiver timestamp) para garantir unicidade
+                const uniqueKeyBase = rad.timestamp || `${rad.teacher}_${rad.day}_${rad.time}_${rad.group}`;
+
+                rad.attendance.forEach(studentName => {
+                    const nameClean = studentName.trim();
+                    if (alunosVip[nameClean]) {
+                        const uniqueKey = `${uniqueKeyBase}_${nameClean}`;
+                        if (!presencasUnicas.has(uniqueKey)) {
+                            presencasUnicas.add(uniqueKey);
+                            alunosVip[nameClean].aulasFeitas++;
+                        }
+                    }
+                });
+            });
+
+            // 3) Converter para array e ordenar
+            const listaVip = Object.keys(alunosVip).map(name => ({
+                name,
+                turmas: Array.from(alunosVip[name].turmas).join(', '),
+                aulas: alunosVip[name].aulasFeitas
+            })).sort((a,b) => b.aulas - a.aulas || a.name.localeCompare(b.name));
+
+            if (listaVip.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-sec);">Nenhum aluno VIP encontrado no sistema.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            listaVip.forEach(aluno => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight:600; font-size:1.05rem;">${aluno.name}</td>
+                    <td style="color:var(--text-sec); font-size:0.9rem;">${aluno.turmas}</td>
+                    <td><span class="vip-count-badge">${aluno.aulas}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+        } catch (error) {
+            console.error('Erro ao renderizar tabela VIP:', error);
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--danger);">Erro ao carregar a lista VIP.</td></tr>';
+        }
     }
 
     function openGroupDetail(group) {
