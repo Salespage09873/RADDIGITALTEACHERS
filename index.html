@@ -160,7 +160,7 @@
         .fechamento-lista th { background: var(--primary-light); color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
         .fechamento-lista tr:hover td { background: var(--card-bg); }
         
-        /* Abas internas na tela de Lesson Plans */
+        /* Abas internas */
         .inner-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
         .inner-tab { padding: 10px 20px; border-radius: 30px; background: var(--bg-color); border: 2px solid var(--border-color); cursor: pointer; font-weight: 600; color: var(--text-sec); transition: all 0.2s; }
         .inner-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
@@ -171,13 +171,18 @@
         .search-bar::before { content: '🔍'; position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 1.1rem; color: var(--text-sec); pointer-events: none; z-index: 2; }
         
         /* Tabela VIP */
-        .vip-table-container { background: var(--bg-color); border-radius: 8px; box-shadow: var(--shadow); border: 2px solid var(--border-color); overflow: hidden; }
-        .vip-table { width: 100%; border-collapse: collapse; font-size: 1rem; }
+        .vip-table { width: 100%; border-collapse: collapse; font-size: 1rem; background: var(--bg-color); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow); }
         .vip-table th, .vip-table td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
-        .vip-table th { background: var(--primary-light); color: var(--primary); font-weight: 700; font-size: 1.05rem; }
-        .vip-table tr:last-child td { border-bottom: none; }
+        .vip-table th { background: var(--primary-light); color: var(--primary); font-weight: 700; }
         .vip-table tr:hover td { background: var(--card-bg); }
-        .vip-count-badge { background: var(--primary); color: #fff; padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 1.1rem; display: inline-block; }
+        .vip-aluno { font-weight: 600; font-size: 1.05rem; color: var(--text-main); }
+        .vip-turma { color: var(--text-sec); font-size: 0.9rem; }
+        
+        /* Checkbox VIP */
+        .vip-check-container { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
+        .vip-check-card { background: var(--bg-color); border: 2px solid var(--border-color); border-radius: 8px; padding: 15px; width: 250px; display: flex; flex-direction: column; }
+        .vip-check-card h4 { color: var(--primary); margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; }
+        .vip-check-card .vip-box { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
 
         @media (max-width: 600px) {
             .teachers-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
@@ -253,20 +258,8 @@
                 </div>
 
                 <div id="tab-content-vip" class="hidden">
-                    <div class="vip-table-container">
-                        <table class="vip-table" id="vip-table">
-                            <thead>
-                                <tr>
-                                    <th>👤 Aluno VIP</th>
-                                    <th>📖 Turma(s)</th>
-                                    <th>✅ Aulas Feitas</th>
-                                </tr>
-                            </thead>
-                            <tbody id="vip-table-body">
-                                <tr><td colspan="3" style="text-align:center;color:var(--text-sec);">Carregando...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <p style="text-align:center; color:var(--text-sec); margin-bottom:15px; font-size:0.9rem;">Clique no nome do aluno para marcar/desmarcar as aulas realizadas.</p>
+                    <div class="group-lesson-grid" id="vip-grid"></div>
                 </div>
             </div>
         </div>
@@ -374,6 +367,19 @@
         </div>
     </div>
 
+    <div id="vip-detail-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 id="vip-detail-title">👑 Aulas VIP - Aluno</h3>
+                <button class="close-modal" onclick="closeModal('vip-detail-modal')">✕</button>
+            </div>
+            <div id="vip-detail-content"></div>
+            <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="saveVipProgress()" class="btn-success" style="flex: 1; background: var(--success); color: #fff; border-color: var(--success);">💾 SALVAR PROGRESSO</button>
+            </div>
+        </div>
+    </div>
+
     <div id="attendance-modal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header">
@@ -402,9 +408,9 @@
 
     let remoteRads = [];
     let fechamentoRads = [];
-
-    // Variável para controlar qual aba interna está ativa
     let currentInnerTab = 'plans';
+    let currentVipAluno = null;
+    let currentVipTurma = null;
 
     function showSyncStatus(text, type = 'default') {
         const el = document.getElementById('sync-status');
@@ -491,6 +497,7 @@
     let allWeeks = { 'This Week': [], 'Next Week': [] };
     let currentGroup = null;
     let currentLessonProgress = {};
+    let currentVipProgress = {};
     let groupBookMap = {};
     let currentRadClass = null;
 
@@ -816,7 +823,7 @@
         const forceHide = () => { clearTimeout(safetyTimer); hideLoadingScreen(); };
         try {
             showLoadingMsg('Carregando...');
-            loadLessonProgress(); loadValoresSalvos();
+            loadLessonProgress(); loadValoresSalvos(); loadVipProgress();
             renderTeachers(); populateGroupSelect();
             try {
                 const now = new Date();
@@ -912,7 +919,7 @@
             renderTeachers();
             if (!document.getElementById('schedule-screen').classList.contains('hidden') && currentTeacher) loadWeekData(currentWeekName);
             if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) {
-                if (currentInnerTab === 'vip') renderVipTable();
+                if (currentInnerTab === 'vip') renderVipGrid();
                 else renderGroupLessonPlans();
             }
             if (!document.getElementById('history-screen').classList.contains('hidden')) renderHistory();
@@ -1197,6 +1204,19 @@
     function getProgressForGroup(group) { return currentLessonProgress[group] || []; }
     function isLessonDone(group, lessonId) { const arr = getProgressForGroup(group); const item = arr.find(p => p.lesson === lessonId); return !!(item && item.completed); }
 
+    // ✅ VIP Progress
+    function loadVipProgress() {
+        try { const saved = localStorage.getItem('vipProgress'); currentVipProgress = saved ? JSON.parse(saved) : {}; } catch(e) { currentVipProgress = {}; }
+    }
+    function persistVipProgress() { try { localStorage.setItem('vipProgress', JSON.stringify(currentVipProgress)); } catch(e) {} }
+
+    function getVipProgressForGroup(group) { return currentVipProgress[group] || {}; }
+    function isVipLessonDone(group, aluno, lessonId) {
+        const arr = getVipProgressForGroup(group);
+        if (!arr[aluno]) return false;
+        return arr[aluno].includes(lessonId);
+    }
+
     function getNextLessonIndex(group) {
         const lessons = getGroupLessons(group);
         const progress = getProgressForGroup(group);
@@ -1230,7 +1250,7 @@
         persistLessonProgress();
         try { if (currentGroup) openGroupDetail(currentGroup); } catch(e) {}
         try { if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) {
-            if (currentInnerTab === 'vip') renderVipTable(); else renderGroupLessonPlans();
+            if (currentInnerTab === 'vip') renderVipGrid(); else renderGroupLessonPlans();
         } } catch(e) {}
         try { if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule(); } catch(e) {}
         const lessonsMap = {};
@@ -1311,7 +1331,6 @@
         document.getElementById('btn-fechamento').classList.remove('active');
     }
     
-    // ✅ Modificado para gerenciar abas internas e barra de pesquisa
     function showLessonPlans() {
         document.getElementById('selection-screen').classList.add('hidden');
         document.getElementById('schedule-screen').classList.add('hidden');
@@ -1323,7 +1342,6 @@
         document.getElementById('btn-history').classList.remove('active');
         document.getElementById('btn-fechamento').classList.remove('active');
         
-        // Limpa a pesquisa ao entrar na tela
         document.getElementById('search-group').value = '';
 
         if (currentInnerTab === 'vip') {
@@ -1335,19 +1353,15 @@
 
     function switchLessonTab(tabName) {
         currentInnerTab = tabName;
-        
-        // Reseta classes das abas
         document.getElementById('tab-btn-plans').classList.remove('active');
         document.getElementById('tab-btn-vip').classList.remove('active');
-        
-        // Reseta visibilidade dos conteúdos
         document.getElementById('tab-content-plans').classList.add('hidden');
         document.getElementById('tab-content-vip').classList.add('hidden');
 
         if (tabName === 'vip') {
             document.getElementById('tab-btn-vip').classList.add('active');
             document.getElementById('tab-content-vip').classList.remove('hidden');
-            renderVipTable();
+            renderVipGrid();
         } else {
             document.getElementById('tab-btn-plans').classList.add('active');
             document.getElementById('tab-content-plans').classList.remove('hidden');
@@ -1840,14 +1854,12 @@
         if (currentGroup) openGroupDetail(currentGroup);
     }
 
-    // ✅ Modificada para suportar busca em tempo real
     function renderGroupLessonPlans() {
         const container = document.getElementById('group-lesson-grid');
         if (!container) return;
         
         let groups = [...allGroupsFromSchedule.values()].map(info => info.display).sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
         
-        // Filtro de pesquisa
         const searchTerm = (document.getElementById('search-group').value || '').toUpperCase().trim();
         if (searchTerm) {
             groups = groups.filter(g => g.toUpperCase().includes(searchTerm));
@@ -1884,84 +1896,138 @@
         });
     }
 
-    // ✅ Nova função para renderizar a tabela VIP
-    function renderVipTable() {
-        const tbody = document.getElementById('vip-table-body');
-        if (!tbody) return;
-        
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-sec);">Carregando...</td></tr>';
+    // ✅ Renderiza a grade de alunos VIP
+    function renderVipGrid() {
+        const container = document.getElementById('vip-grid');
+        if (!container) return;
+        container.innerHTML = '';
 
-        try {
-            // 1) Mapear todos os alunos VIP (aqueles que estão em turmas com modal VIP ou nome VIP)
-            const alunosVip = {}; 
+        const vipGroups = [];
+        allGroupsFromSchedule.forEach(info => {
+            const groupName = info.display;
+            const isVipGroup = groupName.toUpperCase().includes('VIP') || (info.modal || '').toUpperCase().includes('VIP');
+            if (isVipGroup) vipGroups.push(groupName);
+        });
+
+        if (vipGroups.length === 0) {
+            container.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color:var(--text-sec); padding:20px;">Nenhuma turma VIP encontrada no cronograma.</p>`;
+            return;
+        }
+
+        const vipAlunos = new Set();
+        vipGroups.forEach(groupName => {
+            const info = allGroupsFromSchedule.get(normalizeGroupKey(groupName));
+            const students = findStudentsForGroup(groupName, info ? info.book : '');
+            students.forEach(s => vipAlunos.add(s));
+        });
+
+        const listaAlunos = Array.from(vipAlunos).sort((a,b) => a.localeCompare(b, 'pt-BR'));
+
+        if (listaAlunos.length === 0) {
+            container.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color:var(--text-sec); padding:20px;">Nenhum aluno VIP encontrado.</p>`;
+            return;
+        }
+
+        listaAlunos.forEach(aluno => {
+            let aulasFeitas = 0;
+            const turmas = new Set();
             
-            // Vamos cruzar os grupos que têm "VIP" no nome ou modalidade
-            allGroupsFromSchedule.forEach((info) => {
-                const groupName = info.display;
-                const isVipGroup = groupName.toUpperCase().includes('VIP') || (info.modal || '').toUpperCase().includes('VIP');
-                
-                if (isVipGroup) {
-                    const students = findStudentsForGroup(groupName, info.book);
-                    students.forEach(student => {
-                        if (!alunosVip[student]) alunosVip[student] = { turmas: new Set(), aulasFeitas: 0 };
-                        alunosVip[student].turmas.add(groupName);
-                    });
+            vipGroups.forEach(groupName => {
+                const prog = getVipProgressForGroup(groupName);
+                if (prog[aluno]) {
+                    aulasFeitas += prog[aluno].length;
+                    turmas.add(groupName);
                 }
             });
 
-            // 2) Contar as aulas de cada aluno VIP cruzando os RADs salvos
-            // Vamos verificar em todos os RADs (remoteRads + fechamentoRads) quem compareceu
-            const todosRads = [...remoteRads, ...fechamentoRads];
-            
-            // Para evitar duplicatas do mesmo dia/turma, vamos criar uma chave única
-            const presencasUnicas = new Set();
+            const card = document.createElement('div');
+            card.className = 'group-card';
+            card.innerHTML = `
+                <h3>👤 ${aluno}</h3>
+                <div class="book-info">Turmas VIP: ${Array.from(turmas).join(', ') || 'Nenhuma'}</div>
+                <div class="progress" style="font-size:1.2rem; font-weight:700; color:var(--primary); margin-top:15px;">
+                    ${aulasFeitas} aulas feitas
+                </div>
+                <button onclick="openVipDetail('${aluno.replace(/'/g, "\\'")}')" style="margin-top:15px;width:100%;">Editar Aulas</button>
+            `;
+            container.appendChild(card);
+        });
+    }
 
-            todosRads.forEach(rad => {
-                if (rad.status !== 'realizada') return;
-                if (!rad.attendance || rad.attendance.length === 0) return;
-
-                // Usamos timestamp (ou dia/time/group se não tiver timestamp) para garantir unicidade
-                const uniqueKeyBase = rad.timestamp || `${rad.teacher}_${rad.day}_${rad.time}_${rad.group}`;
-
-                rad.attendance.forEach(studentName => {
-                    const nameClean = studentName.trim();
-                    if (alunosVip[nameClean]) {
-                        const uniqueKey = `${uniqueKeyBase}_${nameClean}`;
-                        if (!presencasUnicas.has(uniqueKey)) {
-                            presencasUnicas.add(uniqueKey);
-                            alunosVip[nameClean].aulasFeitas++;
-                        }
-                    }
-                });
-            });
-
-            // 3) Converter para array e ordenar
-            const listaVip = Object.keys(alunosVip).map(name => ({
-                name,
-                turmas: Array.from(alunosVip[name].turmas).join(', '),
-                aulas: alunosVip[name].aulasFeitas
-            })).sort((a,b) => b.aulas - a.aulas || a.name.localeCompare(b.name));
-
-            if (listaVip.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-sec);">Nenhum aluno VIP encontrado no sistema.</td></tr>';
-                return;
+    // ✅ Abre o modal para editar aulas do VIP
+    function openVipDetail(aluno) {
+        currentVipAluno = aluno;
+        const modal = document.getElementById('vip-detail-modal');
+        const title = document.getElementById('vip-detail-title');
+        const content = document.getElementById('vip-detail-content');
+        
+        title.textContent = `👑 Aulas VIP - ${aluno}`;
+        
+        // Encontra as turmas que este aluno faz parte
+        const vipGroups = [];
+        allGroupsFromSchedule.forEach(info => {
+            const groupName = info.display;
+            const isVipGroup = groupName.toUpperCase().includes('VIP') || (info.modal || '').toUpperCase().includes('VIP');
+            if (isVipGroup) {
+                const students = findStudentsForGroup(groupName, info.book);
+                if (students.includes(aluno)) vipGroups.push(groupName);
             }
+        });
 
-            tbody.innerHTML = '';
-            listaVip.forEach(aluno => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight:600; font-size:1.05rem;">${aluno.name}</td>
-                    <td style="color:var(--text-sec); font-size:0.9rem;">${aluno.turmas}</td>
-                    <td><span class="vip-count-badge">${aluno.aulas}</span></td>
+        let html = `<div style="display:flex; flex-direction:column; gap:20px;">`;
+        
+        vipGroups.forEach(groupName => {
+            const lessons = getGroupLessons(groupName);
+            html += `<div style="background:var(--card-bg); padding:15px; border-radius:8px; border:1px solid var(--border-color);">`;
+            html += `<h4 style="color:var(--primary); margin-bottom:10px; font-size:1.1rem;">Turma: ${groupName}</h4>`;
+            html += `<div style="max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">`;
+            
+            lessons.forEach((lesson, idx) => {
+                const done = isVipLessonDone(groupName, aluno, lesson.id);
+                const checkId = `vip_${groupName.replace(/\W/g, '')}_${idx}`;
+                html += `
+                    <div class="checkbox-group ${done ? 'checked' : ''}">
+                        <input type="checkbox" id="${checkId}" ${done ? 'checked' : ''} 
+                               onchange="toggleVipLesson('${groupName.replace(/'/g, "\\'")}', '${lesson.id}', this.checked)">
+                        <label for="${checkId}">${lesson.label} ${lesson.isRevision ? '🔄' : ''} ${lesson.isTest ? '📝' : ''}</label>
+                    </div>
                 `;
-                tbody.appendChild(tr);
             });
+            html += `</div></div>`;
+        });
+        html += `</div>`;
 
-        } catch (error) {
-            console.error('Erro ao renderizar tabela VIP:', error);
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--danger);">Erro ao carregar a lista VIP.</td></tr>';
+        content.innerHTML = html;
+        modal.classList.remove('hidden');
+    }
+
+    // ✅ Marca/desmarca aula do VIP e salva
+    function toggleVipLesson(group, lessonId, checked) {
+        if (!currentVipProgress[group]) currentVipProgress[group] = {};
+        if (!currentVipProgress[group][currentVipAluno]) currentVipProgress[group][currentVipAluno] = [];
+
+        let arr = currentVipProgress[group][currentVipAluno];
+
+        if (checked) {
+            if (!arr.includes(lessonId)) arr.push(lessonId);
+        } else {
+            currentVipProgress[group][currentVipAluno] = arr.filter(id => id !== lessonId);
         }
+
+        // Se ficar vazio, remove a chave
+        if (currentVipProgress[group][currentVipAluno].length === 0) {
+            delete currentVipProgress[group][currentVipAluno];
+        }
+
+        persistVipProgress();
+    }
+
+    // ✅ Salva e atualiza a tela
+    function saveVipProgress() {
+        persistVipProgress();
+        closeModal('vip-detail-modal');
+        renderVipGrid();
+        showSyncStatus('Progresso VIP atualizado localmente!', 'success');
     }
 
     function openGroupDetail(group) {
