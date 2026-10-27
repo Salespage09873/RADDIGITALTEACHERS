@@ -111,6 +111,41 @@
         .group-card .progress { font-size: 0.9rem; color: var(--text-sec); }
         .group-card .progress-bar { width: 100%; height: 8px; background: var(--border-color); border-radius: 4px; margin-top: 10px; overflow: hidden; }
         .group-card .progress-bar .fill { height: 100%; background: var(--success); border-radius: 4px; transition: width 0.3s ease; }
+
+        /* ===== PREVISÃO DE TÉRMINO ===== */
+        .group-card .previsao-termino {
+            margin-top: 12px;
+            padding: 8px 10px;
+            background: #fff8e1;
+            border: 1px solid var(--warning);
+            border-left: 4px solid var(--warning);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #856404;
+            text-align: left;
+        }
+        .group-card .previsao-termino strong { color: #5a3e00; }
+        .group-card .previsao-termino .faltam {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-sec);
+            margin-top: 2px;
+        }
+        .group-card .previsao-termino.concluido {
+            background: var(--success-light);
+            border-color: var(--success);
+            border-left-color: var(--success);
+            color: var(--success);
+        }
+        .group-card .previsao-termino.concluido strong { color: var(--success); }
+        .group-card .previsao-termino.sem-dados {
+            background: var(--card-bg);
+            border-color: var(--border-color);
+            border-left-color: var(--text-sec);
+            color: var(--text-sec);
+        }
+        /* ===== FIM PREVISÃO ===== */
+
         .lesson-item { display: flex; align-items: center; padding: 10px 15px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 8px; transition: all 0.2s ease; cursor: pointer; }
         .lesson-item:hover { border-color: var(--primary); background: var(--primary-light); }
         .lesson-item input[type="checkbox"] { width: auto; margin-right: 15px; margin-bottom: 0; accent-color: var(--primary); transform: scale(1.2); cursor: pointer; }
@@ -1227,6 +1262,70 @@
         return -1;
     }
 
+    // ============================================
+    // PREVISÃO DE TÉRMINO
+    // ============================================
+    function getDiasDaSemanaDaTurma(group) {
+        const alvo = normalizeGroupKey(group);
+        const dias = new Set();
+        const mapaDia = { 'Segunda': 1, 'Terça': 2, 'Quarta': 3, 'Quinta': 4, 'Sexta': 5 };
+
+        // Percorre a grade da semana atual (recorrente)
+        (scheduleData || []).forEach(cls => {
+            if (normalizeGroupKey(cls.group || '') === alvo) {
+                const d = mapaDia[cls.dayName];
+                if (d) dias.add(d);
+            }
+        });
+
+        // Se não achou na grade atual, tenta na próxima
+        if (dias.size === 0) {
+            (nextWeekData || []).forEach(cls => {
+                if (normalizeGroupKey(cls.group || '') === alvo) {
+                    const d = mapaDia[cls.dayName];
+                    if (d) dias.add(d);
+                }
+            });
+        }
+
+        return [...dias].sort();
+    }
+
+    function getPrevisaoTermino(group) {
+        const lessons = getGroupLessons(group);
+        const progress = getProgressForGroup(group);
+        const total = lessons.length;
+        const completed = progress.filter(p => p.completed).length;
+        const faltam = total - completed;
+
+        if (total === 0) return { texto: '—', faltam: 0, semDados: true };
+        if (faltam <= 0) return { texto: 'Concluído', faltam: 0, concluido: true };
+
+        const diasSemana = getDiasDaSemanaDaTurma(group);
+        if (diasSemana.length === 0) {
+            return { texto: 'Sem dia definido', faltam, semDados: true };
+        }
+
+        // Avança dia a dia a partir de amanhã, contando quantos "dias de aula" batem
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        let cursor = new Date(hoje);
+        let contadas = 0;
+        let guard = 0;
+
+        while (contadas < faltam && guard < 3650) {
+            cursor.setDate(cursor.getDate() + 1);
+            if (diasSemana.includes(cursor.getDay())) contadas++;
+            guard++;
+        }
+
+        const dd = String(cursor.getDate()).padStart(2, '0');
+        const mm = String(cursor.getMonth() + 1).padStart(2, '0');
+        const yyyy = cursor.getFullYear();
+
+        return { texto: `${dd}/${mm}/${yyyy}`, faltam, data: cursor };
+    }
+
     function applyChainToggle(group, clickedIndex, completed) {
         if (!currentLessonProgress[group]) currentLessonProgress[group] = [];
         const lessons = getGroupLessons(group);
@@ -1882,6 +1981,22 @@
             let nextText = '';
             if (nextIdx >= 0 && lessons[nextIdx]) nextText = `<div style="font-size:0.8rem;color:var(--primary);margin-top:6px;">➡️ Próxima: ${lessons[nextIdx].label}</div>`;
             else if (total > 0) nextText = `<div style="font-size:0.8rem;color:var(--success);margin-top:6px;">🏁 Concluído</div>`;
+
+            // ===== PREVISÃO DE TÉRMINO =====
+            const previsao = getPrevisaoTermino(group);
+            let previsaoHtml = '';
+            if (previsao.concluido) {
+                previsaoHtml = `<div class="previsao-termino concluido">🏁 <strong>Término:</strong> ${previsao.texto}</div>`;
+            } else if (previsao.semDados) {
+                previsaoHtml = `<div class="previsao-termino sem-dados">📅 <strong>Previsão de término:</strong> ${previsao.texto}</div>`;
+            } else {
+                previsaoHtml = `<div class="previsao-termino">
+                    📅 <strong>Previsão de término:</strong> ${previsao.texto}
+                    <span class="faltam">(${previsao.faltam} aula${previsao.faltam > 1 ? 's' : ''} restante${previsao.faltam > 1 ? 's' : ''})</span>
+                </div>`;
+            }
+            // ===== FIM PREVISÃO =====
+
             const card = document.createElement('div');
             card.className = 'group-card';
             card.innerHTML = `
@@ -1890,11 +2005,14 @@
                 <div class="progress">${completed} de ${total} aulas concluídas</div>
                 ${nextText}
                 <div class="progress-bar"><div class="fill" style="width:${percentage}%;"></div></div>
+                ${previsaoHtml}
                 <button onclick="openGroupDetail('${group.replace(/'/g, "\\'")}')" style="margin-top:15px;width:100%;">Ver Detalhes</button>
             `;
-            container.appendChild(card);
+            container.appendChild(buttonSafeCard(card));
         });
     }
+
+    function buttonSafeCard(card) { return card; }
 
     // ✅ Renderiza a grade de alunos VIP
     function renderVipGrid() {
@@ -1963,7 +2081,6 @@
         
         title.textContent = `👑 Aulas VIP - ${aluno}`;
         
-        // Encontra as turmas que este aluno faz parte
         const vipGroups = [];
         allGroupsFromSchedule.forEach(info => {
             const groupName = info.display;
@@ -2014,7 +2131,6 @@
             currentVipProgress[group][currentVipAluno] = arr.filter(id => id !== lessonId);
         }
 
-        // Se ficar vazio, remove a chave
         if (currentVipProgress[group][currentVipAluno].length === 0) {
             delete currentVipProgress[group][currentVipAluno];
         }
