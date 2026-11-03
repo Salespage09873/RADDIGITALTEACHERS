@@ -272,7 +272,8 @@
             <button onclick="showSelection()" class="active" id="btn-schedule">📅 Cronograma</button>
             <button onclick="showLessonPlans()" id="btn-lessons">📚 Lesson Plans</button>
             <button onclick="showHistory()" id="btn-history">📊 Histórico</button>
-            <button onclick="showFechamento()" id="btn-fechamento">💰 Fechamento</button>
+            <!-- Botão do fechamento agora chama a função de senha -->
+            <button onclick="tentarAcessarFechamento()" id="btn-fechamento">💰 Fechamento</button>
             <button onclick="refreshData()" class="refresh-btn">🔄 Atualizar Dados</button>
         </div>
     </header>
@@ -462,6 +463,7 @@
     const PENDING_QUEUE_KEY = 'radPendingQueue';
     const VALORES_KEY = 'fechamentoValores';
     const SENHA_DESBLOQUEIO = '123321';
+    const SENHA_FECHAMENTO = '1905';
     
     // Link atualizado da planilha do Fechamento (Rad Log)
     const FECHAMENTO_CSV_URL = 'https://docs.google.com/spreadsheets/d/1Dt17RVQfsGkjyMQQM6_tVSeaRm8cD_VWUhcOLliffjU/export?format=csv&gid=2022637576';
@@ -471,6 +473,9 @@
     let currentInnerTab = 'plans';
     let currentVipAluno = null;
     let currentVipTurma = null;
+    
+    // Controle de acesso à aba de fechamento
+    let acessoFechamentoLiberado = false;
 
     function showSyncStatus(text, type = 'default') {
         const el = document.getElementById('sync-status');
@@ -1504,6 +1509,23 @@
         populateHistoryTeacherFilter();
         loadHistoryFromServer();
     }
+
+    // ✅ Lógica de acesso restrito ao Fechamento
+    function tentarAcessarFechamento() {
+        if (acessoFechamentoLiberado) {
+            showFechamento();
+            return;
+        }
+        const senha = prompt('🔒 Acesso Restrito. Digite a senha para acessar o Fechamento:');
+        if (senha === null) return; // Cancelou
+        if (senha === SENHA_FECHAMENTO) {
+            acessoFechamentoLiberado = true;
+            showFechamento();
+        } else {
+            alert('❌ Senha incorreta. Acesso negado.');
+        }
+    }
+
     function showFechamento() {
         document.getElementById('selection-screen').classList.add('hidden');
         document.getElementById('schedule-screen').classList.add('hidden');
