@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Get It - Cronograma Semanal</title>
+    <title>Get It</title>
     <style>
         :root {
             /* Cores baseadas na logo da Get It */
@@ -263,9 +263,9 @@
         <p id="loading-msg"></p>
     </div>
 
-       <header>
+    <header>
         <div class="logo-container" style="margin-bottom: 5px;">
-            <!-- A imagem agora aponta para o seu arquivo local -->
+            <!-- A imagem aponta para o seu arquivo local -->
             <img src="logo.png" alt="Get It" style="width: 220px; height: auto; object-fit: contain;">
         </div>
         <div class="header-buttons">
@@ -462,7 +462,9 @@
     const PENDING_QUEUE_KEY = 'radPendingQueue';
     const VALORES_KEY = 'fechamentoValores';
     const SENHA_DESBLOQUEIO = '123321';
-    const FECHAMENTO_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTXUgDbf7VGEolhrORAK97drh2jz40D_m0z6fBulQrpurP3hEA9fjUX5f-uD1jcbyB_bYJwWaHCPCA/pub?output=csv';
+    
+    // Link atualizado da planilha do Fechamento (Rad Log)
+    const FECHAMENTO_CSV_URL = 'https://docs.google.com/spreadsheets/d/1Dt17RVQfsGkjyMQQM6_tVSeaRm8cD_VWUhcOLliffjU/export?format=csv&gid=2022637576';
 
     let remoteRads = [];
     let fechamentoRads = [];
