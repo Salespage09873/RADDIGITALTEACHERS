@@ -1,641 +1,1876 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CRM Alunos</title>
-<style>
-:root{--bg:#f3f5f9;--sf:#fff;--tx:#1b2540;--mu:#6a7592;--ln:#e2e7f0;--side:#10192f;--br:#2563eb;--brd:#1d4ed8;--ok:#16a34a;--warn:#f59e0b;--err:#ef4444}
-*{box-sizing:border-box;margin:0}
-html,body{height:100%}
-body{font:14px/1.45 "Segoe UI",Inter,system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--tx);display:flex}
-button,input,select,textarea{font:inherit;color:inherit}
-aside{width:224px;background:var(--side);color:#c9d2e8;display:flex;flex-direction:column;padding:18px 12px;flex-shrink:0}
-.logo{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:16px;padding:0 8px 22px}
-.logo i{width:30px;height:30px;border-radius:8px;background:var(--br);display:grid;place-items:center;font-style:normal}
-nav button{display:flex;width:100%;gap:10px;align-items:center;background:none;border:0;color:inherit;padding:10px 12px;border-radius:8px;cursor:pointer;text-align:left;margin-bottom:2px}
-nav button:hover{background:#1a2644}
-nav button.on{background:var(--br);color:#fff}
-.conn{margin-top:auto;font-size:12px;padding:10px 12px;border-radius:8px;background:#1a2644;display:flex;gap:8px;align-items:center}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--warn)}
-.dot.ok{background:var(--ok)}.dot.err{background:var(--err)}
-main{flex:1;min-width:0;display:flex;flex-direction:column;height:100%}
-header{display:flex;gap:12px;align-items:center;padding:16px 24px;background:var(--sf);border-bottom:1px solid var(--ln);flex-wrap:wrap}
-header h1{font-size:18px;font-weight:700;margin-right:auto}
-.search{width:260px;max-width:100%;padding:9px 12px;border:1px solid var(--ln);border-radius:8px;background:var(--bg)}
-.btn{padding:9px 14px;border-radius:8px;border:1px solid var(--ln);background:var(--sf);cursor:pointer;font-weight:600;white-space:nowrap}
-.btn:hover{background:var(--bg)}
-.btn.pr{background:var(--br);border-color:var(--br);color:#fff}
-.btn.pr:hover{background:var(--brd)}
-.btn.dg{color:#dc2626}
-.btn.sm{padding:5px 9px;font-size:12px;font-weight:500}
-:focus-visible{outline:2px solid var(--br);outline-offset:2px}
-.kpis{display:flex;gap:12px;padding:16px 24px 0;flex-wrap:wrap}
-.kpi{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px 16px;min-width:150px;flex:1}
-.kpi b{display:block;font-size:22px}
-.kpi span{color:var(--mu);font-size:12px}
-.board{flex:1;display:flex;gap:14px;padding:16px 24px 24px;overflow:auto;align-items:flex-start}
-.col{width:290px;flex-shrink:0;background:#e9edf5;border-radius:12px;display:flex;flex-direction:column;max-height:100%}
-.col.over{outline:2px dashed var(--br)}
-.ch{padding:12px 14px;display:flex;align-items:center;gap:8px;font-weight:700;border-top:3px solid var(--c);border-radius:12px 12px 0 0}
-.ch em{margin-left:auto;font-style:normal;font-weight:600;color:var(--mu);background:var(--sf);border-radius:20px;padding:1px 9px;font-size:12px}
-.cards{padding:0 10px 10px;overflow:auto;display:flex;flex-direction:column;gap:8px;min-height:48px}
-.card{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px;cursor:grab;box-shadow:0 1px 2px rgba(16,25,47,.06)}
-.card:hover{border-color:#b9c6e4}
-.card.drag{opacity:.4}
-.top{display:flex;gap:10px;align-items:center}
-.av{width:34px;height:34px;border-radius:50%;background:#dbe6ff;color:var(--brd);display:grid;place-items:center;font-weight:700;flex-shrink:0}
-.nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ph{color:var(--mu);font-size:12.5px}
-.tag{display:inline-block;margin-top:10px;background:#eef3ff;color:var(--brd);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600}
-.ob{color:var(--mu);font-size:12.5px;margin-top:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.ft{display:flex;justify-content:space-between;align-items:center;margin-top:10px;color:var(--mu);font-size:12px}
-.wa{color:#15803d;font-weight:600;text-decoration:none}
-.empty{color:var(--mu);text-align:center;padding:14px 6px;font-size:13px}
-.list{flex:1;overflow:auto;padding:16px 24px 24px}
-table{width:100%;border-collapse:collapse;background:var(--sf);border:1px solid var(--ln);border-radius:10px;overflow:hidden;min-width:680px}
-th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--ln)}
-th{background:#f8f9fc;color:var(--mu);font-weight:600;font-size:12.5px}
-tbody tr{cursor:pointer}tbody tr:hover{background:#f8faff}
-.pill{display:inline-block;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:600;color:#fff;background:var(--c)}
-.wrapx{overflow-x:auto}
-dialog{border:0;border-radius:14px;padding:0;width:min(480px,94vw);box-shadow:0 20px 60px rgba(16,25,47,.3)}
-dialog::backdrop{background:rgba(16,25,47,.5)}
-form{padding:22px;display:grid;gap:14px}
-form h2{font-size:17px}
-label{display:grid;gap:5px;font-weight:600;font-size:12.5px;color:var(--mu)}
-input,select,textarea{padding:9px 11px;border:1px solid var(--ln);border-radius:8px;background:var(--sf);color:var(--tx);font-weight:400;font-size:14px}
-textarea{min-height:78px;resize:vertical}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.acts{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
-.acts .dg{margin-right:auto}
-.hint{font-size:12.5px;color:var(--mu);font-weight:400}
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--side);color:#fff;padding:10px 16px;border-radius:8px;display:none;z-index:9}
-
-/* ===== PLANILHA — TELA CHEIA ===== */
-.sheet-wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:10px 10px 10px;overflow:hidden}
-.sheet-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;flex-shrink:0}
-.sheet-toolbar .hint{margin-left:auto;font-size:12px}
-.sheet-scroll{flex:1;overflow:auto;border:1px solid var(--ln);border-radius:10px;background:var(--sf);min-height:0}
-table.sheet{border-collapse:separate;border-spacing:0;width:100%;min-width:1100px;font-size:14px;table-layout:fixed}
-table.sheet col.col-num{width:48px}
-table.sheet col.col-nome{width:20%}
-table.sheet col.col-tel{width:15%}
-table.sheet col.col-plano{width:17%}
-table.sheet col.col-etapa{width:16%}
-table.sheet col.col-obs{width:22%}
-table.sheet col.col-data{width:100px}
-table.sheet col.col-acoes{width:70px}
-table.sheet th,table.sheet td{border-right:1px solid var(--ln);border-bottom:1px solid var(--ln);padding:0;position:relative;vertical-align:middle}
-table.sheet th{background:#f8f9fc;color:var(--mu);font-weight:600;font-size:13px;padding:12px 12px;text-align:left;position:sticky;top:0;z-index:2;white-space:nowrap}
-table.sheet th.rowhead{text-align:center}
-table.sheet td{background:#fff;height:42px}
-table.sheet td.rowhead{background:#f8f9fc;color:var(--mu);text-align:center;font-size:13px;font-weight:600;padding:8px;cursor:default;user-select:none}
-table.sheet td input,table.sheet td select{width:100%;height:100%;border:0;border-radius:0;padding:10px 12px;background:transparent;font-size:14px;font-weight:400}
-table.sheet td input:focus,table.sheet td select:focus{background:#eef5ff;outline:2px solid var(--br);outline-offset:-2px}
-table.sheet tr:hover td{background:#fafbff}
-table.sheet tr:hover td.rowhead{background:#eef2fa}
-.row-actions{display:flex;gap:4px;justify-content:center}
-.row-actions button{border:0;background:none;cursor:pointer;color:var(--mu);padding:4px 7px;border-radius:4px;font-size:15px}
-.row-actions button:hover{background:#eef2fa;color:var(--tx)}
-
-/* ===== ESTATÍSTICAS ===== */
-.stats-wrap{flex:1;overflow:auto;padding:16px 24px 24px}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
-.panel{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:18px}
-.panel h3{font-size:14px;margin-bottom:14px;color:var(--tx)}
-.panel .sub{font-size:12px;color:var(--mu);margin-bottom:12px}
-.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.bar-row .lbl{width:130px;font-size:12.5px;color:var(--tx);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bar-row .track{flex:1;height:22px;background:#eef2fa;border-radius:6px;overflow:hidden;position:relative}
-.bar-row .fill{height:100%;border-radius:6px;transition:width .4s;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fff;font-size:11px;font-weight:700}
-.bar-row .val{width:60px;text-align:right;font-size:12.5px;font-weight:600;flex-shrink:0}
-.donut-wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
-.donut{width:150px;height:150px;border-radius:50%;flex-shrink:0;position:relative}
-.donut::after{content:'';position:absolute;inset:28px;background:var(--sf);border-radius:50%}
-.donut-center{position:absolute;inset:0;display:grid;place-items:center;z-index:1;text-align:center}
-.donut-center b{font-size:24px;display:block}
-.donut-center span{font-size:11px;color:var(--mu)}
-.legend{display:flex;flex-direction:column;gap:6px;font-size:12.5px}
-.legend span{display:flex;align-items:center;gap:8px}
-.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
-.big-stat{text-align:center;padding:12px}
-.big-stat b{font-size:32px;display:block;line-height:1.1}
-.big-stat span{color:var(--mu);font-size:12px}
-.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.rank-list{display:flex;flex-direction:column;gap:8px}
-.rank-item{display:flex;align-items:center;gap:10px;font-size:13px}
-.rank-item .pos{width:22px;height:22px;border-radius:6px;background:#eef2fa;color:var(--mu);display:grid;place-items:center;font-size:11px;font-weight:700;flex-shrink:0}
-.rank-item .pos.gold{background:#fef3c7;color:#b45309}
-.rank-item .nm2{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rank-item .qtd{color:var(--mu);font-size:12px;font-weight:600}
-
-/* input pequeno na toolbar */
-.bulk-input{width:64px;padding:5px 8px;border:1px solid var(--ln);border-radius:6px;text-align:center;font-size:12.5px}
-
-@media(max-width:800px){aside{display:none}header{flex-wrap:wrap}.search{width:100%;max-width:none;order:5}.kpis{padding:12px 16px 0}.board{padding:12px 16px 16px}.sheet-wrap,.stats-wrap,.list{padding:8px}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cronograma Semanal</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --card-bg: #f8f9fa;
+            --text-main: #212529;
+            --text-sec: #6c757d;
+            --primary: #0d6efd;
+            --primary-light: #e7f1ff;
+            --primary-dim: rgba(13, 110, 253, 0.1);
+            --border-color: #dee2e6;
+            --danger: #dc3545;
+            --success: #198754;
+            --success-light: #d4edda;
+            --warning: #ffc107;
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-hover: 0 4px 16px rgba(0,0,0,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; overflow-x: hidden; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .hidden { display: none !important; }
+        header { text-align: center; padding: 30px 0; border-bottom: 3px solid var(--primary); margin-bottom: 30px; background: linear-gradient(180deg, var(--primary-light) 0%, transparent 100%); }
+        h1 { font-size: 2rem; font-weight: 700; letter-spacing: 1px; color: var(--primary); margin-bottom: 10px; }
+        h2, h3 { font-weight: 600; letter-spacing: 0.5px; }
+        .header-buttons { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 15px; }
+        button { background: var(--bg-color); border: 2px solid var(--primary); color: var(--primary); padding: 12px 24px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; border-radius: 6px; margin: 5px; box-shadow: var(--shadow); }
+        button:hover { background: var(--primary); color: #fff; box-shadow: var(--shadow-hover); transform: translateY(-1px); }
+        button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button.btn-danger { border-color: var(--danger); color: var(--danger); }
+        button.btn-danger:hover { background: var(--danger); color: #fff; }
+        button.btn-success { border-color: var(--success); color: var(--success); }
+        button.btn-success:hover { background: var(--success); color: #fff; }
+        .teachers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; justify-items: center; margin-top: 20px; }
+        .teacher-card { background: var(--card-bg); border: 2px solid var(--border-color); padding: 20px; width: 100%; max-width: 200px; text-align: center; cursor: pointer; transition: all 0.3s ease; border-radius: 8px; box-shadow: var(--shadow); }
+        .teacher-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow-hover); background: var(--primary-light); }
+        .teacher-name { font-size: 1.1rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px; }
+        .schedule-header { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; border-bottom: 2px solid var(--border-color); padding-bottom: 20px; }
+        .week-selector { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .day-section { margin-bottom: 40px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--card-bg); box-shadow: var(--shadow); }
+        .day-header { background: var(--primary-light); color: var(--primary); padding: 15px 20px; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid var(--primary); font-size: 1.2rem; letter-spacing: 0.5px; }
+        .classes-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; padding: 20px; }
+        .class-card { background: var(--bg-color); border: 2px solid var(--border-color); padding: 18px; border-radius: 6px; position: relative; transition: all 0.3s ease; box-shadow: var(--shadow); }
+        .class-card:hover { border-color: var(--primary); box-shadow: var(--shadow-hover); }
+        .class-card.rad-saved { border-color: var(--success); background: var(--success-light); opacity: 0.55; }
+        .class-card.rad-saved:hover { opacity: 1; }
+        .class-card.next-week-card { border-left: 5px solid var(--warning); }
+        .class-time { font-size: 1.3rem; color: var(--primary); font-weight: 700; margin-bottom: 8px; display: block; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; }
+        .class-info { font-size: 0.95rem; color: var(--text-sec); margin-bottom: 5px; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-right: 5px; margin-bottom: 5px; color: #fff; }
+        .badge-book { background: var(--warning); color: #000; }
+        .badge-room { background: var(--success); }
+        .badge-modal { background: var(--primary); }
+        .badge-saved { background: var(--success); }
+        .badge-next-week { background: var(--warning); color: #000; }
+        .badge-inc { background: #6f42c1; color: #fff; }
+        .badge-cc { background: #20c997; color: #000; }
+        .action-btn { width: 100%; margin-top: 12px; padding: 10px; font-size: 0.85rem; border: 2px solid var(--border-color); color: var(--text-sec); background: var(--bg-color); border-radius: 6px; font-weight: 600; transition: all 0.3s ease; cursor: pointer; }
+        .action-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: none; box-shadow: none; }
+        .action-btn.saved { border-color: var(--success); color: #fff; background: var(--success); }
+        .action-btn.saved:hover { background: #157347; border-color: #157347; color: #fff; }
+        .status-indicator { position: absolute; top: 12px; right: 12px; width: 12px; height: 12px; border-radius: 50%; }
+        .status-done { background: var(--success); }
+        .status-noshow { background: var(--danger); }
+        .status-cancel { background: var(--warning); }
+        .rad-saved-check { position: absolute; top: 10px; right: 10px; font-size: 1.2rem; color: #fff; background: var(--success); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--success); box-shadow: 0 0 10px rgba(25, 135, 84, 0.3); z-index: 2; }
+        .class-card.rad-saved .rad-saved-check { width: 48px; height: 48px; font-size: 1.9rem; border-width: 3px; box-shadow: 0 0 18px rgba(25, 135, 84, 0.6); animation: pulse-check 2s ease-in-out infinite; }
+        @keyframes pulse-check { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--bg-color); border: none; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
+        .modal-header h3 { color: var(--primary); font-size: 1.2rem; }
+        .close-modal { background: none; border: none; color: var(--text-sec); font-size: 1.8rem; cursor: pointer; padding: 0 8px; margin: 0; box-shadow: none; font-weight: 300; }
+        .close-modal:hover { color: var(--text-main); background: none; transform: none; }
+        .modal-saved-badge { background: var(--success-light); border: 2px solid var(--success); border-radius: 6px; padding: 10px 15px; color: var(--success); font-weight: 600; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        input, select, textarea { width: 100%; background: var(--bg-color); border: 2px solid var(--border-color); color: var(--text-main); padding: 10px 14px; margin-bottom: 12px; border-radius: 6px; font-family: inherit; font-size: 0.95rem; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-dim); }
+        input:disabled, select:disabled, textarea:disabled { background: #e9ecef; color: #6c757d; cursor: not-allowed; opacity: 0.8; }
+        textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+        label { font-weight: 600; font-size: 0.85rem; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+        .checkbox-group { display: flex; align-items: center; margin-bottom: 8px; background: var(--card-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); transition: all 0.2s ease; cursor: pointer; }
+        .checkbox-group:hover { border-color: var(--primary); background: var(--primary-light); }
+        .checkbox-group input { width: auto; margin-right: 12px; margin-bottom: 0; accent-color: var(--primary); transform: scale(1.1); cursor: pointer; }
+        .checkbox-group input:disabled { cursor: not-allowed; }
+        .checkbox-group label { flex: 1; cursor: pointer; font-size: 0.9rem; color: var(--text-main); text-transform: none; font-weight: 400; margin-bottom: 0; }
+        .checkbox-group.checked { background: var(--success-light); border-color: var(--success); }
+        .checkbox-group.checked label { color: var(--success); font-weight: 600; }
+        .checkbox-group .done-badge { display: inline-block; background: var(--success); color: #fff; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 700; }
+        .checkbox-group .next-badge { display: inline-block; background: var(--warning); color: #000; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 700; }
+        .attendance-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; background: var(--bg-color); border-radius: 6px; overflow: hidden; }
+        .attendance-table th, .attendance-table td { border: 1px solid var(--border-color); padding: 10px 12px; text-align: center; }
+        .attendance-table th { background: var(--primary-light); color: var(--primary); font-weight: 700; }
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .loader { width: 50px; height: 50px; border: 4px solid var(--border-color); border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #loading-screen p { margin-top: 20px; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        #loading-msg { font-size: 0.75rem !important; color: var(--text-sec) !important; text-transform: none !important; letter-spacing: 0 !important; margin-top: 8px !important; }
+        .observations-box { background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 6px; padding: 12px; margin-bottom: 15px; }
+        .observations-box textarea { margin-bottom: 0; border: 1px solid var(--border-color); }
+        .observations-box textarea:focus { border-color: var(--primary); }
+        .group-lesson-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
+        .group-card { background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 8px; padding: 20px; cursor: pointer; transition: all 0.3s ease; box-shadow: var(--shadow); text-align: center; }
+        .group-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow-hover); background: var(--primary-light); }
+        .group-card h3 { color: var(--primary); font-size: 1.2rem; margin-bottom: 10px; word-break: break-word; }
+        .group-card .book-info { font-size: 0.9rem; color: var(--text-sec); margin-bottom: 8px; }
+        .group-card .progress { font-size: 0.9rem; color: var(--text-sec); }
+        .group-card .progress-bar { width: 100%; height: 8px; background: var(--border-color); border-radius: 4px; margin-top: 10px; overflow: hidden; }
+        .group-card .progress-bar .fill { height: 100%; background: var(--success); border-radius: 4px; transition: width 0.3s ease; }
+        .lesson-item { display: flex; align-items: center; padding: 10px 15px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 8px; transition: all 0.2s ease; cursor: pointer; }
+        .lesson-item:hover { border-color: var(--primary); background: var(--primary-light); }
+        .lesson-item input[type="checkbox"] { width: auto; margin-right: 15px; margin-bottom: 0; accent-color: var(--primary); transform: scale(1.2); cursor: pointer; }
+        .lesson-item .lesson-label { flex: 1; font-size: 0.95rem; cursor: pointer; }
+        .lesson-item .lesson-date { font-size: 0.8rem; color: var(--text-sec); margin-left: 10px; }
+        .lesson-item .lesson-checked { color: var(--success); font-weight: 600; }
+        .lesson-item.revision { background: #fff3cd; border-color: var(--warning); }
+        .lesson-item .revision-badge { background: var(--warning); color: #000; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; margin-left: 10px; }
+        .lesson-item.test { background: #f8d7da; border-color: var(--danger); }
+        .lesson-item .test-badge { background: var(--danger); color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; margin-left: 10px; }
+        .lesson-item.checked { background: var(--success-light); border-color: var(--success); }
+        .lesson-item.checked .lesson-label { color: var(--success); font-weight: 600; }
+        .lesson-item.next { border: 3px solid var(--warning); background: #fff8e1; box-shadow: 0 0 0 3px rgba(255,193,7,0.25); }
+        .lesson-item .next-label-badge { background: var(--warning); color: #000; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; margin-left: 10px; }
+        .group-lessons-container { max-height: 500px; overflow-y: auto; padding: 5px; }
+        .group-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color); flex-wrap: wrap; gap: 10px; }
+        .group-header h2 { color: var(--primary); word-break: break-word; }
+        .group-header .book-badge { background: var(--primary-light); color: var(--primary); padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; }
+        .refresh-btn { border-color: var(--success) !important; color: var(--success) !important; }
+        .refresh-btn:hover { background: var(--success) !important; color: #fff !important; }
+        .chain-info { font-size: 0.8rem; color: var(--text-sec); font-style: italic; margin-top: 5px; text-align: center; }
+        .error-banner { background: #fff3cd; border: 2px solid var(--warning); border-radius: 8px; padding: 15px 20px; margin-bottom: 20px; color: #856404; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .next-lesson-box { background: var(--primary-light); border-left: 5px solid var(--primary); border-radius: 6px; padding: 12px 16px; margin-bottom: 15px; font-size: 0.9rem; }
+        .next-lesson-box strong { color: var(--primary); }
+        .sync-status { position: fixed; bottom: 20px; right: 20px; background: var(--card-bg); border: 2px solid var(--primary); border-radius: 8px; padding: 10px 16px; font-size: 0.85rem; font-weight: 600; color: var(--primary); box-shadow: var(--shadow-hover); z-index: 1500; display: flex; align-items: center; gap: 8px; max-width: 300px; }
+        .sync-status.success { border-color: var(--success); color: var(--success); }
+        .sync-status.error { border-color: var(--danger); color: var(--danger); }
+        .sync-status.warning { border-color: var(--warning); color: #856404; }
+        .fechamento-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .fechamento-card { background: var(--bg-color); border: 2px solid var(--border-color); border-radius: 10px; padding: 20px; box-shadow: var(--shadow); }
+        .fechamento-card h4 { font-size: 0.85rem; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .fechamento-card .valor { font-size: 2rem; font-weight: 700; color: var(--primary); }
+        .fechamento-card.total { border-color: var(--success); background: var(--success-light); }
+        .fechamento-card.total .valor { color: var(--success); }
+        .fechamento-card.inc { border-color: #6f42c1; background: #f3e8ff; }
+        .fechamento-card.inc .valor { color: #6f42c1; }
+        .fechamento-card.noshow { border-color: var(--warning); background: #fff8e1; }
+        .fechamento-card.noshow .valor { color: #856404; }
+        .fechamento-card.cancel { border-color: var(--danger); background: #f8d7da; }
+        .fechamento-card.cancel .valor { color: var(--danger); }
+        .valores-config { background: var(--card-bg); border: 2px solid var(--primary); border-radius: 10px; padding: 20px; margin-bottom: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end; }
+        .valores-config label { margin-bottom: 6px; }
+        .valores-config input { margin-bottom: 0; font-weight: 600; font-size: 1.1rem; }
+        .fechamento-lista { background: var(--bg-color); border: 2px solid var(--border-color); border-radius: 10px; padding: 20px; margin-top: 25px; }
+        .fechamento-lista table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .fechamento-lista th, .fechamento-lista td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.9rem; }
+        .fechamento-lista th { background: var(--primary-light); color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+        .fechamento-lista tr:hover td { background: var(--card-bg); }
+        .inner-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .inner-tab { padding: 10px 20px; border-radius: 30px; background: var(--bg-color); border: 2px solid var(--border-color); cursor: pointer; font-weight: 600; color: var(--text-sec); transition: all 0.2s; }
+        .inner-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .search-bar { width: 100%; max-width: 400px; margin: 0 auto 20px; position: relative; }
+        .search-bar input { padding-left: 40px; border-radius: 30px; font-size: 1rem; box-shadow: var(--shadow); margin-bottom: 0; border: 2px solid var(--border-color); }
+        .search-bar::before { content: '🔍'; position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 1.1rem; color: var(--text-sec); pointer-events: none; z-index: 2; }
+        @media (max-width: 600px) {
+            .teachers-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+            .classes-list { grid-template-columns: 1fr; padding: 15px; }
+            h1 { font-size: 1.5rem; }
+            .modal-content { width: 95%; padding: 20px; }
+            .header-buttons { flex-direction: column; align-items: center; }
+            .sync-status { bottom: 10px; right: 10px; font-size: 0.75rem; }
+            .fechamento-card .valor { font-size: 1.5rem; }
+        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--card-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+    </style>
 </head>
 <body>
-<aside>
-  <div class="logo"><i>🎓</i>CRM Alunos</div>
-  <nav>
-    <button id="nv-funil">▦ Funil de vendas</button>
-    <button id="nv-planilha">▤ Planilha</button>
-    <button id="nv-stats">📊 Estatísticas</button>
-    <button id="nv-lista">☰ Contatos</button>
-  </nav>
-  <div class="conn"><span class="dot" id="dot"></span><span id="cs">Modo demonstração</span></div>
-</aside>
-<main>
-  <header>
-    <h1 id="ttl">Funil de vendas</h1>
-    <input class="search" id="q" type="search" placeholder="Buscar por nome, telefone ou plano" aria-label="Buscar">
-    <button class="btn" id="cfg">Conectar planilha</button>
-    <button class="btn pr" id="new">+ Novo lead</button>
-  </header>
-  <div class="kpis" id="kpis"></div>
-  <section class="board" id="board"></section>
 
-  <!-- PLANILHA -->
-  <section class="sheet-wrap" id="sheet-view" hidden>
-    <div class="sheet-toolbar">
-      <button class="btn sm" id="sheet-add-row">+ 1 linha</button>
-      <button class="btn sm" id="sheet-add-100">+ 100 linhas</button>
-      <input class="bulk-input" id="sheet-bulk-qty" type="number" min="1" max="1000" value="50" aria-label="Quantidade de linhas">
-      <button class="btn sm" id="sheet-add-bulk">+ adicionar</button>
-      <button class="btn sm" id="sheet-paste-hint" title="Clique numa célula e cole com Ctrl+V">📋 Colar do Sheets</button>
-      <button class="btn sm" id="sheet-clear" style="color:#dc2626">Limpar tudo</button>
-      <span class="hint">Cole (Ctrl+V) linhas copiadas do Sheets em qualquer célula — elas são adicionadas automaticamente.</span>
+    <div id="loading-screen">
+        <div class="loader"></div>
+        <p>Carregando Sistema...</p>
+        <p id="loading-msg"></p>
     </div>
-    <div class="sheet-scroll">
-      <table class="sheet" id="sheet-table">
-        <colgroup>
-          <col class="col-num">
-          <col class="col-nome">
-          <col class="col-tel">
-          <col class="col-plano">
-          <col class="col-etapa">
-          <col class="col-obs">
-          <col class="col-data">
-          <col class="col-acoes">
-        </colgroup>
-        <thead>
-          <tr>
-            <th class="rowhead">#</th>
-            <th>Nome</th>
-            <th>Telefone</th>
-            <th>Plano</th>
-            <th>Etapa</th>
-            <th>Observações</th>
-            <th>Criado em</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="sheet-body"></tbody>
-      </table>
+
+    <header>
+        <h1>Sistema de Gestão</h1>
+        <p style="color: var(--text-sec); font-size: 0.95rem; font-weight: 500;">GERENCIAMENTO DE AULAS E LESSON PLANS</p>
+        <div class="header-buttons">
+            <button onclick="showSelection()" class="active" id="btn-schedule">📅 Cronograma</button>
+            <button onclick="showLessonPlans()" id="btn-lessons">📚 Lesson Plans por Turma</button>
+            <button onclick="showHistory()" id="btn-history">📊 Histórico de Aulas</button>
+            <button onclick="showFechamento()" id="btn-fechamento">💰 Fechamento</button>
+            <button onclick="refreshData()" class="refresh-btn">🔄 Atualizar Dados</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="error-banner" class="error-banner hidden"><span>⚠️</span><span id="error-banner-msg"></span></div>
+
+        <div id="selection-screen">
+            <div class="teachers-grid" id="teachers-grid"></div>
+            <div style="text-align: center; margin-top: 40px;">
+                <button onclick="openAttendanceList()" style="border-color: var(--success); color: var(--success);">📋 Lista de Presença Geral</button>
+            </div>
+        </div>
+
+        <div id="schedule-screen" class="hidden">
+            <div class="schedule-header">
+                <button onclick="showSelection()" style="align-self: flex-start; border-color: var(--text-sec); color: var(--text-sec);">← Voltar</button>
+                <h2 id="current-teacher-name" style="color: var(--primary); text-align: center;"></h2>
+                <div class="week-selector" id="week-selector"></div>
+            </div>
+            <div id="schedule-content"></div>
+        </div>
+
+        <div id="lesson-plan-screen" class="hidden">
+            <div style="margin-bottom: 20px;">
+                <button onclick="showSelection()" style="border-color: var(--text-sec); color: var(--text-sec);">← Voltar</button>
+            </div>
+            <div id="lesson-plan-content">
+                <h2 style="color: var(--primary); text-align: center; margin-bottom: 20px;">📚 Lesson Plans e Registros</h2>
+                <div class="inner-tabs">
+                    <div class="inner-tab active" onclick="switchLessonTab('plans')" id="tab-btn-plans">Turmas</div>
+                    <div class="inner-tab" onclick="switchLessonTab('vip')" id="tab-btn-vip">👑 Registro de Aulas VIP</div>
+                </div>
+                <div id="tab-content-plans">
+                    <div class="search-bar">
+                        <input type="text" id="search-group" placeholder="Pesquisar turma..." oninput="renderGroupLessonPlans()">
+                    </div>
+                    <div class="group-lesson-grid" id="group-lesson-grid"></div>
+                </div>
+                <div id="tab-content-vip" class="hidden">
+                    <p style="text-align:center; color:var(--text-sec); margin-bottom:15px; font-size:0.9rem;">Clique no aluno para marcar/desmarcar as aulas realizadas.</p>
+                    <div class="group-lesson-grid" id="vip-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="history-screen" class="hidden">
+            <div style="margin-bottom: 20px;">
+                <button onclick="showSelection()" style="border-color: var(--text-sec); color: var(--text-sec);">← Voltar</button>
+            </div>
+            <h2 style="color: var(--primary); text-align: center; margin-bottom: 20px;">📊 Histórico de Aulas</h2>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center;">
+                <select id="hist-filter-teacher" onchange="renderHistory()" style="max-width: 200px; margin-bottom: 0;"><option value="">Todos os professores</option></select>
+                <select id="hist-filter-status" onchange="renderHistory()" style="max-width: 200px; margin-bottom: 0;">
+                    <option value="">Todos os status</option>
+                    <option value="realizada">✅ Realizada</option>
+                    <option value="noshow">❌ No Show</option>
+                    <option value="cancelada">⚠️ Cancelada</option>
+                </select>
+                <input type="text" id="hist-filter-group" oninput="renderHistory()" placeholder="Filtrar por turma..." style="max-width: 220px; margin-bottom: 0;">
+                <button onclick="loadHistoryFromServer()" style="margin: 0;">🔄 Atualizar</button>
+                <button onclick="clearHistoryFilters()" style="margin: 0;">🧹 Limpar</button>
+            </div>
+            <div id="history-content"><p style="text-align:center; color: var(--text-sec); margin-top:40px;">Carregando histórico...</p></div>
+        </div>
+
+        <div id="fechamento-screen" class="hidden">
+            <div style="margin-bottom: 20px;">
+                <button onclick="showSelection()" style="border-color: var(--text-sec); color: var(--text-sec);">← Voltar</button>
+            </div>
+            <h2 style="color: var(--primary); text-align: center; margin-bottom: 20px;">💰 Fechamento de Pagamento</h2>
+            <div class="valores-config">
+                <div><label>💵 Valor Aula Normal (R$)</label><input type="number" id="valor-normal" value="25" min="0" step="0.01" oninput="renderFechamento()"></div>
+                <div><label>🏢 Valor Aula In Company (R$)</label><input type="number" id="valor-inc" value="30" min="0" step="0.01" oninput="renderFechamento()"></div>
+            </div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center;">
+                <select id="fech-teacher" onchange="renderFechamento()" style="max-width: 220px; margin-bottom: 0;"><option value="">Todos os professores</option></select>
+                <input type="month" id="fech-mes" onchange="renderFechamento()" style="max-width: 200px; margin-bottom: 0;">
+                <button onclick="limparFiltrosFechamento()" style="margin: 0;">🧹 Limpar</button>
+                <button onclick="carregarFechamentoCSV().then(renderFechamento)" style="margin: 0;">🔄 Atualizar</button>
+            </div>
+            <div id="fechamento-resumo" class="fechamento-grid"></div>
+            <div id="fechamento-lista-container" class="fechamento-lista"></div>
+        </div>
     </div>
-  </section>
 
-  <!-- ESTATÍSTICAS -->
-  <section class="stats-wrap" id="stats-view" hidden>
-    <div class="stats-grid" id="stats-grid"></div>
-  </section>
-
-  <section class="list" id="list" hidden>
-    <div class="wrapx">
-      <table>
-        <thead><tr><th>Nome</th><th>Telefone</th><th>Plano</th><th>Etapa</th><th>Criado em</th></tr></thead>
-        <tbody id="tb"></tbody>
-      </table>
+    <div id="sync-status" class="sync-status hidden">
+        <span id="sync-icon">🔄</span>
+        <span id="sync-text">Sincronizando...</span>
     </div>
-  </section>
-</main>
 
-<!-- MODAL LEAD -->
-<dialog id="dl">
-  <form id="fm" method="dialog">
-    <h2 id="fh">Novo lead</h2>
-    <label>Nome do aluno<input id="f-nome" required></label>
-    <div class="row">
-      <label>Telefone<input id="f-tel" type="tel" placeholder="(47) 99999-9999" required></label>
-      <label>Etapa<select id="f-etapa"></select></label>
+    <div id="rad-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>RAD - Registro de Aula</h3>
+                <button class="close-modal" onclick="closeModal('rad-modal')">✕</button>
+            </div>
+            <div id="rad-saved-badge" class="modal-saved-badge hidden">✅ RAD já salvo anteriormente</div>
+            <div id="rad-class-info" style="margin-bottom: 15px; padding: 12px; background: var(--card-bg); border-radius: 6px; border-left: 4px solid var(--primary);"></div>
+            <div id="rad-next-lesson" class="next-lesson-box hidden"></div>
+            <label>Status da Aula:</label>
+            <select id="rad-status" onchange="toggleRadFields()">
+                <option value="">Selecione...</option>
+                <option value="realizada">Realizada</option>
+                <option value="noshow">No Show (Aluno não veio)</option>
+                <option value="cancelada">Cancelada</option>
+            </select>
+            <div id="rad-fields" class="hidden">
+                <hr style="border: 0; border-top: 2px solid var(--border-color); margin: 20px 0;">
+                
+                <div id="cc-fields" class="hidden">
+                    <label style="color: var(--primary);">💬 Alunos Presentes:</label>
+                    <textarea id="cc-alunos" placeholder="Digite os nomes dos alunos presentes..." rows="3" style="margin-bottom: 15px;"></textarea>
+                    
+                    <label style="color: var(--primary);">📝 Conteúdo Passado:</label>
+                    <textarea id="cc-conteudo" placeholder="Digite o conteúdo/tema da aula de conversação..." rows="4" style="margin-bottom: 15px;"></textarea>
+                </div>
+
+                <div id="regular-fields">
+                    <label>Lesson Plan Realizada:</label>
+                    <div class="chain-info" style="text-align:left; margin-bottom:6px;">💡 Ao marcar uma aula, todas as anteriores são marcadas automaticamente.</div>
+                    <div id="lesson-plan-container" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px;"></div>
+                    <label>Lista de Presença:</label>
+                    <div id="attendance-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px;"></div>
+                    <div class="observations-box">
+                        <label style="color: var(--primary);">📝 Observações:</label>
+                        <textarea id="rad-observations" placeholder="Digite aqui suas observações sobre a aula..." rows="3"></textarea>
+                    </div>
+                </div>
+
+                <button id="btn-salvar-rad" onclick="salvarRadUmaVez()" class="btn-success" style="width: 100%; background: var(--success); color: #fff; border-color: var(--success);">
+                    💾 SALVAR RAD
+                </button>
+                <button id="btn-desbloquear-rad" onclick="desbloquearBotao()" class="btn-danger" style="width: 100%; margin-top: 8px; border-color: #6f42c1; color: #6f42c1;">
+                    🔓 DESBLOQUEAR (senha)
+                </button>
+                <button id="btn-limpar-rad" onclick="limparRadUmaVez()" class="btn-danger" style="width: 100%; margin-top: 8px; border-color: var(--danger); color: var(--danger);">
+                    🗑️ LIMPAR DADOS
+                </button>
+            </div>
+        </div>
     </div>
-    <label>Plano de interesse<select id="f-plano"></select></label>
-    <label>Informações do atendimento<textarea id="f-obs" placeholder="Horário preferido, nível, objeções, próximo contato…"></textarea></label>
-    <div class="acts">
-      <button type="button" class="btn dg" id="del" hidden>Excluir</button>
-      <button type="button" class="btn" id="cn">Cancelar</button>
-      <button class="btn pr">Salvar</button>
+
+    <div id="lesson-detail-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 id="lesson-detail-title">📖 Lesson Plan - Turma</h3>
+                <button class="close-modal" onclick="closeModal('lesson-detail-modal')">✕</button>
+            </div>
+            <div id="lesson-detail-content"></div>
+            <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="saveLessonProgress()" class="btn-success" style="flex: 1; background: var(--success); color: #fff; border-color: var(--success);">💾 SALVAR PROGRESSO</button>
+                <button onclick="resetLessonProgress()" class="btn-danger" style="flex: 1; border-color: var(--danger); color: var(--danger);">🔄 RESETAR PROGRESSO</button>
+            </div>
+        </div>
     </div>
-  </form>
-</dialog>
 
-<!-- MODAL CONEXÃO -->
-<dialog id="dc">
-  <form id="fc" method="dialog">
-    <h2>Conectar ao Google Sheets</h2>
-    <label>URL do Apps Script (termina em /exec)<input id="f-url" placeholder="https://script.google.com/macros/s/…/exec"></label>
-    <p class="hint">Deixe em branco para voltar ao modo demonstração (dados salvos só neste navegador).</p>
-    <div class="acts"><button type="button" class="btn" id="cn2">Cancelar</button><button class="btn pr">Salvar conexão</button></div>
-  </form>
-</dialog>
+    <div id="vip-detail-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 id="vip-detail-title">👑 Aulas VIP - Aluno</h3>
+                <button class="close-modal" onclick="closeModal('vip-detail-modal')">✕</button>
+            </div>
+            <div id="vip-detail-content"></div>
+            <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="saveVipProgress()" class="btn-success" style="flex: 1; background: var(--success); color: #fff; border-color: var(--success);">💾 SALVAR PROGRESSO</button>
+            </div>
+        </div>
+    </div>
 
-<div id="toast" role="status"></div>
+    <div id="attendance-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>Controle de Presença por Turma</h3>
+                <button class="close-modal" onclick="closeModal('attendance-modal')">✕</button>
+            </div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 15px;">
+                <select id="att-group-select" onchange="loadAttendanceTable()" style="flex: 1; min-width: 150px;">
+                    <option value="">Selecione a Turma...</option>
+                </select>
+                <input type="month" id="att-month-select" onchange="loadAttendanceTable()" style="flex: 0 1 auto; width: auto;">
+            </div>
+            <div id="attendance-table-container" style="overflow-x: auto; margin-top: 20px;"></div>
+        </div>
+    </div>
 
 <script>
-/* ================= CONFIG ================= */
-const STAGES=[
-  {id:'Novo contato',c:'#6366f1'},
-  {id:'Em atendimento',c:'#0ea5e9'},
-  {id:'Proposta enviada',c:'#f59e0b'},
-  {id:'Matriculado',c:'#16a34a'},
-  {id:'Perdido',c:'#94a3b8'}
-];
-const PLANS=['Inglês Regular','Intensivo','Conversação','Business English','Kids & Teens','Preparatório IELTS/TOEFL'];
-const $=s=>document.querySelector(s);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const get=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
-const set=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
-let leads=[],view='funil',editing=null;
+    const API_URL = 'https://script.google.com/macros/s/AKfycbz4I_zZpO7UeTpPSqtYCq6vjRIv09RGlicQYvqDHBjL6ardcn-MbL7as1FwkDyJ-QYo/exec';
+    const PENDING_QUEUE_KEY = 'radPendingQueue';
+    const VALORES_KEY = 'fechamentoValores';
+    const SENHA_DESBLOQUEIO = '123321';
+    const FECHAMENTO_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTXUgDbf7VGEolhrORAK97drh2jz40D_m0z6fBulQrpurP3hEA9fjUX5f-uD1jcbyB_bYJwWaHCPCA/pub?output=csv';
 
-function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',2600)}
-function status(t,k){$('#cs').textContent=t;$('#dot').className='dot '+(k||'')}
-const url=()=>get('crm_api')||'';
+    let remoteRads = [];
+    let fechamentoRads = [];
+    let currentInnerTab = 'plans';
+    let currentVipAluno = null;
 
-/* ================= REMOTE ================= */
-async function remote(body){
-  const r=await fetch(url(),{method:'POST',body:JSON.stringify(body)});
-  if(!r.ok)throw new Error(r.status);
-  return r.json();
-}
-async function load(){
-  if(!url()){
-    try{leads=JSON.parse(get('crm_demo')||'null')}catch(e){leads=null}
-    if(!leads){const d=new Date().toISOString();leads=[
-      {id:'a1',nome:'Mariana Souza',telefone:'(47) 99123-4567',plano:'Intensivo',etapa:'Novo contato',obs:'Quer começar em novembro, aulas à noite.',criado:d},
-      {id:'a2',nome:'Carlos Eduardo Lima',telefone:'(47) 98877-1020',plano:'Business English',etapa:'Em atendimento',obs:'Precisa de inglês para reuniões. Agendar aula experimental.',criado:d},
-      {id:'a3',nome:'Ana Beatriz Rocha',telefone:'(47) 99654-3210',plano:'Kids & Teens',etapa:'Proposta enviada',obs:'Filha de 11 anos, nível iniciante.',criado:d}]}
-    status('Modo demonstração');render();return;
-  }
-  status('Sincronizando…');
-  try{
-    const r=await fetch(url());
-    leads=(await r.json()).leads||[];
-    status('Conectado ao Google Sheets','ok');
-  }catch(e){status('Falha na conexão','err');toast('Não foi possível ler a planilha. Verifique a URL e a implantação.')}
-  render();
-}
-async function persist(op,lead){
-  if(!url()){set('crm_demo',JSON.stringify(leads));return}
-  try{await remote({action:op,lead});status('Conectado ao Google Sheets','ok')}
-  catch(e){status('Falha ao salvar','err');toast('Erro ao salvar na planilha.')}
-}
-function persistAll(){set('crm_demo',JSON.stringify(leads))}
-
-/* ================= HELPERS ================= */
-function match(l){const q=$('#q').value.trim().toLowerCase();return !q||[l.nome,l.telefone,l.plano,l.obs].join(' ').toLowerCase().includes(q)}
-function ini(n){return String(n||'?').split(/\s+/).filter(Boolean).slice(0,2).map(p=>p[0]).join('').toUpperCase()}
-function wa(t){let d=String(t).replace(/\D/g,'');if(d.length<10)return '';if(d.length<=11)d='55'+d;return 'https://wa.me/'+d}
-function fmt(d){const x=new Date(d);return isNaN(x)?'':x.toLocaleDateString('pt-BR')}
-function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
-
-/* ================= RENDER GERAL ================= */
-function render(){
-  renderKpis();
-  $('#board').hidden=view!=='funil';
-  $('#list').hidden=view!=='lista';
-  $('#sheet-view').hidden=view!=='planilha';
-  $('#stats-view').hidden=view!=='stats';
-  if(view==='funil')renderBoard();
-  if(view==='lista')renderList();
-  if(view==='planilha')renderSheet();
-  if(view==='stats')renderStats();
-}
-function renderKpis(){
-  const mat=leads.filter(l=>l.etapa==='Matriculado').length;
-  const ativos=leads.filter(l=>l.etapa!=='Matriculado'&&l.etapa!=='Perdido').length;
-  $('#kpis').innerHTML=[[leads.length,'Total de leads'],[ativos,'Em andamento'],[mat,'Matriculados'],[leads.length?Math.round(mat/leads.length*100)+'%':'0%','Taxa de conversão']]
-    .map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join('');
-}
-
-/* ================= FUNIL ================= */
-function renderBoard(){
-  const vis=leads.filter(match);
-  $('#board').innerHTML=STAGES.map(s=>{
-    const cs=vis.filter(l=>l.etapa===s.id);
-    return `<div class="col" data-s="${esc(s.id)}" style="--c:${s.c}"><div class="ch">${esc(s.id)}<em>${cs.length}</em></div><div class="cards">${
-      cs.map(card).join('')||'<div class="empty">Arraste um lead para cá</div>'}</div></div>`}).join('');
-}
-function card(l){
-  const w=wa(l.telefone);
-  return `<div class="card" draggable="true" data-id="${esc(l.id)}">
-  <div class="top"><div class="av">${esc(ini(l.nome))}</div><div style="min-width:0"><div class="nm">${esc(l.nome)}</div><div class="ph">${esc(l.telefone)}</div></div></div>
-  <span class="tag">${esc(l.plano||'Sem plano')}</span>
-  ${l.obs?`<div class="ob">${esc(l.obs)}</div>`:''}
-  <div class="ft"><span>${fmt(l.criado)}</span>${w?`<a class="wa" href="${w}" target="_blank" rel="noopener">WhatsApp</a>`:''}</div></div>`;
-}
-
-/* drag & drop */
-let dragId=null;
-$('#board').addEventListener('dragstart',e=>{const c=e.target.closest('.card');if(!c)return;dragId=c.dataset.id;c.classList.add('drag');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragId)});
-$('#board').addEventListener('dragend',()=>{dragId=null;render()});
-$('#board').addEventListener('dragover',e=>{const c=e.target.closest('.col');if(!c)return;e.preventDefault();document.querySelectorAll('.col.over').forEach(x=>x.classList.remove('over'));c.classList.add('over')});
-$('#board').addEventListener('drop',e=>{
-  const c=e.target.closest('.col');if(!c||!dragId)return;e.preventDefault();
-  const l=leads.find(x=>x.id===dragId);
-  if(l&&l.etapa!==c.dataset.s){l.etapa=c.dataset.s;persist('upsert',l);toast('Movido para '+l.etapa)}
-});
-$('#board').addEventListener('click',e=>{if(e.target.closest('a'))return;const c=e.target.closest('.card');if(c)openForm(c.dataset.id)});
-
-/* ================= LISTA ================= */
-function renderList(){
-  const vis=leads.filter(match);
-  $('#tb').innerHTML=vis.map(l=>{const s=STAGES.find(x=>x.id===l.etapa)||STAGES[0];
-    return `<tr data-id="${esc(l.id)}"><td><b>${esc(l.nome)}</b></td><td>${esc(l.telefone)}</td><td>${esc(l.plano)}</td><td><span class="pill" style="--c:${s.c}">${esc(s.id)}</span></td><td>${fmt(l.criado)}</td></tr>`}).join('')
-    ||'<tr><td colspan="5" class="empty">Nenhum lead encontrado.</td></tr>';
-}
-$('#tb').addEventListener('click',e=>{const r=e.target.closest('tr[data-id]');if(r)openForm(r.dataset.id)});
-
-/* ================= PLANILHA ================= */
-function renderSheet(){
-  const tbody=$('#sheet-body');
-  tbody.innerHTML='';
-  leads.forEach((l,i)=>tbody.appendChild(sheetRow(l,i)));
-}
-function sheetRow(l,i){
-  const tr=document.createElement('tr');
-  tr.dataset.id=l.id;
-  const stageOpts=STAGES.map(s=>`<option ${s.id===l.etapa?'selected':''}>${esc(s.id)}</option>`).join('');
-  const planOpts=PLANS.map(p=>`<option ${p===l.plano?'selected':''}>${esc(p)}</option>`).join('')+(PLANS.includes(l.plano)?'':`<option selected>${esc(l.plano||'')}</option>`);
-  tr.innerHTML=`
-    <td class="rowhead">${i+1}</td>
-    <td><input data-field="nome" value="${esc(l.nome)}" placeholder="Nome"></td>
-    <td><input data-field="telefone" value="${esc(l.telefone)}" placeholder="(00) 00000-0000"></td>
-    <td><select data-field="plano">${planOpts}</select></td>
-    <td><select data-field="etapa">${stageOpts}</select></td>
-    <td><input data-field="obs" value="${esc(l.obs||'')}" placeholder="Observações"></td>
-    <td><input data-field="criado" value="${esc(fmt(l.criado))}" placeholder="dd/mm/aaaa"></td>
-    <td><div class="row-actions"><button title="Editar no modal" data-act="edit">✏️</button><button title="Excluir" data-act="del">🗑️</button></div></td>`;
-  tr.querySelectorAll('input,select').forEach(el=>{
-    el.addEventListener('change',()=>{
-      const f=el.dataset.field;
-      let v=el.value;
-      if(f==='criado'){
-        const m=v.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-        if(m){v=new Date(m[3],m[2]-1,m[1]).toISOString()}else{v=new Date().toISOString()}
-      }
-      l[f]=v;
-      persistAll();
-      if(url())persist('upsert',l);
-      renderKpis();
-      toast('Linha salva');
-    });
-  });
-  tr.querySelector('[data-act="edit"]').onclick=()=>openForm(l.id);
-  tr.querySelector('[data-act="del"]').onclick=async()=>{
-    if(!confirm('Excluir esta linha?'))return;
-    leads=leads.filter(x=>x.id!==l.id);persistAll();render();await persist('delete',l);toast('Linha excluída');
-  };
-  return tr;
-}
-
-/* ===== ADICIONAR LINHAS (1 / 100 / quantidade escolhida) ===== */
-function addRows(qty){
-  qty=Math.max(1,Math.min(1000,parseInt(qty,10)||1));
-  const created=[];
-  for(let i=0;i<qty;i++){
-    const l={id:newId(),nome:'',telefone:'',plano:PLANS[0],etapa:STAGES[0].id,obs:'',criado:new Date().toISOString()};
-    leads.push(l);created.push(l);
-    if(url())persist('upsert',l);
-  }
-  persistAll();
-  renderSheet();
-  renderKpis();
-  // foca na primeira célula da primeira linha nova (apenas se for poucas linhas)
-  if(qty<=5){
-    const first=created[0];
-    const input=$('#sheet-body').querySelector(`tr[data-id="${first.id}"] input[data-field="nome"]`);
-    if(input){input.focus();input.scrollIntoView({block:'center'})}
-  }else{
-    // rola até a primeira nova linha
-    const first=created[0];
-    const row=$('#sheet-body').querySelector(`tr[data-id="${first.id}"]`);
-    if(row)row.scrollIntoView({block:'center'});
-  }
-  toast(`${qty} linha(s) adicionada(s)`);
-}
-$('#sheet-add-row').onclick=()=>addRows(1);
-$('#sheet-add-100').onclick=()=>addRows(100);
-$('#sheet-add-bulk').onclick=()=>addRows($('#sheet-bulk-qty').value);
-$('#sheet-clear').onclick=()=>{
-  if(!confirm('Apagar TODOS os leads? Isso não pode ser desfeito.'))return;
-  leads=[];persistAll();render();toast('Planilha limpa');
-};
-$('#sheet-paste-hint').onclick=()=>{toast('Clique numa célula da planilha e cole com Ctrl+V')};
-
-/* ===== COLAR DO SHEETS ===== */
-document.addEventListener('paste',e=>{
-  if(view!=='planilha')return;
-  const active=document.activeElement;
-  if(!active||!(active.tagName==='INPUT'||active.tagName==='SELECT'))return;
-  const text=(e.clipboardData||window.clipboardData).getData('text');
-  if(!text||!text.includes('\t'))return;
-  e.preventDefault();
-  const rows=text.replace(/\r/g,'').split('\n').filter(r=>r.trim()!=='').map(r=>r.split('\t'));
-  const tr=active.closest('tr');
-  const startId=tr?.dataset.id;
-  const startIdx=leads.findIndex(x=>x.id===startId);
-  const fieldOrder=['nome','telefone','plano','etapa','obs','criado'];
-  const startField=active.dataset.field;
-  const startCol=Math.max(0,fieldOrder.indexOf(startField));
-
-  let added=0,updated=0;
-  rows.forEach((cols,r)=>{
-    let lead;
-    if(r===0 && startIdx>=0 && startCol>0){
-      lead=leads[startIdx];
-    }else{
-      lead={id:newId(),criado:new Date().toISOString()};
-      leads.push(lead);added++;
+    function showSyncStatus(text, type = 'default') {
+        const el = document.getElementById('sync-status');
+        const icon = document.getElementById('sync-icon');
+        const txt = document.getElementById('sync-text');
+        if (!el || !icon || !txt) return;
+        el.classList.remove('hidden', 'success', 'error', 'warning');
+        if (type === 'success') el.classList.add('success');
+        if (type === 'error') el.classList.add('error');
+        if (type === 'warning') el.classList.add('warning');
+        if (type === 'success') icon.textContent = '✅';
+        else if (type === 'error') icon.textContent = '❌';
+        else if (type === 'warning') icon.textContent = '⚠️';
+        else icon.textContent = '🔄';
+        txt.textContent = text;
+        if (type === 'success' || type === 'error' || type === 'warning') {
+            setTimeout(() => el.classList.add('hidden'), 4000);
+        }
     }
-    cols.forEach((val,c)=>{
-      const f=fieldOrder[startCol+c];
-      if(!f)return;
-      let v=val.trim();
-      if(f==='criado'){
-        const m=v.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-        if(m)v=new Date(m[3],m[2]-1,m[1]).toISOString();
-        else if(!v)return;
-        else v=new Date().toISOString();
-      }
-      if(f==='etapa' && !STAGES.some(s=>s.id===v)){
-        const found=STAGES.find(s=>s.id.toLowerCase().includes(v.toLowerCase()));
-        v=found?found.id:STAGES[0].id;
-      }
-      lead[f]=v;
+
+    const SCHEDULE_THIS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSAl1ndXXSgDWbrjCiSDkmtECkP94Rr2nk-kIHV-zHd4NFSE9CzyQb6YP2Rt4lEQNYOpuvgjCYDal/pub?output=csv';
+    const SCHEDULE_NEXT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz-bXwql9tWFhbu7vU4QV2Mh2X-wS8Dg104Y31VzdsPCdQM08rUPGSBphEfeL94kbgCnJOJorYwFjO/pub?output=csv';
+    const STUDENTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRJ50UB29UDqy1PTkOJrUI81d4kZtzB0Qyfo1wPs2rbm9uftJdlcH88h-sfDrxW2o7Fi_5LZVSI4jul/pub?gid=335122343&single=true&output=csv';
+    const LESSON_PLANS_BASE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR8P-aCBn4HeNpri88Hd-VWSfD8pXaNZ5Y0vYCJ_FSCmDGpEJDHwnRU_72NS7rhpLEQAa_CzGklUu2p/pub';
+
+    const KIDS_BOOK_GIDS = {
+        'AW HIGH FIVE': '0', 'AW FRIENDSHIP': '852178178', 'AW ADVENTURE': '1274563307',
+        'AW PLAYTIME': '403683685', 'AW WINNERS': '1259782943',
+        'WF HIGH FIVE': '749978300', 'WF PIECE OF CAKE': '903327626', 'WF PLAYTIME': '491371915',
+        'WF WINNERS': '506732494', 'WF ADVENTURE': '2075038143', 'WF FRIENDSHIP': '1798862018'
+    };
+
+    const FETCH_TIMEOUT_MS = 5000;
+
+    const BASE_TEACHERS = [
+        { name: 'BARBARA' }, { name: 'CARLA' }, { name: 'CARLOS' }, { name: 'CAROL' },
+        { name: 'DIOGO' }, { name: 'HOPE' }, { name: 'LUISA' }, { name: 'MAT' },
+        { name: 'PEDRO' }, { name: 'LUCILA' }
+    ];
+
+    let VALID_TEACHERS = BASE_TEACHERS.slice();
+
+    const BOOK_STRUCTURE = {};
+    (function buildBookStructure() {
+        const baseLessons = [
+            'LESSON 1', 'LESSON 2', 'LESSON 3', 'LESSON 4', 'LESSON 5',
+            'REVISION 1 - 10 / READING 2 / REVISION 11 - 25',
+            'LESSON 6', 'LESSON 7', 'LESSON 8', 'LESSON 9', 'LESSON 10',
+            'REVISION 26 - 35 / READING 5 & 6 / REVISION 36 - 50',
+            'LESSON 11', 'LESSON 12', 'LESSON 13', 'LESSON 14', 'LESSON 15',
+            'REVISION 51 - 60 / READING 8 / REVISION 61 - 75',
+            'LESSON 16', 'LESSON 17', 'LESSON 18', 'LESSON 19', 'LESSON 20',
+            'REVISION 76 - 85 / READING 12 / REVISION 86 - 100',
+            'LESSON 21', 'LESSON 22', 'LESSON 23', 'LESSON 24', 'LESSON 25',
+            'REVISION 101 - 110 / READING 17 / REVISION 111 - 125',
+            'LESSON 26', 'LESSON 27', 'LESSON 28', 'LESSON 29', 'LESSON 30',
+            'REVISION 126 - 135 / READING 21 / REVISION 136 - 150',
+            'LESSON 31', 'LESSON 32'
+        ];
+        const middleRevs = [
+            'REVISION 86 - 100 / READING 18 / REVISION 101 - 110',
+            'REVISION 111 - 120 / READING 14 / REVISION 121 - 135',
+            'REVISION 136 - 145 / READING 9 / REVISION 146 - 160'
+        ];
+        for (let n = 1; n <= 10; n++) {
+            let arr = [...baseLessons];
+            if (n >= 2) arr = arr.concat(['LESSON 33', 'LESSON 34', 'LESSON 35']);
+            arr = arr.concat(middleRevs);
+            arr = arr.concat([`TEST BOOK ${n}`]);
+            if (n >= 2) arr = arr.concat([`TEST CORRECTION BOOK ${n}`]);
+            BOOK_STRUCTURE[`Book ${n}`] = { lessons: arr };
+        }
+    })();
+
+    const KIDS_BOOK_STRUCTURE = {};
+
+    let scheduleData = [];
+    let nextWeekData = [];
+    let studentsData = {};
+    let allGroupsFromSchedule = new Map();
+    let currentTeacher = null;
+    let currentWeekName = 'This Week';
+    let currentWeekData = [];
+    let allWeeks = { 'This Week': [], 'Next Week': [] };
+    let currentGroup = null;
+    let currentLessonProgress = {};
+    let currentVipProgress = {};
+    let groupBookMap = {};
+    let currentRadClass = null;
+
+    let modalIndex = { exato: {}, semDia: {}, semTeacher: {}, grupo: {} };
+
+    function hideLoadingScreen() {
+        const ls = document.getElementById('loading-screen');
+        if (ls) ls.classList.add('hidden');
+    }
+    function showLoadingMsg(msg) {
+        const el = document.getElementById('loading-msg');
+        if (el) el.textContent = msg;
+    }
+    function showErrorBanner(msg) {
+        const banner = document.getElementById('error-banner');
+        const msgEl = document.getElementById('error-banner-msg');
+        if (banner && msgEl) { msgEl.textContent = msg; banner.classList.remove('hidden'); }
+    }
+
+    function fetchWithTimeout(url, timeoutMs, opts = {}) {
+        return new Promise((resolve, reject) => {
+            const controller = new AbortController();
+            const timer = setTimeout(() => { controller.abort(); reject(new Error('Timeout')); }, timeoutMs);
+            fetch(url, { ...opts, signal: controller.signal })
+                .then(res => { clearTimeout(timer); if (!res.ok) throw new Error('HTTP ' + res.status); return res.text(); })
+                .then(resolve).catch(err => { clearTimeout(timer); reject(err); });
+        });
+    }
+
+    async function jsonpRequest(url) {
+        try {
+            const resp = await fetch(url + (url.includes('?') ? '&' : '?') + '_=' + Date.now());
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const data = await resp.json();
+            if (data && data.ok && Array.isArray(data.rads)) return data.rads;
+            if (data && data.ok && data.progress) return data.progress;
+            if (data && data.ok) return [];
+            throw new Error(data && data.error ? data.error : 'Resposta inválida');
+        } catch (err) { console.error('Falha fetch:', err.message); throw err; }
+    }
+
+    async function carregarFechamentoCSV() {
+        try {
+            const resp = await fetch(FECHAMENTO_CSV_URL + '&_=' + Date.now());
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const text = await resp.text();
+            fechamentoRads = parseFechamentoCSV(text);
+            console.log('✅ Fechamento CSV:', fechamentoRads.length, 'RADs');
+            return true;
+        } catch(e) {
+            console.warn('❌ Erro ao carregar fechamento:', e.message);
+            fechamentoRads = [];
+            return false;
+        }
+    }
+
+    function parseFechamentoCSV(text) {
+        if (!text) return [];
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+        if (lines.length < 2) return [];
+        const rads = [];
+        for (let i = 1; i < lines.length; i++) {
+            let row;
+            try { row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim()); } catch(e) { continue; }
+            const timestamp = row[0] || '';
+            const teacher = row[1] || '';
+            const day = row[2] || '';
+            const time = row[3] || '';
+            const group = row[4] || '';
+            const status = (row[5] || '').toLowerCase();
+            const lessons = row[6] || '';
+            const attendance = row[7] || '';
+            const observations = row[8] || '';
+            if (!teacher && !timestamp) continue;
+            rads.push({
+                timestamp, teacher, day, time, group, status,
+                lessons: lessons ? lessons.split(',').map(x=>x.trim()).filter(x=>x) : [],
+                attendance: attendance ? attendance.split(',').map(x=>x.trim()).filter(x=>x) : [],
+                observations
+            });
+        }
+        return rads;
+    }
+
+    function _travarBotoesRad(travar) {
+        const btnSalvar = document.getElementById('btn-salvar-rad');
+        const btnLimpar = document.getElementById('btn-limpar-rad');
+        if (travar) {
+            if (btnSalvar) { btnSalvar.disabled = true; btnSalvar.style.opacity = '0.5'; btnSalvar.style.cursor = 'not-allowed'; btnSalvar.textContent = '🔒 SALVO (bloqueado)'; }
+            if (btnLimpar) { btnLimpar.disabled = true; btnLimpar.style.opacity = '0.5'; btnLimpar.style.cursor = 'not-allowed'; btnLimpar.textContent = '🔒 LIMPAR (bloqueado)'; }
+        } else {
+            if (btnSalvar) { btnSalvar.disabled = false; btnSalvar.style.opacity = '1'; btnSalvar.style.cursor = 'pointer'; btnSalvar.textContent = '💾 SALVAR RAD'; }
+            if (btnLimpar) { btnLimpar.disabled = false; btnLimpar.style.opacity = '1'; btnLimpar.style.cursor = 'pointer'; btnLimpar.textContent = '🗑️ LIMPAR DADOS'; }
+        }
+    }
+
+    function salvarRadUmaVez() {
+        const btn = document.getElementById('btn-salvar-rad');
+        if (btn && btn.disabled) { console.log('🔒 Botão travado.'); return; }
+        _travarBotoesRad(true);
+        saveRad();
+    }
+
+    function limparRadUmaVez() {
+        const btn = document.getElementById('btn-limpar-rad');
+        if (btn && btn.disabled) { console.log('🔒 Botão LIMPAR travado.'); return; }
+        clearRad();
+    }
+
+    function desbloquearBotao() {
+        const senha = prompt('🔒 Digite a senha para destravar:');
+        if (senha === null) return;
+        if (senha !== SENHA_DESBLOQUEIO) { alert('❌ Senha incorreta.'); return; }
+        _travarBotoesRad(false);
+        console.log('🔓 Botões destravados');
+        alert('✅ Botões liberados.');
+    }
+
+    function resetarTravaBotao() { _travarBotoesRad(false); }
+
+    async function pingServer() { try { await fetch(API_URL + '?action=ping&_=' + Date.now(), { method: 'GET' }); } catch(e) {} }
+
+    async function reallySendToServer(radData) {
+        await pingServer();
+        await new Promise(r => setTimeout(r, 300));
+        for (let tentativa = 1; tentativa <= 2; tentativa++) {
+            try {
+                const res = await fetch(API_URL + '?_=' + Date.now(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(radData),
+                    redirect: 'follow'
+                });
+                const text = await res.text();
+                if (text.trim().startsWith('<')) {
+                    console.warn(`⚠️ Tentativa ${tentativa} retornou HTML`);
+                    if (tentativa < 2) { await new Promise(r => setTimeout(r, 1500)); continue; }
+                    return false;
+                }
+                try {
+                    const json = JSON.parse(text);
+                    if (json.ok) { console.log(`✅ RAD salvo (tentativa ${tentativa})`); return true; }
+                } catch(e) {}
+            } catch(e) {
+                console.warn(`❌ Tentativa ${tentativa}:`, e.message);
+            }
+            if (tentativa < 2) await new Promise(r => setTimeout(r, 1000));
+        }
+        return false;
+    }
+
+    async function sendProgressToServer(group, lessonsMap) {
+        try {
+            const normalized = {};
+            Object.keys(lessonsMap || {}).forEach(lid => {
+                const info = lessonsMap[lid];
+                if (info === true) normalized[lid] = { completed: true, date: '' };
+                else if (info === false) normalized[lid] = { completed: false, date: '' };
+                else if (info && typeof info === 'object') normalized[lid] = { completed: info.completed === true, date: info.date || '' };
+            });
+            const payload = { action: 'progress', group: group, lessons: normalized };
+            const resp = await fetch(API_URL + '?action=progress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+            const data = await resp.json();
+            if (data && data.ok) { console.log('✅ Progresso enviado:', group); return true; }
+        } catch (e) { console.warn('❌ Falha progresso:', e.message); }
+        return false;
+    }
+
+    async function loadGlobalProgress() {
+        try {
+            const resp = await fetch(API_URL + '?action=progress&_=' + Date.now());
+            const data = await resp.json();
+            if (data && data.ok && data.progress) {
+                const novo = {};
+                Object.keys(data.progress).forEach(group => {
+                    const obj = data.progress[group];
+                    novo[group] = Object.keys(obj).map(lid => ({ lesson: lid, completed: obj[lid].completed === true, date: obj[lid].date || '' }));
+                });
+                currentLessonProgress = novo;
+                persistLessonProgress();
+                console.log('✅ Progresso do servidor:', Object.keys(novo).length, 'turmas');
+            }
+        } catch (e) { console.warn('Progresso falhou:', e.message); }
+    }
+
+    function getPendingQueue() { try { const s = localStorage.getItem(PENDING_QUEUE_KEY); return s ? JSON.parse(s) : []; } catch(e) { return []; } }
+    function addToPendingQueue(radData) {
+        const queue = getPendingQueue();
+        queue.push({ ...radData, queuedAt: new Date().toISOString() });
+        try { localStorage.setItem(PENDING_QUEUE_KEY, JSON.stringify(queue)); } catch(e) {}
+    }
+    function clearPendingQueue() { try { localStorage.removeItem(PENDING_QUEUE_KEY); } catch(e) {} }
+
+    async function tryFlushPendingQueue() {
+        const queue = getPendingQueue();
+        if (queue.length === 0) return;
+        const remaining = [];
+        for (const rad of queue) {
+            const ok = await reallySendToServer(rad);
+            if (!ok) remaining.push(rad);
+        }
+        if (remaining.length === 0) clearPendingQueue();
+        else { try { localStorage.setItem(PENDING_QUEUE_KEY, JSON.stringify(remaining)); } catch(e) {} }
+    }
+
+    async function sendRadToServer(radData) {
+        showSyncStatus('Salvando...', 'default');
+        const ok = await reallySendToServer(radData);
+        if (ok) { showSyncStatus('RAD sincronizado!', 'success'); return true; }
+        else { showSyncStatus('Salvo localmente', 'warning'); addToPendingQueue(radData); return false; }
+    }
+
+    async function loadHistoryFromServer() {
+        const container = document.getElementById('history-content');
+        if (container) container.innerHTML = '<p style="text-align:center; color: var(--text-sec); margin-top:40px;">Carregando...</p>';
+        showSyncStatus('Carregando...', 'default');
+        try {
+            const rads = await jsonpRequest(API_URL);
+            remoteRads = rads || [];
+            console.log(`✅ ${remoteRads.length} RADs`);
+            showSyncStatus(`${remoteRads.length} RADs`, 'success');
+        } catch (e) {
+            console.error('Erro:', e.message); remoteRads = [];
+            showSyncStatus('Servidor indisponível', 'error');
+            if (container) container.innerHTML = `<div class="error-banner">⚠️ Erro: ${e.message}</div>`;
+            return;
+        }
+        renderHistory();
+    }
+
+    async function loadKidsLessonPlans() {
+        const bookNames = Object.keys(KIDS_BOOK_GIDS);
+        const promises = bookNames.map(async (bookName) => {
+            const gid = KIDS_BOOK_GIDS[bookName];
+            const url = `${LESSON_PLANS_BASE_URL}?gid=${gid}&single=true&output=csv`;
+            try {
+                const text = await fetchWithTimeout(url, FETCH_TIMEOUT_MS);
+                const lessons = parseKidsLessonPlanCSV(text);
+                if (lessons.length > 0) KIDS_BOOK_STRUCTURE[bookName] = { lessons };
+            } catch (e) {}
+        });
+        await Promise.all(promises);
+    }
+
+    function parseKidsLessonPlanCSV(text) {
+        if (!text) return [];
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+        if (lines.length < 2) return [];
+        const lessons = [];
+        for (let i = 1; i < lines.length; i++) {
+            let row;
+            try { row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); } catch(e) { continue; }
+            const lesson = (row[0] || '').replace(/"/g, '').trim();
+            if (lesson && lesson.toUpperCase() !== 'LESSON') lessons.push(lesson);
+        }
+        return lessons;
+    }
+
+    function buildModalMap() {
+        modalIndex = { exato: {}, semDia: {}, semTeacher: {}, grupo: {} };
+        const allAulas = [...scheduleData, ...nextWeekData];
+        allAulas.forEach(cls => {
+            const teacher = (cls.teacher || '').toUpperCase().trim();
+            const day = (cls.dayName || '').toUpperCase().trim();
+            const time = (cls.time || '').trim();
+            const group = normalizeGroupKeyAgressive(cls.group || '');
+            const modal = (cls.modal || '').toUpperCase().trim();
+            if (!modal || !group) return;
+            modalIndex.exato[`${teacher}|${day}|${time}|${group}`] = modal;
+            modalIndex.semDia[`${teacher}|${time}|${group}`] = modal;
+            modalIndex.semTeacher[`${day}|${time}|${group}`] = modal;
+            modalIndex.grupo[group] = modal;
+        });
+    }
+
+    function getModalDoRad(rad) {
+        const teacher = (rad.teacher || '').toUpperCase().trim();
+        const day = (rad.day || '').toUpperCase().trim();
+        const time = (rad.time || '').trim();
+        const group = normalizeGroupKeyAgressive(rad.group || '');
+        if (modalIndex.exato[`${teacher}|${day}|${time}|${group}`]) return modalIndex.exato[`${teacher}|${day}|${time}|${group}`];
+        if (modalIndex.semDia[`${teacher}|${time}|${group}`]) return modalIndex.semDia[`${teacher}|${time}|${group}`];
+        if (modalIndex.semTeacher[`${day}|${time}|${group}`]) return modalIndex.semTeacher[`${day}|${time}|${group}`];
+        if (modalIndex.grupo[group]) return modalIndex.grupo[group];
+        for (const k of Object.keys(modalIndex.exato)) {
+            const p = k.split('|');
+            if (p[3] && group && (p[3].includes(group) || group.includes(p[3]))) {
+                if (p[0] === teacher || p[2] === time) return modalIndex.exato[k];
+            }
+        }
+        return '';
+    }
+
+    function isInCompany(rad) {
+        const modal = getModalDoRad(rad);
+        return modal.includes('IN-C') || modal.includes('IN COMPANY') || modal.includes('IN-COMPANY');
+    }
+
+    function isConversationClass(cls) {
+        if (!cls) return false;
+        const groupUpper = (cls.group || '').toUpperCase();
+        const bookUpper = (cls.book || '').toUpperCase();
+        const modalUpper = (cls.modal || '').toUpperCase();
+        return groupUpper.includes('CC') || 
+               groupUpper.includes('CONVERSATION') || 
+               groupUpper.includes('CONVERSA') ||
+               bookUpper.includes('CC') ||
+               bookUpper.includes('CONVERSATION') ||
+               modalUpper.includes('CC') ||
+               modalUpper.includes('CONVERSATION');
+    }
+
+    function sincronizarTeachersComSchedule() {
+        const conhecidos = new Set(VALID_TEACHERS.map(t => t.name));
+        const doSchedule = new Set();
+        [...scheduleData, ...nextWeekData].forEach(cls => { if (cls.teacher) doSchedule.add(cls.teacher); });
+        const novos = [];
+        doSchedule.forEach(name => {
+            if (!conhecidos.has(name)) { VALID_TEACHERS.push({ name }); novos.push(name); }
+        });
+        if (novos.length > 0) console.log('🆕 Novos teachers:', novos.join(', '));
+    }
+
+    // ============================================================
+    // INICIALIZAÇÃO BLINDADA
+    // ============================================================
+    window.addEventListener('DOMContentLoaded', async () => {
+        // Timer de segurança GLOBAL — independente de qualquer coisa
+        const safetyTimer = setTimeout(() => {
+            console.warn('⚠️ Safety timer disparou — forçando hide');
+            hideLoadingScreen();
+        }, 4000);
+
+        try {
+            showLoadingMsg('Carregando...');
+
+            // Cada função em try/catch INDIVIDUAL
+            try { loadLessonProgress(); } catch(e) { console.warn('loadLessonProgress:', e); }
+            try { loadValoresSalvos(); } catch(e) { console.warn('loadValoresSalvos:', e); }
+            try { loadVipProgress(); } catch(e) { console.warn('loadVipProgress:', e); }
+            try { renderTeachers(); } catch(e) { console.warn('renderTeachers:', e); }
+            try { populateGroupSelect(); } catch(e) { console.warn('populateGroupSelect:', e); }
+            try {
+                const now = new Date();
+                const mi = document.getElementById('att-month-select'); if (mi) mi.value = now.toISOString().slice(0, 7);
+                const mf = document.getElementById('fech-mes'); if (mf) mf.value = now.toISOString().slice(0, 7);
+            } catch(e) {}
+
+            // Esconde a tela ANTES dos fetchs
+            clearTimeout(safetyTimer);
+            hideLoadingScreen();
+
+            // Aviso se estiver em file://
+            if (location.protocol === 'file:') {
+                showErrorBanner('⚠️ Você abriu via file:// — alguns dados externos podem não carregar. Use um servidor HTTP local (ex: python -m http.server).');
+            }
+
+            // Fetchs em background
+            const tasks = [
+                (async () => { try { await loadKidsLessonPlans(); } catch(e) { console.warn('kids:', e); } })(),
+                (async () => { try { const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS); scheduleData = parseScheduleCSV(text); allWeeks['This Week'] = scheduleData; } catch(e) { console.warn('schedule this:', e); } })(),
+                (async () => { try { const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS); nextWeekData = parseScheduleCSV(text, { skipGroupRegistration: true }); allWeeks['Next Week'] = nextWeekData; } catch(e) { console.warn('schedule next:', e); } })(),
+                (async () => { try { const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS); parseStudentsCSV(text); } catch(e) { console.warn('students:', e); } })(),
+                (async () => { try { const rads = await jsonpRequest(API_URL); remoteRads = rads || []; } catch(e) { console.warn('rads:', e); } })(),
+                (async () => { try { await loadGlobalProgress(); } catch(e) { console.warn('progress:', e); } })()
+            ];
+            await Promise.allSettled(tasks);
+
+            // Re-render depois que os dados chegaram
+            try { sincronizarTeachersComSchedule(); } catch(e) {}
+            try { buildModalMap(); } catch(e) {}
+            try { buildGroupBookMap(); } catch(e) {}
+            try { renderTeachers(); } catch(e) {}
+            try { populateGroupSelect(); } catch(e) {}
+            try { renderGroupLessonPlans(); } catch(e) {}
+            try { populateFechamentoTeacherFilter(); } catch(e) {}
+            try { populateHistoryTeacherFilter(); } catch(e) {}
+            try { await tryFlushPendingQueue(); } catch(e) {}
+
+            console.log(`✅ Inicialização completa. Turmas: ${allGroupsFromSchedule.size}, RADs: ${remoteRads.length}, Teachers: ${VALID_TEACHERS.length}`);
+        } catch (err) {
+            console.error('❌ Erro fatal na inicialização:', err);
+            clearTimeout(safetyTimer);
+            hideLoadingScreen();
+            showErrorBanner('Erro na inicialização: ' + (err.message || err));
+        }
     });
-    if(r===0 && startIdx>=0 && startCol>0)updated++;
-    else if(url())persist('upsert',lead);
-  });
-  persistAll();
-  render();
-  toast(`Colado: ${added} nova(s) linha(s)${updated?', 1 atualizada':''}`);
-});
 
-/* ================= ESTATÍSTICAS ================= */
-function renderStats(){
-  const total=leads.length||1;
-  const byStage=STAGES.map(s=>({...s,n:leads.filter(l=>l.etapa===s.id).length}));
-  const byPlan={};
-  leads.forEach(l=>{byPlan[l.plano||'Sem plano']=(byPlan[l.plano||'Sem plano']||0)+1});
-  const plans=Object.entries(byPlan).sort((a,b)=>b[1]-a[1]);
-  const mat=leads.filter(l=>l.etapa==='Matriculado').length;
-  const perd=leads.filter(l=>l.etapa==='Perdido').length;
-  const ativos=leads.filter(l=>l.etapa!=='Matriculado'&&l.etapa!=='Perdido').length;
-  const conv=leads.length?Math.round(mat/leads.length*100):0;
+    async function refreshData() {
+        if(!confirm('Deseja recarregar os dados?')) return;
+        const ls = document.getElementById('loading-screen'); if (ls) ls.classList.remove('hidden');
+        try {
+            const tasks = [
+                (async () => { try { await loadKidsLessonPlans(); } catch(e) {} })(),
+                (async () => { try { const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS); scheduleData = parseScheduleCSV(text); } catch(e) {} })(),
+                (async () => { try { const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS); nextWeekData = parseScheduleCSV(text, { skipGroupRegistration: true }); } catch(e) {} })(),
+                (async () => { try { const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS); parseStudentsCSV(text); } catch(e) {} })(),
+                (async () => { try { const rads = await jsonpRequest(API_URL); remoteRads = rads || []; } catch(e) {} })(),
+                (async () => { try { await loadGlobalProgress(); } catch(e) {} })(),
+                (async () => { try { await carregarFechamentoCSV(); } catch(e) {} })()
+            ];
+            await Promise.allSettled(tasks);
+            allWeeks = { 'This Week': scheduleData, 'Next Week': nextWeekData };
+            try { await tryFlushPendingQueue(); } catch(e) {}
+            sincronizarTeachersComSchedule();
+            buildModalMap(); buildGroupBookMap(); loadLessonProgress(); populateGroupSelect();
+            populateFechamentoTeacherFilter(); populateHistoryTeacherFilter(); renderTeachers();
+            if (!document.getElementById('schedule-screen').classList.contains('hidden') && currentTeacher) loadWeekData(currentWeekName);
+            if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) {
+                if (currentInnerTab === 'vip') renderVipGrid(); else renderGroupLessonPlans();
+            }
+            if (!document.getElementById('history-screen').classList.contains('hidden')) renderHistory();
+            if (!document.getElementById('fechamento-screen').classList.contains('hidden')) renderFechamento();
+            alert('✅ Dados atualizados!');
+        } catch (err) { console.error(err); alert('❌ Erro ao atualizar.'); }
+        finally { hideLoadingScreen(); }
+    }
 
-  const donutSegs=byStage.filter(s=>s.n>0);
-  let acc=0;
-  const stops=donutSegs.map(s=>{
-    const start=acc, end=acc+s.n/total*100; acc=end;
-    return `${s.c} ${start}% ${end}%`;
-  }).join(', ');
+    function parseScheduleCSV(text, opts = {}) {
+        const { skipGroupRegistration = false } = opts;
+        if (!text) return [];
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+        if(lines.length < 2) return [];
+        const COL_BOOK = 1, COL_GROUP = 2, COL_ROOM = 3, COL_MODAL = 4, COL_TIME = 5, DAYS_START = 6;
+        const daysMap = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
+        const aulas = [];
+        const chavesAulas = new Set();
+        for(let i=1; i<lines.length; i++) {
+            let row;
+            try { row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim()); } catch(e) { continue; }
+            const book = row[COL_BOOK] || '';
+            const groupRaw = row[COL_GROUP] || '';
+            const room = row[COL_ROOM] || '';
+            const modal = row[COL_MODAL] || '';
+            const time = row[COL_TIME] || '';
+            if(!groupRaw || groupRaw.trim() === '') continue;
+            const groupClean = cleanText(groupRaw);
+            const bookClean = cleanText(book);
+            if (!skipGroupRegistration) {
+                const normKey = normalizeGroupKey(groupClean);
+                allGroupsFromSchedule.set(normKey, { display: groupClean, book: bookClean, room: cleanText(room), modal: cleanText(modal), time: cleanText(time) });
+            }
+            if(!time) continue;
+            for(let d=0; d<5; d++) {
+                const cellContent = row[DAYS_START + d];
+                if(cellContent && cellContent.trim() !== '') {
+                    const teacherName = findTeacherInString(cellContent);
+                    if(teacherName) {
+                        const key = `${bookClean}|${groupClean}|${room}|${modal}|${time}|${daysMap[d]}|${teacherName}`;
+                        if (chavesAulas.has(key)) continue;
+                        chavesAulas.add(key);
+                        aulas.push({ book: bookClean, group: groupClean, room: cleanText(room), modal: cleanText(modal), time: cleanText(time), dayIndex: d, dayName: daysMap[d], teacher: teacherName });
+                    }
+                }
+            }
+        }
+        return aulas;
+    }
 
-  const maxStage=Math.max(...byStage.map(s=>s.n),1);
-  const barsStage=byStage.map(s=>`
-    <div class="bar-row">
-      <span class="lbl">${esc(s.id)}</span>
-      <div class="track"><div class="fill" style="width:${s.n/maxStage*100}%;background:${s.c}">${s.n>0?s.n:''}</div></div>
-      <span class="val">${s.n}</span>
-    </div>`).join('');
+    function parseStudentsCSV(text) {
+        if (!text) return;
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+        if(lines.length < 2) return;
+        const rawGroups = {};
+        for(let i=1; i<lines.length; i++) {
+            let parts;
+            try { parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); } catch(e) { continue; }
+            if(parts.length >= 2) {
+                const group = parts[0].replace(/"/g, '').trim();
+                const student = parts[1].replace(/"/g, '').trim();
+                if(group && student) {
+                    const key = normalizeGroupKeyAgressive(group);
+                    if(!rawGroups[key]) rawGroups[key] = { display: group, students: [] };
+                    if(!rawGroups[key].students.includes(student)) rawGroups[key].students.push(student);
+                }
+            }
+        }
+        studentsData = {};
+        Object.keys(rawGroups).forEach(key => { studentsData[rawGroups[key].display] = rawGroups[key].students; });
+    }
 
-  const maxPlan=plans.length?plans[0][1]:1;
-  const barsPlan=plans.map(([p,n])=>`
-    <div class="bar-row">
-      <span class="lbl">${esc(p)}</span>
-      <div class="track"><div class="fill" style="width:${n/maxPlan*100}%;background:var(--br)">${n}</div></div>
-      <span class="val">${n}</span>
-    </div>`).join('')||'<div class="empty">Sem dados.</div>';
+    function cleanText(str) { return str ? str.replace(/<.*?>/g, '').trim() : ''; }
 
-  const rank=plans.slice(0,5).map(([p,n],i)=>`
-    <div class="rank-item"><span class="pos ${i===0?'gold':''}">${i+1}</span><span class="nm2">${esc(p)}</span><span class="qtd">${n}</span></div>`).join('')||'<div class="empty">Sem dados.</div>';
+    function findTeacherInString(str) {
+        if (!str) return null;
+        const upperStr = str.toUpperCase();
+        const candidates = new Set();
+        VALID_TEACHERS.forEach(t => candidates.add(t.name));
+        [...scheduleData, ...nextWeekData].forEach(cls => { if (cls.teacher) candidates.add(cls.teacher); });
+        for (const name of candidates) {
+            if (!name) continue;
+            const regex = new RegExp(`\\b${name}\\b`, 'i');
+            if (regex.test(upperStr)) return name;
+        }
+        const match = upperStr.match(/\b([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ]{3,15})\b/g);
+        if (match && match.length === 1) return match[0];
+        return null;
+    }
 
-  const byMonth={};
-  leads.forEach(l=>{const d=new Date(l.criado);if(isNaN(d))return;const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');byMonth[k]=(byMonth[k]||0)+1});
-  const months=Object.entries(byMonth).sort();
-  const maxM=Math.max(...months.map(m=>m[1]),1);
-  const barsMonth=months.map(([k,n])=>{
-    const [y,m]=k.split('-');
-    return `<div class="bar-row"><span class="lbl">${m}/${y.slice(2)}</span><div class="track"><div class="fill" style="width:${n/maxM*100}%;background:#0ea5e9">${n}</div></div><span class="val">${n}</span></div>`;
-  }).join('')||'<div class="empty">Sem dados.</div>';
+    function normalizeGroupKey(str) { return str ? str.toUpperCase().replace(/\s+/g, ' ').trim() : ''; }
+    function normalizeGroupKeyAgressive(str) {
+        if (!str) return '';
+        return str.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[\(\)\[\]]/g, ' ').replace(/[~\-_/\\|:;,.!?@#$%^&*+=<>"']/g, ' ')
+            .replace(/[^A-Z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+    }
 
-  $('#stats-grid').innerHTML=`
-    <div class="panel">
-      <h3>Visão geral</h3>
-      <div class="mini-grid">
-        <div class="big-stat"><b>${leads.length}</b><span>Total de leads</span></div>
-        <div class="big-stat"><b>${ativos}</b><span>Em andamento</span></div>
-        <div class="big-stat" style="color:var(--ok)"><b>${mat}</b><span>Matriculados</span></div>
-        <div class="big-stat" style="color:var(--err)"><b>${perd}</b><span>Perdidos</span></div>
-      </div>
-    </div>
-    <div class="panel">
-      <h3>Taxa de conversão</h3>
-      <div class="big-stat"><b style="color:var(--br)">${conv}%</b><span>matriculados / total</span></div>
-      <div class="bar-row" style="margin-top:14px">
-        <div class="track"><div class="fill" style="width:${conv}%;background:var(--ok)">${conv}%</div></div>
-      </div>
-    </div>
-    <div class="panel">
-      <h3>Leads por etapa</h3>
-      <div class="donut-wrap">
-        <div class="donut" style="background:conic-gradient(${stops||'#eef2fa 0% 100%'})">
-          <div class="donut-center"><div><b>${leads.length}</b><span>leads</span></div></div>
-        </div>
-        <div class="legend">${byStage.map(s=>`<span><i style="background:${s.c}"></i>${esc(s.id)}: <b>${s.n}</b></span>`).join('')}</div>
-      </div>
-    </div>
-    <div class="panel">
-      <h3>Barras por etapa</h3>
-      <div class="sub">Distribuição absoluta no funil</div>
-      ${barsStage}
-    </div>
-    <div class="panel">
-      <h3>Leads por plano</h3>
-      <div class="sub">Planos de interesse</div>
-      ${barsPlan}
-    </div>
-    <div class="panel">
-      <h3>Ranking de planos</h3>
-      <div class="sub">Top 5 mais procurados</div>
-      <div class="rank-list">${rank}</div>
-    </div>
-    <div class="panel">
-      <h3>Leads por mês</h3>
-      <div class="sub">Volume de cadastros por mês</div>
-      ${barsMonth}
-    </div>
-    <div class="panel">
-      <h3>Resumo rápido</h3>
-      <div class="mini-grid" style="grid-template-columns:1fr">
-        <div class="big-stat"><b>${leads.length?Math.round(leads.length/12):0}</b><span>média mensal (est.)</span></div>
-        <div class="big-stat"><b>${plans.length}</b><span>planos diferentes</span></div>
-        <div class="big-stat"><b>${leads.filter(l=>l.etapa==='Novo contato').length}</b><span>novos contatos (a atender)</span></div>
-      </div>
-    </div>`;
-}
+    function findStudentsForGroup(groupName, bookHint) {
+        if (!groupName) return [];
+        const targetKey = normalizeGroupKeyAgressive(groupName);
+        const bookKey = bookHint ? normalizeGroupKeyAgressive(bookHint) : '';
+        const bookUpper = (bookHint || '').toUpperCase();
+        const groupUpper = (groupName || '').toUpperCase();
+        const keys = Object.keys(studentsData);
+        if (groupUpper.includes('CONNECT')) {
+            const wantKids = bookUpper.includes('KIDS') || targetKey.includes('KIDS');
+            const suffix = wantKids ? 'KIDS' : 'GET IT';
+            const match = keys.find(k => { const kNorm = normalizeGroupKeyAgressive(k); return kNorm.includes('CONNECT') && kNorm.includes(suffix); });
+            if (match && studentsData[match]) return studentsData[match];
+        }
+        if (groupUpper.includes('MUFASA') || targetKey.includes('MUFASA') || targetKey.includes('TIMBO')) {
+            const match = keys.find(k => { const kNorm = normalizeGroupKeyAgressive(k); return kNorm.includes('MUFASA') || kNorm.includes('TIMBO'); });
+            if (match && studentsData[match]) return studentsData[match];
+        }
+        function score(k) {
+            const kNorm = normalizeGroupKeyAgressive(k);
+            let s = 0;
+            if (kNorm === targetKey) s += 1000;
+            else if (kNorm.includes(targetKey)) s += 500 + targetKey.length;
+            else if (targetKey.includes(kNorm)) s += 500 + kNorm.length;
+            if (bookKey && kNorm.includes(bookKey)) s += 2000;
+            const targetGx = targetKey.match(/\bG\s*0?(\d{1,2})\b/);
+            const keyGx = kNorm.match(/\bG\s*0?(\d{1,2})\b/);
+            if (targetGx && keyGx && targetGx[1] === keyGx[1]) s += 300;
+            const targetWords = targetKey.split(' ').filter(w => w.length > 3);
+            const kWords = kNorm.split(' ');
+            s += targetWords.filter(w => kWords.includes(w)).length * 100;
+            return s;
+        }
+        let bestKey = null, bestScore = 0;
+        keys.forEach(k => { const s = score(k); if (s > bestScore) { bestScore = s; bestKey = k; } });
+        if (bestKey && bestScore > 0 && studentsData[bestKey]) return studentsData[bestKey];
+        return [];
+    }
 
-/* ================= FORM MODAL ================= */
-$('#f-etapa').innerHTML=STAGES.map(s=>`<option>${esc(s.id)}</option>`).join('');
-$('#f-plano').innerHTML=PLANS.map(p=>`<option>${esc(p)}</option>`).join('');
-function openForm(id){
-  editing=leads.find(l=>l.id===id)||null;
-  $('#fh').textContent=editing?'Editar lead':'Novo lead';
-  $('#del').hidden=!editing;
-  const l=editing||{nome:'',telefone:'',plano:PLANS[0],etapa:STAGES[0].id,obs:''};
-  $('#f-nome').value=l.nome;$('#f-tel').value=l.telefone;$('#f-plano').value=l.plano;$('#f-etapa').value=l.etapa;$('#f-obs').value=l.obs||'';
-  $('#dl').showModal();
-}
-$('#fm').addEventListener('submit',async()=>{
-  const d={nome:$('#f-nome').value.trim(),telefone:$('#f-tel').value.trim(),plano:$('#f-plano').value,etapa:$('#f-etapa').value,obs:$('#f-obs').value.trim()};
-  if(editing){Object.assign(editing,d);await persist('upsert',editing)}
-  else{const l={id:newId(),criado:new Date().toISOString(),...d};leads.unshift(l);await persist('upsert',l)}
-  persistAll();render();toast('Lead salvo');
-});
-$('#del').onclick=async()=>{
-  if(!editing||!confirm('Excluir este lead?'))return;
-  const l=editing;leads=leads.filter(x=>x.id!==l.id);$('#dl').close();persistAll();render();await persist('delete',l);toast('Lead excluído');
-};
-$('#cn').onclick=()=>$('#dl').close();
-$('#new').onclick=()=>openForm(null);
+    function findKidsBook(text) {
+        if (!text) return null;
+        const norm = normalizeGroupKeyAgressive(text);
+        if (!norm) return null;
+        const books = Object.keys(KIDS_BOOK_GIDS);
+        for (const b of books) if (normalizeGroupKeyAgressive(b) === norm) return b;
+        const prefixMatch = norm.match(/\b(AW|WF)\b/);
+        if (prefixMatch) {
+            const prefix = prefixMatch[1];
+            const idx = norm.indexOf(prefix);
+            const depois = norm.substring(idx + prefix.length).trim();
+            const palavrasDepois = depois.split(' ').filter(w => w.length > 1);
+            if (palavrasDepois.length > 0) {
+                for (const b of books) {
+                    const bNorm = normalizeGroupKeyAgressive(b);
+                    if (!bNorm.startsWith(prefix + ' ')) continue;
+                    const bWords = bNorm.split(' ').filter(w => w.length > 1 && w !== prefix);
+                    if (palavrasDepois.every(w => bWords.includes(w))) return b;
+                }
+                for (const b of books) {
+                    const bNorm = normalizeGroupKeyAgressive(b);
+                    if (!bNorm.startsWith(prefix + ' ')) continue;
+                    const bWords = bNorm.split(' ').filter(w => w.length > 1 && w !== prefix);
+                    if (palavrasDepois.filter(w => bWords.includes(w)).length > 0) return b;
+                }
+            }
+        }
+        if (norm === 'AW' || norm === 'WF') return null;
+        const words = norm.split(' ').filter(w => w.length > 1);
+        if (words.length >= 2) {
+            for (const b of books) {
+                const bNorm = normalizeGroupKeyAgressive(b);
+                if (bNorm.includes(norm) || norm.includes(bNorm)) return b;
+            }
+        }
+        return null;
+    }
 
-/* ================= CONEXÃO ================= */
-$('#cfg').onclick=()=>{$('#f-url').value=url();$('#dc').showModal()};
-$('#cn2').onclick=()=>$('#dc').close();
-$('#fc').addEventListener('submit',()=>{
-  const v=$('#f-url').value.trim();
-  if(v)set('crm_api',v);else try{localStorage.removeItem('crm_api')}catch(e){}
-  load();
-});
+    function buildGroupBookMap() {
+        allGroupsFromSchedule.forEach((info) => {
+            const group = info.display;
+            const bookStr = (info.book || '').trim();
+            if (!bookStr) return;
+            const combinado = (bookStr + ' ' + group).trim();
+            let kids = findKidsBook(combinado);
+            if (!kids) kids = findKidsBook(bookStr);
+            if (kids) { groupBookMap[group] = kids; return; }
+            if (bookStr.toUpperCase() === 'AW' || bookStr.toUpperCase() === 'WF') {
+                const prefix = bookStr.toUpperCase();
+                const groupNorm = normalizeGroupKeyAgressive(group);
+                const groupWords = groupNorm.split(' ').filter(w => w.length > 2);
+                const books = Object.keys(KIDS_BOOK_GIDS);
+                for (const b of books) {
+                    const bNorm = normalizeGroupKeyAgressive(b);
+                    if (!bNorm.startsWith(prefix + ' ')) continue;
+                    const bWords = bNorm.split(' ').filter(w => w.length > 1 && w !== prefix);
+                    if (groupWords.filter(w => bWords.includes(w)).length > 0) { groupBookMap[group] = b; return; }
+                }
+            }
+            const bookKey = bookStr.toUpperCase().trim();
+            const bookNames = Object.keys(BOOK_STRUCTURE);
+            let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
+            if (!foundBook) {
+                const numMatch = bookKey.match(/\d+/);
+                if (numMatch) { const num = parseInt(numMatch[0]); if (num >= 1 && num <= 10) foundBook = `Book ${num}`; }
+            }
+            if (foundBook) groupBookMap[group] = foundBook;
+        });
+    }
 
-/* ================= NAVEGAÇÃO ================= */
-const titles={funil:'Funil de vendas',planilha:'Planilha de leads',stats:'Estatísticas',lista:'Contatos'};
-function nav(v){
-  view=v;
-  ['funil','planilha','stats','lista'].forEach(k=>{
-    const b=$('#nv-'+k);if(b)b.className=k===v?'on':'';
-  });
-  $('#ttl').textContent=titles[v]||'CRM';
-  render();
-}
-$('#nv-funil').onclick=()=>nav('funil');
-$('#nv-planilha').onclick=()=>nav('planilha');
-$('#nv-stats').onclick=()=>nav('stats');
-$('#nv-lista').onclick=()=>nav('lista');
-$('#q').addEventListener('input',render);
+    function getBookFromGroupName(group) {
+        if (!group) return null;
+        const match = group.toUpperCase().match(/\bG\s*0?(\d{1,2})\b/);
+        if (!match) return null;
+        const num = parseInt(match[1], 10);
+        if (num >= 1 && num <= 10) return `Book ${num}`;
+        return null;
+    }
 
-load();
+    function getBookForGroup(group) {
+        if (!group) return 'Book 1';
+        const normKey = normalizeGroupKey(group);
+        const info = allGroupsFromSchedule.get(normKey);
+        if (info && info.book) {
+            const bookStr = info.book.trim();
+            const combinado = (bookStr + ' ' + group).trim();
+            let kids = findKidsBook(combinado);
+            if (!kids) kids = findKidsBook(bookStr);
+            if (kids) { groupBookMap[group] = kids; return kids; }
+            if (bookStr.toUpperCase() === 'AW' || bookStr.toUpperCase() === 'WF') {
+                const prefix = bookStr.toUpperCase();
+                const groupNorm = normalizeGroupKeyAgressive(group);
+                const groupWords = groupNorm.split(' ').filter(w => w.length > 2);
+                const books = Object.keys(KIDS_BOOK_GIDS);
+                for (const b of books) {
+                    const bNorm = normalizeGroupKeyAgressive(b);
+                    if (!bNorm.startsWith(prefix + ' ')) continue;
+                    const bWords = bNorm.split(' ').filter(w => w.length > 1 && w !== prefix);
+                    if (groupWords.filter(w => bWords.includes(w)).length > 0) { groupBookMap[group] = b; return b; }
+                }
+            }
+            const bookKey = bookStr.toUpperCase().trim();
+            const bookNames = Object.keys(BOOK_STRUCTURE);
+            let foundBook = bookNames.find(b => b.toUpperCase() === bookKey);
+            if (!foundBook) {
+                const numMatch = bookKey.match(/\d+/);
+                if (numMatch) { const num = parseInt(numMatch[0]); if (num >= 1 && num <= 10) foundBook = `Book ${num}`; }
+            }
+            if (foundBook) { groupBookMap[group] = foundBook; return foundBook; }
+        }
+        const kidsFromGroup = findKidsBook(group);
+        if (kidsFromGroup) { groupBookMap[group] = kidsFromGroup; return kidsFromGroup; }
+        const bookFromName = getBookFromGroupName(group);
+        if (bookFromName) { groupBookMap[group] = bookFromName; return bookFromName; }
+        groupBookMap[group] = 'Book 1';
+        return 'Book 1';
+    }
+
+    function getGroupLessons(group) {
+        const bookName = getBookForGroup(group);
+        if (KIDS_BOOK_STRUCTURE[bookName]) {
+            return KIDS_BOOK_STRUCTURE[bookName].lessons.map((label, index) => ({
+                id: `lesson_${index}`, label,
+                isRevision: label.toUpperCase().includes('REVISION') || label.toUpperCase().includes('REVIEW'),
+                isTest: label.toUpperCase().includes('TEST'), order: index
+            }));
+        }
+        const bookData = BOOK_STRUCTURE[bookName];
+        if (bookData && bookData.lessons) {
+            return bookData.lessons.map((label, index) => ({
+                id: `lesson_${index}`, label,
+                isRevision: label.toUpperCase().includes('REVISION'),
+                isTest: label.toUpperCase().includes('TEST'), order: index
+            }));
+        }
+        return [];
+    }
+
+    function loadLessonProgress() { try { const saved = localStorage.getItem('lessonProgress'); currentLessonProgress = saved ? JSON.parse(saved) : {}; } catch(e) { currentLessonProgress = {}; } }
+    function persistLessonProgress() { try { localStorage.setItem('lessonProgress', JSON.stringify(currentLessonProgress)); } catch(e) {} }
+    function getProgressForGroup(group) { return currentLessonProgress[group] || []; }
+    function isLessonDone(group, lessonId) { const arr = getProgressForGroup(group); const item = arr.find(p => p.lesson === lessonId); return !!(item && item.completed); }
+
+    function loadVipProgress() { try { const saved = localStorage.getItem('vipProgress'); currentVipProgress = saved ? JSON.parse(saved) : {}; } catch(e) { currentVipProgress = {}; } }
+    function persistVipProgress() { try { localStorage.setItem('vipProgress', JSON.stringify(currentVipProgress)); } catch(e) {} }
+    function getVipProgressForGroup(group) { return currentVipProgress[group] || {}; }
+    function isVipLessonDone(group, aluno, lessonId) {
+        const arr = getVipProgressForGroup(group);
+        if (!arr[aluno]) return false;
+        return arr[aluno].includes(lessonId);
+    }
+
+    function getNextLessonIndex(group) {
+        const lessons = getGroupLessons(group);
+        const progress = getProgressForGroup(group);
+        for (let i = 0; i < lessons.length; i++) {
+            const p = progress.find(x => x.lesson === lessons[i].id);
+            if (!p || !p.completed) return i;
+        }
+        return -1;
+    }
+
+    function applyChainToggle(group, clickedIndex, completed) {
+        if (!currentLessonProgress[group]) currentLessonProgress[group] = [];
+        const lessons = getGroupLessons(group);
+        const today = new Date().toLocaleDateString('pt-BR');
+        if (completed) {
+            for (let i = 0; i <= clickedIndex; i++) {
+                const lesson = lessons[i]; if (!lesson) continue;
+                const existing = currentLessonProgress[group].find(p => p.lesson === lesson.id);
+                if (existing) { existing.completed = true; existing.date = today; }
+                else currentLessonProgress[group].push({ lesson: lesson.id, completed: true, date: today });
+            }
+        } else {
+            for (let i = clickedIndex; i < lessons.length; i++) {
+                const lesson = lessons[i]; if (!lesson) continue;
+                const existing = currentLessonProgress[group].find(p => p.lesson === lesson.id);
+                if (existing) { existing.completed = false; existing.date = ''; }
+            }
+        }
+        currentLessonProgress[group] = currentLessonProgress[group].filter(p => p.completed === true);
+        if (currentLessonProgress[group].length === 0) delete currentLessonProgress[group];
+        persistLessonProgress();
+        try { if (currentGroup) openGroupDetail(currentGroup); } catch(e) {}
+        try { if (!document.getElementById('lesson-plan-screen').classList.contains('hidden')) {
+            if (currentInnerTab === 'vip') renderVipGrid(); else renderGroupLessonPlans();
+        } } catch(e) {}
+        try { if (!document.getElementById('schedule-screen').classList.contains('hidden')) renderSchedule(); } catch(e) {}
+        const lessonsMap = {};
+        (currentLessonProgress[group] || []).forEach(p => { if (p.completed === true) lessonsMap[p.lesson] = { completed: true, date: p.date || '' }; });
+        sendProgressToServer(group, lessonsMap);
+    }
+
+    function getDataDaAulaNaSemana(cls, weekName) {
+        const diasSemana = { 'Domingo': 0, 'Segunda': 1, 'Terça': 2, 'Quarta': 3, 'Quinta': 4, 'Sexta': 5, 'Sábado': 6 };
+        const dia = diasSemana[cls.dayName];
+        if (dia === undefined) return null;
+        const hoje = new Date();
+        const diff = dia - hoje.getDay();
+        const offset = (weekName === 'Next Week') ? 7 : 0;
+        const dataAula = new Date(hoje);
+        dataAula.setDate(hoje.getDate() + diff + offset);
+        const dd = String(dataAula.getDate()).padStart(2, '0');
+        const mm = String(dataAula.getMonth() + 1).padStart(2, '0');
+        return `${dd}/${mm}/${dataAula.getFullYear()}`;
+    }
+
+    function radEhDaSemana(rad, cls, weekName) {
+        if (!rad.timestamp) return false;
+        const dataAula = getDataDaAulaNaSemana(cls, weekName);
+        if (!dataAula) return false;
+        const ts = String(rad.timestamp);
+        const match = ts.match(/^(\d{2}\/\d{2}\/\d{4})/);
+        if (match) return match[1] === dataAula;
+        try {
+            const d = new Date(ts);
+            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}` === dataAula;
+        } catch(e) {}
+        return false;
+    }
+
+    function getRadKey(cls) {
+        if (!currentTeacher) return 'rad_unknown';
+        const dataAula = getDataDaAulaNaSemana(cls, currentWeekName);
+        return `rad_${currentTeacher.name}_${dataAula}_${cls.dayName}_${cls.time}_${cls.group}`;
+    }
+
+    function isRadSaved(cls) {
+        if (!currentTeacher) return false;
+        try { const saved = localStorage.getItem(getRadKey(cls)); if (saved) { const data = JSON.parse(saved); if (data.status && data.status !== '') return true; } } catch(e) {}
+        const matches = remoteRads.filter(r => r.teacher === currentTeacher.name && r.day === cls.dayName && r.time === cls.time && r.group === cls.group);
+        for (const rad of matches) if (radEhDaSemana(rad, cls, currentWeekName)) return true;
+        return false;
+    }
+
+    function getRadSavedData(cls) {
+        try { const saved = localStorage.getItem(getRadKey(cls)); if (saved) return JSON.parse(saved); } catch(e) {}
+        const matches = remoteRads.filter(r => r.teacher === currentTeacher?.name && r.day === cls.dayName && r.time === cls.time && r.group === cls.group);
+        for (const rad of matches) if (radEhDaSemana(rad, cls, currentWeekName)) return rad;
+        return null;
+    }
+
+    function showSelection() {
+        document.getElementById('selection-screen').classList.remove('hidden');
+        document.getElementById('schedule-screen').classList.add('hidden');
+        document.getElementById('lesson-plan-screen').classList.add('hidden');
+        document.getElementById('history-screen').classList.add('hidden');
+        document.getElementById('fechamento-screen').classList.add('hidden');
+        document.getElementById('btn-schedule').classList.add('active');
+        document.getElementById('btn-lessons').classList.remove('active');
+        document.getElementById('btn-history').classList.remove('active');
+        document.getElementById('btn-fechamento').classList.remove('active');
+        currentTeacher = null;
+    }
+    function showSchedule() {
+        document.getElementById('selection-screen').classList.add('hidden');
+        document.getElementById('schedule-screen').classList.remove('hidden');
+        document.getElementById('lesson-plan-screen').classList.add('hidden');
+        document.getElementById('history-screen').classList.add('hidden');
+        document.getElementById('fechamento-screen').classList.add('hidden');
+        document.getElementById('btn-schedule').classList.add('active');
+        document.getElementById('btn-lessons').classList.remove('active');
+        document.getElementById('btn-history').classList.remove('active');
+        document.getElementById('btn-fechamento').classList.remove('active');
+    }
+    
+    function showLessonPlans() {
+        document.getElementById('selection-screen').classList.add('hidden');
+        document.getElementById('schedule-screen').classList.add('hidden');
+        document.getElementById('lesson-plan-screen').classList.remove('hidden');
+        document.getElementById('history-screen').classList.add('hidden');
+        document.getElementById('fechamento-screen').classList.add('hidden');
+        document.getElementById('btn-schedule').classList.remove('active');
+        document.getElementById('btn-lessons').classList.add('active');
+        document.getElementById('btn-history').classList.remove('active');
+        document.getElementById('btn-fechamento').classList.remove('active');
+        document.getElementById('search-group').value = '';
+        if (currentInnerTab === 'vip') switchLessonTab('vip'); else switchLessonTab('plans');
+    }
+
+    function switchLessonTab(tabName) {
+        currentInnerTab = tabName;
+        document.getElementById('tab-btn-plans').classList.remove('active');
+        document.getElementById('tab-btn-vip').classList.remove('active');
+        document.getElementById('tab-content-plans').classList.add('hidden');
+        document.getElementById('tab-content-vip').classList.add('hidden');
+        if (tabName === 'vip') {
+            document.getElementById('tab-btn-vip').classList.add('active');
+            document.getElementById('tab-content-vip').classList.remove('hidden');
+            renderVipGrid();
+        } else {
+            document.getElementById('tab-btn-plans').classList.add('active');
+            document.getElementById('tab-content-plans').classList.remove('hidden');
+            renderGroupLessonPlans();
+        }
+    }
+    
+    function showHistory() {
+        document.getElementById('selection-screen').classList.add('hidden');
+        document.getElementById('schedule-screen').classList.add('hidden');
+        document.getElementById('lesson-plan-screen').classList.add('hidden');
+        document.getElementById('history-screen').classList.remove('hidden');
+        document.getElementById('fechamento-screen').classList.add('hidden');
+        document.getElementById('btn-schedule').classList.remove('active');
+        document.getElementById('btn-lessons').classList.remove('active');
+        document.getElementById('btn-history').classList.add('active');
+        document.getElementById('btn-fechamento').classList.remove('active');
+        currentTeacher = null;
+        populateHistoryTeacherFilter();
+        loadHistoryFromServer();
+    }
+    function showFechamento() {
+        document.getElementById('selection-screen').classList.add('hidden');
+        document.getElementById('schedule-screen').classList.add('hidden');
+        document.getElementById('lesson-plan-screen').classList.add('hidden');
+        document.getElementById('history-screen').classList.add('hidden');
+        document.getElementById('fechamento-screen').classList.remove('hidden');
+        document.getElementById('btn-schedule').classList.remove('active');
+        document.getElementById('btn-lessons').classList.remove('active');
+        document.getElementById('btn-history').classList.remove('active');
+        document.getElementById('btn-fechamento').classList.add('active');
+        currentTeacher = null;
+        populateFechamentoTeacherFilter();
+        const container = document.getElementById('fechamento-lista-container');
+        if (container) container.innerHTML = '<p style="text-align:center; color: var(--text-sec); padding: 20px;">Carregando...</p>';
+        carregarFechamentoCSV().then(() => { renderFechamento(); });
+    }
+
+    function loadValoresSalvos() { try { const saved = localStorage.getItem(VALORES_KEY); if (saved) { const v = JSON.parse(saved); if (v.normal !== undefined) document.getElementById('valor-normal').value = v.normal; if (v.inc !== undefined) document.getElementById('valor-inc').value = v.inc; } } catch(e) {} }
+    function salvarValores() {
+        const normal = parseFloat(document.getElementById('valor-normal').value) || 0;
+        const inc = parseFloat(document.getElementById('valor-inc').value) || 0;
+        try { localStorage.setItem(VALORES_KEY, JSON.stringify({ normal, inc })); } catch(e) {}
+    }
+
+    function populateFechamentoTeacherFilter() {
+        const select = document.getElementById('fech-teacher');
+        if (!select) return;
+        const valorAtual = select.value;
+        select.innerHTML = '<option value="">Todos os professores</option>';
+        VALID_TEACHERS.slice().sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
+            const opt = document.createElement('option'); opt.value = t.name; opt.textContent = t.name; select.appendChild(opt);
+        });
+        if (valorAtual) select.value = valorAtual;
+    }
+
+    function limparFiltrosFechamento() {
+        document.getElementById('fech-teacher').value = '';
+        document.getElementById('fech-mes').value = '';
+        renderFechamento();
+    }
+
+    function renderFechamento() {
+        salvarValores();
+        const valorNormal = parseFloat(document.getElementById('valor-normal').value) || 0;
+        const valorInc = parseFloat(document.getElementById('valor-inc').value) || 0;
+        const filtroTeacher = (document.getElementById('fech-teacher').value || '').toUpperCase();
+        const filtroMes = document.getElementById('fech-mes').value;
+        let filtered = fechamentoRads.slice();
+        if (filtroTeacher) filtered = filtered.filter(r => (r.teacher || '').toUpperCase() === filtroTeacher);
+        if (filtroMes) filtered = filtered.filter(r => {
+            if (!r.timestamp) return false;
+            const ts = String(r.timestamp);
+            let ano, mes;
+            const match = ts.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+            if (match) { ano = match[3]; mes = match[2]; } else {
+                try { const d = new Date(ts); ano = String(d.getFullYear()); mes = String(d.getMonth() + 1).padStart(2, '0'); } catch(e) { return false; }
+            }
+            return `${ano}-${mes}` === filtroMes;
+        });
+        let normais = 0, inCompany = 0, noShow = 0, canceladas = 0;
+        const listaDetalhada = [];
+        filtered.forEach(rad => {
+            const status = (rad.status || '').toLowerCase();
+            const inc = isInCompany(rad);
+            if (status === 'realizada') { if (inc) inCompany++; else normais++; }
+            else if (status === 'noshow') noShow++;
+            else if (status === 'cancelada') canceladas++;
+            listaDetalhada.push({ teacher: rad.teacher, day: rad.day, time: rad.time, group: rad.group, status: rad.status, inc, modal: getModalDoRad(rad), timestamp: rad.timestamp });
+        });
+        const totalNormal = (normais + noShow) * valorNormal;
+        const totalInc = inCompany * valorInc;
+        const totalGeral = totalNormal + totalInc;
+        const resumo = document.getElementById('fechamento-resumo');
+        resumo.innerHTML = `
+            <div class="fechamento-card"><h4>✅ Aulas Normais</h4><div class="valor">${normais}</div><div style="color:var(--text-sec);font-size:0.85rem;margin-top:5px;">R$ ${valorNormal.toFixed(2)} cada</div></div>
+            <div class="fechamento-card inc"><h4>🏢 In Company</h4><div class="valor">${inCompany}</div><div style="color:#6f42c1;font-size:0.85rem;margin-top:5px;">R$ ${valorInc.toFixed(2)} cada</div></div>
+            <div class="fechamento-card noshow"><h4>❌ No Show</h4><div class="valor">${noShow}</div><div style="color:#856404;font-size:0.85rem;margin-top:5px;">R$ ${valorNormal.toFixed(2)} cada</div></div>
+            <div class="fechamento-card cancel"><h4>⚠️ Canceladas</h4><div class="valor">${canceladas}</div><div style="color:var(--danger);font-size:0.85rem;margin-top:5px;">Não paga</div></div>
+            <div class="fechamento-card total"><h4>💰 TOTAL A PAGAR</h4><div class="valor">R$ ${totalGeral.toFixed(2)}</div><div style="color:var(--success);font-size:0.85rem;margin-top:5px;">${normais + noShow + inCompany} aulas pagas</div></div>
+        `;
+        const lista = document.getElementById('fechamento-lista-container');
+        if (listaDetalhada.length === 0) { lista.innerHTML = `<p style="text-align:center;color:var(--text-sec);padding:20px;">Nenhum RAD encontrado.</p>`; return; }
+        let html = `<h3>📋 Detalhamento (${listaDetalhada.length} aulas)</h3><table><thead><tr><th>Data</th><th>Teacher</th><th>Dia</th><th>Horário</th><th>Turma</th><th>Modal</th><th>Status</th><th>Valor</th></tr></thead><tbody>`;
+        listaDetalhada.forEach(item => {
+            const statusLabel = { 'realizada': '✅ Realizada', 'noshow': '❌ No Show', 'cancelada': '⚠️ Cancelada' }[item.status] || item.status;
+            let valor = 0;
+            if (item.status === 'realizada') valor = item.inc ? valorInc : valorNormal;
+            else if (item.status === 'noshow') valor = valorNormal;
+            const badge = item.inc ? `<span class="badge badge-inc">IN-C</span>` : `<span class="badge badge-modal">${item.modal || 'REGULAR'}</span>`;
+            html += `<tr><td>${item.timestamp || '—'}</td><td><strong>${item.teacher || '—'}</strong></td><td>${item.day || '—'}</td><td>${item.time || '—'}</td><td>${item.group || '—'}</td><td>${badge}</td><td>${statusLabel}</td><td style="font-weight:600;color:${valor > 0 ? 'var(--success)' : 'var(--text-sec)'};">R$ ${valor.toFixed(2)}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        lista.innerHTML = html;
+    }
+
+    function clearHistoryFilters() {
+        document.getElementById('hist-filter-teacher').value = '';
+        document.getElementById('hist-filter-status').value = '';
+        document.getElementById('hist-filter-group').value = '';
+        renderHistory();
+    }
+    function populateHistoryTeacherFilter() {
+        const select = document.getElementById('hist-filter-teacher');
+        if (!select) return;
+        const valorAtual = select.value;
+        select.innerHTML = '<option value="">Todos os professores</option>';
+        VALID_TEACHERS.slice().sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
+            const opt = document.createElement('option'); opt.value = t.name; opt.textContent = t.name; select.appendChild(opt);
+        });
+        if (valorAtual) select.value = valorAtual;
+    }
+
+    // ============================================================
+    // renderHistory — RECONSTRUÍDA (estava truncada)
+    // ============================================================
+    function renderHistory() {
+        const container = document.getElementById('history-content');
+        if (!container) return;
+        const filterTeacher = (document.getElementById('hist-filter-teacher').value || '').toUpperCase();
+        const filterStatus = document.getElementById('hist-filter-status').value;
+        const filterGroup = normalizeGroupKey(document.getElementById('hist-filter-group').value);
+        let filtered = remoteRads.slice();
+        if (filterTeacher) filtered = filtered.filter(r => (r.teacher || '').toUpperCase() === filterTeacher);
+        if (filterStatus) filtered = filtered.filter(r => r.status === filterStatus);
+        if (filterGroup) filtered = filtered.filter(r => normalizeGroupKey(r.group || '').includes(filterGroup));
+        filtered.sort((a, b) => {
+            const da = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+            const db = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+            return db - da;
+        });
+        if (filtered.length === 0) {
+            container.innerHTML = `<p style="text-align:center;color:var(--text-sec);margin-top:40px;">Nenhum RAD registrado.</p>`;
+            return;
+        }
+        const statusLabel = {
+            'realizada': { text: '✅ Realizada', color: 'var(--success)' },
+            'noshow': { text: '❌ No Show', color: 'var(--danger)' },
+            'cancelada': { text: '⚠️ Cancelada', color: 'var(--warning)' }
+        };
+        let html = `<p style="text-align:center;color:var(--text-sec);margin-bottom:15px;font-size:0.9rem;">Total: ${filtered.length} aula(s)</p>`;
+        html += `<div class="fechamento-lista"><table><thead><tr>
+            <th>Data</th><th>Teacher</th><th>Dia</th><th>Horário</th><th>Turma</th><th>Status</th><th>Lessons</th><th>Presença</th><th>Obs</th>
+        </tr></thead><tbody>`;
+        filtered.forEach(rad => {
+            const st = statusLabel[rad.status] || { text: rad.status || '—', color: 'var(--text-sec)' };
+            const lessonsStr = (rad.lessons && rad.lessons.length) ? rad.lessons.join(', ') : '—';
+            const attStr = (rad.attendance && rad.attendance.length) ? rad.attendance.join(', ') : '—';
+            const obsStr = rad.observations ? rad.observations : '—';
+            html += `<tr>
+                <td>${rad.timestamp || '—'}</td>
+                <td><strong>${rad.teacher || '—'}</strong></td>
+                <td>${rad.day || '—'}</td>
+                <td>${rad.time || '—'}</td>
+                <td>${rad.group || '—'}</td>
+                <td style="color:${st.color};font-weight:600;">${st.text}</td>
+                <td style="font-size:0.8rem;">${lessonsStr}</td>
+                <td style="font-size:0.8rem;">${attStr}</td>
+                <td style="font-size:0.8rem;max-width:220px;">${obsStr}</td>
+            </tr>`;
+        });
+        html += `</tbody></table></div>`;
+        container.innerHTML = html;
+    }
+
+    // ============================================================
+    // Funções auxiliares que faltavam (stubs seguros)
+    // ============================================================
+    function renderTeachers() {
+        const grid = document.getElementById('teachers-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        VALID_TEACHERS.slice().sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
+            const card = document.createElement('div');
+            card.className = 'teacher-card';
+            card.innerHTML = `<div class="teacher-name">${t.name}</div>`;
+            card.onclick = () => selectTeacher(t.name);
+            grid.appendChild(card);
+        });
+    }
+
+    function selectTeacher(name) {
+        currentTeacher = VALID_TEACHERS.find(t => t.name === name) || { name };
+        document.getElementById('current-teacher-name').textContent = `Professor(a): ${name}`;
+        showSchedule();
+        renderWeekSelector();
+        loadWeekData(currentWeekName);
+    }
+
+    function renderWeekSelector() {
+        const sel = document.getElementById('week-selector');
+        if (!sel) return;
+        sel.innerHTML = '';
+        ['This Week', 'Next Week'].forEach(w => {
+            const btn = document.createElement('button');
+            btn.textContent = w === 'This Week' ? '📅 Esta Semana' : '📅 Próxima Semana';
+            btn.className = currentWeekName === w ? 'active' : '';
+            btn.onclick = () => { currentWeekName = w; renderWeekSelector(); loadWeekData(w); };
+            sel.appendChild(btn);
+        });
+    }
+
+    function loadWeekData(weekName) {
+        currentWeekName = weekName;
+        const data = weekName === 'Next Week' ? nextWeekData : scheduleData;
+        currentWeekData = currentTeacher ? data.filter(c => c.teacher === currentTeacher.name) : [];
+        renderSchedule();
+    }
+
+    function renderSchedule() {
+        const container = document.getElementById('schedule-content');
+        if (!container) return;
+        if (!currentTeacher) { container.innerHTML = ''; return; }
+        const days = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
+        let html = '';
+        days.forEach(day => {
+            const aulas = currentWeekData.filter(c => c.dayName === day).sort((a,b) => a.time.localeCompare(b.time));
+            if (aulas.length === 0) return;
+            html += `<div class="day-section"><div class="day-header">${day}</div><div class="classes-list">`;
+            aulas.forEach(cls => {
+                const saved = isRadSaved(cls);
+                const cc = isConversationClass(cls);
+                html += `<div class="class-card ${saved ? 'rad-saved' : ''} ${currentWeekName === 'Next Week' ? 'next-week-card' : ''}">
+                    ${saved ? '<div class="rad-saved-check">✓</div>' : ''}
+                    <span class="class-time">${cls.time}</span>
+                    <div class="class-info"><strong>${cls.group}</strong></div>
+                    <div class="class-info">📚 ${cls.book || '—'}</div>
+                    ${cls.room ? `<span class="badge badge-room">🏠 ${cls.room}</span>` : ''}
+                    ${cls.modal ? `<span class="badge badge-modal">${cls.modal}</span>` : ''}
+                    ${cc ? '<span class="badge badge-cc">💬 CC</span>' : ''}
+                    ${currentWeekName === 'Next Week' ? '<span class="badge badge-next-week">PRÓX. SEMANA</span>' : ''}
+                    ${saved ? '<span class="badge badge-saved">RAD SALVO</span>' : ''}
+                    <button class="action-btn ${saved ? 'saved' : ''}" onclick="openRadModal('${cls.group.replace(/'/g, "\\'")}','${cls.dayName}','${cls.time}','${(cls.book||'').replace(/'/g,"\\'")}')">
+                        ${saved ? '✅ Ver RAD' : '📝 Registrar RAD'}
+                    </button>
+                </div>`;
+            });
+            html += `</div></div>`;
+        });
+        if (!html) html = '<p style="text-align:center;color:var(--text-sec);padding:40px;">Nenhuma aula encontrada nesta semana.</p>';
+        container.innerHTML = html;
+    }
+
+    function populateGroupSelect() {
+        const sel = document.getElementById('att-group-select');
+        if (!sel) return;
+        const atual = sel.value;
+        sel.innerHTML = '<option value="">Selecione a Turma...</option>';
+        Array.from(allGroupsFromSchedule.values())
+            .map(g => g.display)
+            .sort()
+            .forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name; opt.textContent = name;
+                sel.appendChild(opt);
+            });
+        if (atual) sel.value = atual;
+    }
+
+    function renderGroupLessonPlans() {
+        const grid = document.getElementById('group-lesson-grid');
+        if (!grid) return;
+        const search = (document.getElementById('search-group')?.value || '').toUpperCase();
+        const groups = Array.from(allGroupsFromSchedule.values()).map(g => g.display).sort();
+        const filtered = groups.filter(g => !search || g.toUpperCase().includes(search));
+        if (filtered.length === 0) {
+            grid.innerHTML = '<p style="text-align:center;color:var(--text-sec);padding:40px;">Nenhuma turma encontrada.</p>';
+            return;
+        }
+        grid.innerHTML = filtered.map(g => {
+            const lessons = getGroupLessons(g);
+            const progress = getProgressForGroup(g);
+            const done = progress.filter(p => p.completed).length;
+            const pct = lessons.length ? Math.round((done / lessons.length) * 100) : 0;
+            const book = getBookForGroup(g);
+            return `<div class="group-card" onclick="openGroupDetail('${g.replace(/'/g, "\\'")}')">
+                <h3>${g}</h3>
+                <div class="book-info">📚 ${book}</div>
+                <div class="progress">${done} / ${lessons.length} aulas (${pct}%)</div>
+                <div class="progress-bar"><div class="fill" style="width:${pct}%"></div></div>
+            </div>`;
+        }).join('');
+    }
+
+    function renderVipGrid() {
+        const grid = document.getElementById('vip-grid');
+        if (!grid) return;
+        const alunos = new Set();
+        Object.values(studentsData).forEach(arr => arr.forEach(a => alunos.add(a)));
+        const sorted = Array.from(alunos).sort();
+        if (sorted.length === 0) {
+            grid.innerHTML = '<p style="text-align:center;color:var(--text-sec);padding:40px;">Nenhum aluno carregado.</p>';
+            return;
+        }
+        grid.innerHTML = sorted.map(a => {
+            const prog = currentVipProgress[a] || [];
+            return `<div class="group-card" onclick="openVipDetail('${a.replace(/'/g, "\\'")}')">
+                <h3>👑 ${a}</h3>
+                <div class="progress">${prog.length} aula(s) marcada(s)</div>
+            </div>`;
+        }).join('');
+    }
+
+    function openGroupDetail(group) {
+        currentGroup = group;
+        const lessons = getGroupLessons(group);
+        const progress = getProgressForGroup(group);
+        const nextIdx = getNextLessonIndex(group);
+        document.getElementById('lesson-detail-title').textContent = `📖 ${group}`;
+        let html = `<div class="group-header"><h2>${group}</h2><span class="book-badge">📚 ${getBookForGroup(group)}</span></div>`;
+        html += `<div class="group-lessons-container">`;
+        lessons.forEach((l, i) => {
+            const done = isLessonDone(group, l.id);
+            const isNext = i === nextIdx;
+            const cls = ['lesson-item', l.isRevision ? 'revision' : '', l.isTest ? 'test' : '', done ? 'checked' : '', isNext ? 'next' : ''].filter(Boolean).join(' ');
+            html += `<div class="${cls}" onclick="toggleLessonCheck('${group.replace(/'/g, "\\'")}', ${i}, ${!done})">
+                <input type="checkbox" ${done ? 'checked' : ''} onclick="event.stopPropagation()">
+                <span class="lesson-label">${l.label}</span>
+                ${l.isRevision ? '<span class="revision-badge">REV</span>' : ''}
+                ${l.isTest ? '<span class="test-badge">TEST</span>' : ''}
+                ${isNext ? '<span class="next-label-badge">PRÓXIMA</span>' : ''}
+            </div>`;
+        });
+        html += `</div>`;
+        document.getElementById('lesson-detail-content').innerHTML = html;
+        document.getElementById('lesson-detail-modal').classList.remove('hidden');
+    }
+
+    function toggleLessonCheck(group, idx, completed) {
+        applyChainToggle(group, idx, completed);
+    }
+
+    function openVipDetail(aluno) {
+        currentVipAluno = aluno;
+        const lessons = BOOK_STRUCTURE['Book 1']?.lessons || [];
+        const marcadas = (currentVipProgress[aluno] || []);
+        document.getElementById('vip-detail-title').textContent = `👑 ${aluno}`;
+        let html = `<div class="group-lessons-container">`;
+        lessons.forEach((label, i) => {
+            const id = `lesson_${i}`;
+            const done = marcadas.includes(id);
+            html += `<div class="lesson-item ${done ? 'checked' : ''}" onclick="toggleVipCheck('${aluno.replace(/'/g, "\\'")}', '${id}')">
+                <input type="checkbox" ${done ? 'checked' : ''} onclick="event.stopPropagation()">
+                <span class="lesson-label">${label}</span>
+            </div>`;
+        });
+        html += `</div>`;
+        document.getElementById('vip-detail-content').innerHTML = html;
+        document.getElementById('vip-detail-modal').classList.remove('hidden');
+    }
+
+    function toggleVipCheck(aluno, lessonId) {
+        if (!currentVipProgress[aluno]) currentVipProgress[aluno] = [];
+        const arr = currentVipProgress[aluno];
+        const idx = arr.indexOf(lessonId);
+        if (idx >= 0) arr.splice(idx, 1); else arr.push(lessonId);
+        persistVipProgress();
+        openVipDetail(aluno);
+    }
+
+    function saveLessonProgress() {
+        persistLessonProgress();
+        alert('✅ Progresso salvo!');
+        closeModal('lesson-detail-modal');
+    }
+    function resetLessonProgress() {
+        if (!currentGroup) return;
+        if (!confirm('Resetar todo o progresso desta turma?')) return;
+        delete currentLessonProgress[currentGroup];
+        persistLessonProgress();
+        openGroupDetail(currentGroup);
+        renderGroupLessonPlans();
+    }
+    function saveVipProgress() {
+        persistVipProgress();
+        alert('✅ Progresso VIP salvo!');
+        closeModal('vip-detail-modal');
+    }
+
+    function openRadModal(group, day, time, book) {
+        const cls = currentWeekData.find(c => c.group === group && c.dayName === day && c.time === time);
+        if (!cls) { alert('Aula não encontrada.'); return; }
+        currentRadClass = cls;
+        const saved = getRadSavedData(cls);
+        const cc = isConversationClass(cls);
+        document.getElementById('rad-class-info').innerHTML = `
+            <strong>${cls.group}</strong><br>
+            📅 ${cls.dayName} — ⏰ ${cls.time}<br>
+            📚 ${cls.book || '—'} ${cls.room ? `| 🏠 ${cls.room}` : ''} ${cls.modal ? `| ${cls.modal}` : ''}
+        `;
+        document.getElementById('rad-saved-badge').classList.toggle('hidden', !saved);
+        document.getElementById('cc-fields').classList.toggle('hidden', !cc);
+        document.getElementById('regular-fields').classList.toggle('hidden', cc);
+        document.getElementById('rad-status').value = saved?.status || '';
+        document.getElementById('rad-observations').value = saved?.observations || '';
+        if (cc) {
+            document.getElementById('cc-alunos').value = (saved?.attendance || []).join(', ');
+            document.getElementById('cc-conteudo').value = (saved?.lessons || []).join(', ');
+        }
+        toggleRadFields();
+        if (!cc) {
+            renderLessonPlanChecklist(cls);
+            renderAttendanceChecklist(cls, saved);
+        }
+        _travarBotoesRad(!!saved);
+        document.getElementById('rad-modal').classList.remove('hidden');
+    }
+
+    function toggleRadFields() {
+        const status = document.getElementById('rad-status').value;
+        document.getElementById('rad-fields').classList.toggle('hidden', !status);
+    }
+
+    function renderLessonPlanChecklist(cls) {
+        const container = document.getElementById('lesson-plan-container');
+        if (!container) return;
+        const lessons = getGroupLessons(cls.group);
+        const nextIdx = getNextLessonIndex(cls.group);
+        container.innerHTML = lessons.map((l, i) => {
+            const done = isLessonDone(cls.group, l.id);
+            return `<div class="checkbox-group ${done ? 'checked' : ''}">
+                <input type="checkbox" ${done ? 'checked' : ''} data-lesson-id="${l.id}" data-idx="${i}">
+                <label>${l.label} ${i === nextIdx ? '<span class="next-badge">PRÓXIMA</span>' : ''} ${done ? '<span class="done-badge">OK</span>' : ''}</label>
+            </div>`;
+        }).join('');
+    }
+
+    function renderAttendanceChecklist(cls, saved) {
+        const container = document.getElementById('attendance-container');
+        if (!container) return;
+        const alunos = findStudentsForGroup(cls.group, cls.book);
+        const presentes = saved?.attendance || [];
+        if (alunos.length === 0) {
+            container.innerHTML = '<p style="color:var(--text-sec);text-align:center;padding:10px;">Nenhum aluno cadastrado para esta turma.</p>';
+            return;
+        }
+        container.innerHTML = alunos.map(a => {
+            const presente = presentes.includes(a);
+            return `<div class="checkbox-group ${presente ? 'checked' : ''}">
+                <input type="checkbox" ${presente ? 'checked' : ''} data-aluno="${a.replace(/"/g, '&quot;')}">
+                <label>${a}</label>
+            </div>`;
+        }).join('');
+    }
+
+    async function saveRad() {
+        if (!currentRadClass || !currentTeacher) { alert('Erro: aula não selecionada.'); return; }
+        const status = document.getElementById('rad-status').value;
+        if (!status) { alert('Selecione o status da aula.'); _travarBotoesRad(false); return; }
+        const cc = isConversationClass(currentRadClass);
+        let lessons = [], attendance = [], observations = '';
+        if (cc) {
+            attendance = (document.getElementById('cc-alunos').value || '').split(',').map(s => s.trim()).filter(Boolean);
+            lessons = (document.getElementById('cc-conteudo').value || '').split(',').map(s => s.trim()).filter(Boolean);
+        } else {
+            observations = document.getElementById('rad-observations').value || '';
+            attendance = Array.from(document.querySelectorAll('#attendance-container input[type="checkbox"]:checked')).map(cb => cb.dataset.aluno);
+            lessons = Array.from(document.querySelectorAll('#lesson-plan-container input[type="checkbox"]:checked')).map(cb => cb.dataset.lessonId);
+        }
+        const radData = {
+            timestamp: new Date().toLocaleString('pt-BR'),
+            teacher: currentTeacher.name,
+            day: currentRadClass.dayName,
+            time: currentRadClass.time,
+            group: currentRadClass.group,
+            status, lessons, attendance, observations
+        };
+        try { localStorage.setItem(getRadKey(currentRadClass), JSON.stringify(radData)); } catch(e) {}
+        await sendRadToServer(radData);
+        alert('✅ RAD salvo!');
+        renderSchedule();
+        closeModal('rad-modal');
+    }
+
+    function clearRad() {
+        if (!currentRadClass) return;
+        if (!confirm('Limpar todos os dados deste RAD?')) return;
+        try { localStorage.removeItem(getRadKey(currentRadClass)); } catch(e) {}
+        closeModal('rad-modal');
+        renderSchedule();
+    }
+
+    function closeModal(id) {
+        document.getElementById(id)?.classList.add('hidden');
+    }
+
+    function openAttendanceList() {
+        document.getElementById('attendance-modal').classList.remove('hidden');
+        populateGroupSelect();
+        loadAttendanceTable();
+    }
+
+    function loadAttendanceTable() {
+        const container = document.getElementById('attendance-table-container');
+        if (!container) return;
+        const group = document.getElementById('att-group-select').value;
+        const month = document.getElementById('att-month-select').value;
+        if (!group) { container.innerHTML = '<p style="text-align:center;color:var(--text-sec);padding:20px;">Selecione uma turma.</p>'; return; }
+        const alunos = findStudentsForGroup(group, '');
+        if (alunos.length === 0) { container.innerHTML = '<p style="text-align:center;color:var(--text-sec);padding:20px;">Nenhum aluno cadastrado.</p>'; return; }
+        let rads = remoteRads.filter(r => normalizeGroupKey(r.group || '') === normalizeGroupKey(group));
+        if (month) rads = rads.filter(r => {
+            const ts = String(r.timestamp || '');
+            const m = ts.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+            if (m) return `${m[3]}-${m[2]}` === month;
+            return false;
+        });
+        let html = `<table class="attendance-table"><thead><tr><th>Aluno</th>`;
+        rads.forEach(r => { html += `<th>${r.timestamp || '—'}</th>`; });
+        html += `<th>Total</th></tr></thead><tbody>`;
+        alunos.forEach(a => {
+            html += `<tr><td><strong>${a}</strong></td>`;
+            let total = 0;
+            rads.forEach(r => {
+                const presente = (r.attendance || []).includes(a);
+                if (presente) total++;
+                html += `<td>${presente ? '✅' : '—'}</td>`;
+            });
+            html += `<td><strong>${total}</strong></td></tr>`;
+        });
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+    }
+
+    // Fecha modais ao clicar fora
+    document.addEventListener('click', (e) => {
+        if (e.target.classList && e.target.classList.contains('modal-overlay')) {
+            e.target.classList.add('hidden');
+        }
+    });
+
+    console.log('✅ Script carregado. Aguardando DOMContentLoaded...');
 </script>
 </body>
 </html>
