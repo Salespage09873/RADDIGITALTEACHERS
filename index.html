@@ -61,6 +61,7 @@
         .badge-next-week { background: var(--warning); color: #000; }
         .badge-inc { background: #6f42c1; color: #fff; }
         .badge-cc { background: #20c997; color: #000; }
+        .badge-vip { background: #6f42c1; color: #fff; }
         .action-btn { width: 100%; margin-top: 12px; padding: 10px; font-size: 0.85rem; border: 2px solid var(--border-color); color: var(--text-sec); background: var(--bg-color); border-radius: 6px; font-weight: 600; transition: all 0.3s ease; cursor: pointer; }
         .action-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: none; box-shadow: none; }
         .action-btn.saved { border-color: var(--success); color: #fff; background: var(--success); }
@@ -236,7 +237,7 @@
                     <div class="group-lesson-grid" id="group-lesson-grid"></div>
                 </div>
                 <div id="tab-content-vip" class="hidden">
-                    <p style="text-align:center; color:var(--text-sec); margin-bottom:15px; font-size:0.9rem;">Clique no aluno para marcar/desmarcar as aulas realizadas.</p>
+                    <p style="text-align:center; color:var(--text-sec); margin-bottom:15px; font-size:0.9rem;">Clique no aluno VIP para marcar/desmarcar as aulas realizadas.</p>
                     <div class="group-lesson-grid" id="vip-grid"></div>
                 </div>
             </div>
@@ -427,13 +428,15 @@
 
     const FETCH_TIMEOUT_MS = 5000;
 
+    // Lista base usada apenas como ordem preferencial e fallback quando o schedule ainda não carregou.
+    // A lista final exibida é SEMPRE a dos teachers que aparecem no schedule.
     const BASE_TEACHERS = [
         { name: 'BARBARA' }, { name: 'CARLA' }, { name: 'CARLOS' }, { name: 'CAROL' },
         { name: 'DIOGO' }, { name: 'HOPE' }, { name: 'LUISA' }, { name: 'MAT' },
-        { name: 'PEDRO' }, { name: 'LUCILA' }
+        { name: 'PEDRO' }
     ];
 
-    let VALID_TEACHERS = BASE_TEACHERS.slice();
+    let VALID_TEACHERS = [];
 
     const BOOK_STRUCTURE = {};
     (function buildBookStructure() {
@@ -796,22 +799,48 @@
                modalUpper.includes('CONVERSATION');
     }
 
+    // ✅ NOVO: verifica se a turma é VIP (coluna E do schedule = modal contém "VIP")
+    function isVipClass(cls) {
+        if (!cls) return false;
+        const modalUpper = (cls.modal || '').toUpperCase();
+        return modalUpper.includes('VIP');
+    }
+
+    // ============================================================
+    // ✅ CORRIGIDO: sincroniza teachers APENAS com os que estão no schedule
+    // ============================================================
     function sincronizarTeachersComSchedule() {
-        const conhecidos = new Set(VALID_TEACHERS.map(t => t.name));
         const doSchedule = new Set();
-        [...scheduleData, ...nextWeekData].forEach(cls => { if (cls.teacher) doSchedule.add(cls.teacher); });
-        const novos = [];
-        doSchedule.forEach(name => {
-            if (!conhecidos.has(name)) { VALID_TEACHERS.push({ name }); novos.push(name); }
+        [...scheduleData, ...nextWeekData].forEach(cls => {
+            if (cls.teacher && cls.teacher.trim()) doSchedule.add(cls.teacher.trim());
         });
-        if (novos.length > 0) console.log('🆕 Novos teachers:', novos.join(', '));
+
+        // Se o schedule ainda não carregou, mantém a lista base como fallback
+        if (doSchedule.size === 0) {
+            console.warn('⚠️ Schedule vazio — usando lista base como fallback');
+            VALID_TEACHERS = BASE_TEACHERS.slice();
+            return;
+        }
+
+        // Ordem: primeiro quem está em BASE_TEACHERS (na ordem base), depois os demais em ordem alfabética
+        const ordemBase = BASE_TEACHERS.map(t => t.name);
+        const ordenados = [...doSchedule].sort((a, b) => {
+            const ia = ordemBase.indexOf(a);
+            const ib = ordemBase.indexOf(b);
+            if (ia !== -1 && ib !== -1) return ia - ib;
+            if (ia !== -1) return -1;
+            if (ib !== -1) return 1;
+            return a.localeCompare(b);
+        });
+
+        VALID_TEACHERS = ordenados.map(name => ({ name }));
+        console.log(`👥 Teachers ativos (do schedule): ${VALID_TEACHERS.map(t => t.name).join(', ')}`);
     }
 
     // ============================================================
     // INICIALIZAÇÃO BLINDADA
     // ============================================================
     window.addEventListener('DOMContentLoaded', async () => {
-        // Timer de segurança GLOBAL — independente de qualquer coisa
         const safetyTimer = setTimeout(() => {
             console.warn('⚠️ Safety timer disparou — forçando hide');
             hideLoadingScreen();
@@ -820,11 +849,10 @@
         try {
             showLoadingMsg('Carregando...');
 
-            // Cada função em try/catch INDIVIDUAL
             try { loadLessonProgress(); } catch(e) { console.warn('loadLessonProgress:', e); }
             try { loadValoresSalvos(); } catch(e) { console.warn('loadValoresSalvos:', e); }
             try { loadVipProgress(); } catch(e) { console.warn('loadVipProgress:', e); }
-            try { renderTeachers(); } catch(e) { console.warn('renderTeachers:', e); }
+            // ✅ NÃO renderiza teachers aqui — espera o schedule carregar
             try { populateGroupSelect(); } catch(e) { console.warn('populateGroupSelect:', e); }
             try {
                 const now = new Date();
@@ -832,16 +860,13 @@
                 const mf = document.getElementById('fech-mes'); if (mf) mf.value = now.toISOString().slice(0, 7);
             } catch(e) {}
 
-            // Esconde a tela ANTES dos fetchs
             clearTimeout(safetyTimer);
             hideLoadingScreen();
 
-            // Aviso se estiver em file://
             if (location.protocol === 'file:') {
                 showErrorBanner('⚠️ Você abriu via file:// — alguns dados externos podem não carregar. Use um servidor HTTP local (ex: python -m http.server).');
             }
 
-            // Fetchs em background
             const tasks = [
                 (async () => { try { await loadKidsLessonPlans(); } catch(e) { console.warn('kids:', e); } })(),
                 (async () => { try { const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS); scheduleData = parseScheduleCSV(text); allWeeks['This Week'] = scheduleData; } catch(e) { console.warn('schedule this:', e); } })(),
@@ -852,7 +877,6 @@
             ];
             await Promise.allSettled(tasks);
 
-            // Re-render depois que os dados chegaram
             try { sincronizarTeachersComSchedule(); } catch(e) {}
             try { buildModalMap(); } catch(e) {}
             try { buildGroupBookMap(); } catch(e) {}
@@ -971,7 +995,7 @@
         if (!str) return null;
         const upperStr = str.toUpperCase();
         const candidates = new Set();
-        VALID_TEACHERS.forEach(t => candidates.add(t.name));
+        BASE_TEACHERS.forEach(t => candidates.add(t.name));
         [...scheduleData, ...nextWeekData].forEach(cls => { if (cls.teacher) candidates.add(cls.teacher); });
         for (const name of candidates) {
             if (!name) continue;
@@ -1452,9 +1476,6 @@
         if (valorAtual) select.value = valorAtual;
     }
 
-    // ============================================================
-    // renderHistory — RECONSTRUÍDA (estava truncada)
-    // ============================================================
     function renderHistory() {
         const container = document.getElementById('history-content');
         if (!container) return;
@@ -1504,9 +1525,6 @@
         container.innerHTML = html;
     }
 
-    // ============================================================
-    // Funções auxiliares que faltavam (stubs seguros)
-    // ============================================================
     function renderTeachers() {
         const grid = document.getElementById('teachers-grid');
         if (!grid) return;
@@ -1561,6 +1579,7 @@
             aulas.forEach(cls => {
                 const saved = isRadSaved(cls);
                 const cc = isConversationClass(cls);
+                const vip = isVipClass(cls);
                 html += `<div class="class-card ${saved ? 'rad-saved' : ''} ${currentWeekName === 'Next Week' ? 'next-week-card' : ''}">
                     ${saved ? '<div class="rad-saved-check">✓</div>' : ''}
                     <span class="class-time">${cls.time}</span>
@@ -1568,6 +1587,7 @@
                     <div class="class-info">📚 ${cls.book || '—'}</div>
                     ${cls.room ? `<span class="badge badge-room">🏠 ${cls.room}</span>` : ''}
                     ${cls.modal ? `<span class="badge badge-modal">${cls.modal}</span>` : ''}
+                    ${vip ? '<span class="badge badge-vip">👑 VIP</span>' : ''}
                     ${cc ? '<span class="badge badge-cc">💬 CC</span>' : ''}
                     ${currentWeekName === 'Next Week' ? '<span class="badge badge-next-week">PRÓX. SEMANA</span>' : ''}
                     ${saved ? '<span class="badge badge-saved">RAD SALVO</span>' : ''}
@@ -1623,16 +1643,40 @@
         }).join('');
     }
 
+    // ============================================================
+    // ✅ CORRIGIDO: renderVipGrid mostra APENAS alunos de turmas VIP
+    // (turmas cuja coluna E do schedule = modal contém "VIP")
+    // ============================================================
     function renderVipGrid() {
         const grid = document.getElementById('vip-grid');
         if (!grid) return;
-        const alunos = new Set();
-        Object.values(studentsData).forEach(arr => arr.forEach(a => alunos.add(a)));
-        const sorted = Array.from(alunos).sort();
-        if (sorted.length === 0) {
-            grid.innerHTML = '<p style="text-align:center;color:var(--text-sec);padding:40px;">Nenhum aluno carregado.</p>';
+
+        // Filtra apenas turmas VIP no schedule (this + next week)
+        const vipClasses = [...scheduleData, ...nextWeekData].filter(isVipClass);
+
+        if (vipClasses.length === 0) {
+            grid.innerHTML = '<p style="text-align:center;color:var(--text-sec);padding:40px;">Nenhuma aula VIP encontrada no schedule.</p>';
             return;
         }
+
+        // Coleta os alunos VIP (por nome). Se a turma VIP não estiver na planilha
+        // de students, usa o nome da turma como fallback.
+        const vipAlunos = new Set();
+        vipClasses.forEach(cls => {
+            const alunosDaTurma = findStudentsForGroup(cls.group, cls.book);
+            if (alunosDaTurma.length > 0) {
+                alunosDaTurma.forEach(a => vipAlunos.add(a));
+            } else if (cls.group && cls.group.trim()) {
+                vipAlunos.add(cls.group.trim());
+            }
+        });
+
+        const sorted = Array.from(vipAlunos).sort();
+        if (sorted.length === 0) {
+            grid.innerHTML = '<p style="text-align:center;color:var(--text-sec);padding:40px;">Nenhum aluno VIP identificado.</p>';
+            return;
+        }
+
         grid.innerHTML = sorted.map(a => {
             const prog = currentVipProgress[a] || [];
             return `<div class="group-card" onclick="openVipDetail('${a.replace(/'/g, "\\'")}')">
@@ -1863,7 +1907,6 @@
         container.innerHTML = html;
     }
 
-    // Fecha modais ao clicar fora
     document.addEventListener('click', (e) => {
         if (e.target.classList && e.target.classList.contains('modal-overlay')) {
             e.target.classList.add('hidden');
