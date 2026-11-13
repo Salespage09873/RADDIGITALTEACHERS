@@ -62,6 +62,7 @@
         .badge-inc { background: #6f42c1; color: #fff; }
         .badge-cc { background: #20c997; color: #000; }
         .badge-vip { background: #6f42c1; color: #fff; }
+        .badge-support { background: #fd7e14; color: #fff; }
         .action-btn { width: 100%; margin-top: 12px; padding: 10px; font-size: 0.85rem; border: 2px solid var(--border-color); color: var(--text-sec); background: var(--bg-color); border-radius: 6px; font-weight: 600; transition: all 0.3s ease; cursor: pointer; }
         .action-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: none; box-shadow: none; }
         .action-btn.saved { border-color: var(--success); color: #fff; background: var(--success); }
@@ -312,7 +313,7 @@
                     <textarea id="cc-alunos" placeholder="Digite os nomes dos alunos presentes..." rows="3" style="margin-bottom: 15px;"></textarea>
                     
                     <label style="color: var(--primary);">📝 Conteúdo Passado:</label>
-                    <textarea id="cc-conteudo" placeholder="Digite o conteúdo/tema da aula de conversação..." rows="4" style="margin-bottom: 15px;"></textarea>
+                    <textarea id="cc-conteudo" placeholder="Digite o conteúdo/tema da aula..." rows="4" style="margin-bottom: 15px;"></textarea>
                 </div>
 
                 <div id="regular-fields">
@@ -428,8 +429,6 @@
 
     const FETCH_TIMEOUT_MS = 5000;
 
-    // Lista base usada apenas como ordem preferencial e fallback quando o schedule ainda não carregou.
-    // A lista final exibida é SEMPRE a dos teachers que aparecem no schedule.
     const BASE_TEACHERS = [
         { name: 'BARBARA' }, { name: 'CARLA' }, { name: 'CARLOS' }, { name: 'CAROL' },
         { name: 'DIOGO' }, { name: 'HOPE' }, { name: 'LUISA' }, { name: 'MAT' },
@@ -799,30 +798,41 @@
                modalUpper.includes('CONVERSATION');
     }
 
-    // ✅ NOVO: verifica se a turma é VIP (coluna E do schedule = modal contém "VIP")
+    // ✅ Support Kids: mesmo fluxo de CC (formulário livre)
+    function isSupportKidsClass(cls) {
+        if (!cls) return false;
+        const groupUpper = (cls.group || '').toUpperCase();
+        const bookUpper = (cls.book || '').toUpperCase();
+        const modalUpper = (cls.modal || '').toUpperCase();
+        return groupUpper.includes('SUPPORT') ||
+               groupUpper.includes('KIDS SUPPORT') ||
+               bookUpper.includes('SUPPORT') ||
+               modalUpper.includes('SUPPORT');
+    }
+
+    // ✅ Classes que usam o formulário livre (CC + Support Kids)
+    function isFreeFormClass(cls) {
+        return isConversationClass(cls) || isSupportKidsClass(cls);
+    }
+
     function isVipClass(cls) {
         if (!cls) return false;
         const modalUpper = (cls.modal || '').toUpperCase();
         return modalUpper.includes('VIP');
     }
 
-    // ============================================================
-    // ✅ CORRIGIDO: sincroniza teachers APENAS com os que estão no schedule
-    // ============================================================
     function sincronizarTeachersComSchedule() {
         const doSchedule = new Set();
         [...scheduleData, ...nextWeekData].forEach(cls => {
             if (cls.teacher && cls.teacher.trim()) doSchedule.add(cls.teacher.trim());
         });
 
-        // Se o schedule ainda não carregou, mantém a lista base como fallback
         if (doSchedule.size === 0) {
             console.warn('⚠️ Schedule vazio — usando lista base como fallback');
             VALID_TEACHERS = BASE_TEACHERS.slice();
             return;
         }
 
-        // Ordem: primeiro quem está em BASE_TEACHERS (na ordem base), depois os demais em ordem alfabética
         const ordemBase = BASE_TEACHERS.map(t => t.name);
         const ordenados = [...doSchedule].sort((a, b) => {
             const ia = ordemBase.indexOf(a);
@@ -837,9 +847,6 @@
         console.log(`👥 Teachers ativos (do schedule): ${VALID_TEACHERS.map(t => t.name).join(', ')}`);
     }
 
-    // ============================================================
-    // INICIALIZAÇÃO BLINDADA
-    // ============================================================
     window.addEventListener('DOMContentLoaded', async () => {
         const safetyTimer = setTimeout(() => {
             console.warn('⚠️ Safety timer disparou — forçando hide');
@@ -852,7 +859,6 @@
             try { loadLessonProgress(); } catch(e) { console.warn('loadLessonProgress:', e); }
             try { loadValoresSalvos(); } catch(e) { console.warn('loadValoresSalvos:', e); }
             try { loadVipProgress(); } catch(e) { console.warn('loadVipProgress:', e); }
-            // ✅ NÃO renderiza teachers aqui — espera o schedule carregar
             try { populateGroupSelect(); } catch(e) { console.warn('populateGroupSelect:', e); }
             try {
                 const now = new Date();
@@ -1578,7 +1584,8 @@
             html += `<div class="day-section"><div class="day-header">${day}</div><div class="classes-list">`;
             aulas.forEach(cls => {
                 const saved = isRadSaved(cls);
-                const cc = isConversationClass(cls);
+                const isCC = isConversationClass(cls);
+                const isSupport = isSupportKidsClass(cls);
                 const vip = isVipClass(cls);
                 html += `<div class="class-card ${saved ? 'rad-saved' : ''} ${currentWeekName === 'Next Week' ? 'next-week-card' : ''}">
                     ${saved ? '<div class="rad-saved-check">✓</div>' : ''}
@@ -1588,7 +1595,8 @@
                     ${cls.room ? `<span class="badge badge-room">🏠 ${cls.room}</span>` : ''}
                     ${cls.modal ? `<span class="badge badge-modal">${cls.modal}</span>` : ''}
                     ${vip ? '<span class="badge badge-vip">👑 VIP</span>' : ''}
-                    ${cc ? '<span class="badge badge-cc">💬 CC</span>' : ''}
+                    ${isSupport ? '<span class="badge badge-support">🆘 SUPPORT KIDS</span>' : ''}
+                    ${isCC ? '<span class="badge badge-cc">💬 CC</span>' : ''}
                     ${currentWeekName === 'Next Week' ? '<span class="badge badge-next-week">PRÓX. SEMANA</span>' : ''}
                     ${saved ? '<span class="badge badge-saved">RAD SALVO</span>' : ''}
                     <button class="action-btn ${saved ? 'saved' : ''}" onclick="openRadModal('${cls.group.replace(/'/g, "\\'")}','${cls.dayName}','${cls.time}','${(cls.book||'').replace(/'/g,"\\'")}')">
@@ -1643,15 +1651,10 @@
         }).join('');
     }
 
-    // ============================================================
-    // ✅ CORRIGIDO: renderVipGrid mostra APENAS alunos de turmas VIP
-    // (turmas cuja coluna E do schedule = modal contém "VIP")
-    // ============================================================
     function renderVipGrid() {
         const grid = document.getElementById('vip-grid');
         if (!grid) return;
 
-        // Filtra apenas turmas VIP no schedule (this + next week)
         const vipClasses = [...scheduleData, ...nextWeekData].filter(isVipClass);
 
         if (vipClasses.length === 0) {
@@ -1659,8 +1662,6 @@
             return;
         }
 
-        // Coleta os alunos VIP (por nome). Se a turma VIP não estiver na planilha
-        // de students, usa o nome da turma como fallback.
         const vipAlunos = new Set();
         vipClasses.forEach(cls => {
             const alunosDaTurma = findStudentsForGroup(cls.group, cls.book);
@@ -1767,23 +1768,23 @@
         if (!cls) { alert('Aula não encontrada.'); return; }
         currentRadClass = cls;
         const saved = getRadSavedData(cls);
-        const cc = isConversationClass(cls);
+        const freeForm = isFreeFormClass(cls); // ✅ CC + Support Kids
         document.getElementById('rad-class-info').innerHTML = `
             <strong>${cls.group}</strong><br>
             📅 ${cls.dayName} — ⏰ ${cls.time}<br>
             📚 ${cls.book || '—'} ${cls.room ? `| 🏠 ${cls.room}` : ''} ${cls.modal ? `| ${cls.modal}` : ''}
         `;
         document.getElementById('rad-saved-badge').classList.toggle('hidden', !saved);
-        document.getElementById('cc-fields').classList.toggle('hidden', !cc);
-        document.getElementById('regular-fields').classList.toggle('hidden', cc);
+        document.getElementById('cc-fields').classList.toggle('hidden', !freeForm);
+        document.getElementById('regular-fields').classList.toggle('hidden', freeForm);
         document.getElementById('rad-status').value = saved?.status || '';
         document.getElementById('rad-observations').value = saved?.observations || '';
-        if (cc) {
+        if (freeForm) {
             document.getElementById('cc-alunos').value = (saved?.attendance || []).join(', ');
             document.getElementById('cc-conteudo').value = (saved?.lessons || []).join(', ');
         }
         toggleRadFields();
-        if (!cc) {
+        if (!freeForm) {
             renderLessonPlanChecklist(cls);
             renderAttendanceChecklist(cls, saved);
         }
@@ -1832,9 +1833,9 @@
         if (!currentRadClass || !currentTeacher) { alert('Erro: aula não selecionada.'); return; }
         const status = document.getElementById('rad-status').value;
         if (!status) { alert('Selecione o status da aula.'); _travarBotoesRad(false); return; }
-        const cc = isConversationClass(currentRadClass);
+        const freeForm = isFreeFormClass(currentRadClass); // ✅ CC + Support Kids
         let lessons = [], attendance = [], observations = '';
-        if (cc) {
+        if (freeForm) {
             attendance = (document.getElementById('cc-alunos').value || '').split(',').map(s => s.trim()).filter(Boolean);
             lessons = (document.getElementById('cc-conteudo').value || '').split(',').map(s => s.trim()).filter(Boolean);
         } else {
